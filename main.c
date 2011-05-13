@@ -2,7 +2,7 @@
  * @author: 
  * @brief: ECE 354 S11 RTX Project P1-(c) 
  * @date: 2011/05/02
- * This file runs simiple tests of memory allocation/de-allocation APIs.
+ * This file runs simple tests of memory allocation/de-allocation APIs.
  * During the demo, we may replace this file with one  
  * that contains more testing cases. 
  */
