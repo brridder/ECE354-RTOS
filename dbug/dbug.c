@@ -3,7 +3,7 @@
  * @brief: output to janusROM terminal by using trap #15
  * @author: ECE354 Lab Instructors and TAs
  * @author: Irene Huang
- * @date: 2010/05/03
+ * @date: 2011/01/04
  */
 
 #include "dbug.h"
@@ -21,8 +21,19 @@ VOID rtx_dbug_out_char( CHAR c )
     asm( "move.l %d1, -(%a7)" );
 
     /* Load CHAR c into d1 */
-    asm( "move.l 8(%a6), %d1" );
-    
+    asm( "move.l 8(%a6), %d1" );  /* Standard Motorola syntax */ 
+    //asm( "move.l (8, %a6), %d1" );/* Standard Motorola syntax */
+    //asm( "move.l %a6@(8), %d1" ); /* Motorola 680x0 syntax developed by MIT */
+
+    /*
+    asm("move.l %0, %%d1"
+       : // no output  
+       :"g"(c)
+       :"d1" 
+       );
+    */
+
+
     /* Setup trap function */
     asm( "move.l #0x13, %d0" );
     asm( "trap #15" );

@@ -14,7 +14,7 @@ OBJCPY=m68k-elf-objcopy
 ASM=./start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 
-OBJS=dbug.o memory.o main.o
+OBJS=dbug/dbug.o memory.o main.o
 
 # Note, GCC builds things in order, it's important to put the
 #  ASM first, so that it is located at the beginning of our program.
@@ -25,8 +25,8 @@ main.s19: $(OBJS)
 memory.o: memory.c memory.h
 	$(CC) $(CFLAGS) -c memory.c
 
-dbug.o: dbug.c dbug.h
-	$(CC) $(CFLAGS) -c dbug.c
+dbug/dbug.o: dbug/dbug.c dbug/dbug.h
+	make -C dbug/
 
 .PHONY: clean
 clean:
