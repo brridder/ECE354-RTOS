@@ -1,0 +1,13 @@
+CC=m68k-elf-gcc
+CXX=m68k-elf-g++
+CFLAGS= -Wall -m5307 -pipe -nostdlib
+LD=m68k-elf-gcc
+AS=m68k-elf-as
+AR=m68k-elf-ar
+ARFLAGS=
+OBJCPY=m68k-elf-objcopy
+OBJDMP=m68k-elf-objdump
+PRJLDFLAGS = Wl
+RM=rm
+DIRS=dbug shared timer0 uart1
+ECHO=echo
