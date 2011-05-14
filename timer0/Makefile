@@ -1,9 +1,11 @@
+include ../Makefile.inc
+
 START_ASM=../shared/start.s timer_entry.s
 LDFLAGS=-T../shared/rtx.ld -Wl,-Map=serial.map
 TIMER_OBJS=../dbug/dbug.o ../shared/uart/uart.o timer.o
 
-timer: timer_entry.s $(TIMER_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o timer.bin $(ASM) $(TIMER_OBJS) 
+timer.s19: timer_entry.s $(TIMER_OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o timer.bin $(START_ASM) $(TIMER_OBJS) 
 	$(OBJCPY) --output-format=srec timer.bin timer.s19
 	$(OBJDMP) -xdC timer.bin > timer.lst
 	chmod u+x timer.s19
