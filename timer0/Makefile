@@ -1,17 +1,27 @@
 include ../Makefile.inc
 
-START_ASM=../shared/start.s timer_entry.s
-LDFLAGS=-T../shared/rtx.ld -Wl,-Map=timer.map
-TIMER_OBJS=../dbug/dbug.o ../shared/uart/uart.o ../shared/string.o timer.o 
+DEPS=../shared/string.o ../shared/uart/uart.o ../dbug.o
 
-timer.s19: timer_entry.s $(TIMER_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o timer.bin $(START_ASM) $(TIMER_OBJS) 
+START_ASM=../shared/start.s timer_entry.s
+LDFLAGS=-T../shared/rtx.ld -Wl,-Map=serial.map
+OBJS=$(patsubst %.c,%.o,$(wildcard *.c)) $(DEPS)
+
+timer.s19: $(OBJS) timer_entry.s
+	$(CC) $(CFLAGS) $(LDFLAGS) -o timer.bin $(START_ASM) $(OBJS) 
 	$(OBJCPY) --output-format=srec timer.bin timer.s19
 	$(OBJDMP) -xdC timer.bin > timer.lst
 	chmod u+x timer.s19
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+-include $(OBJS:.o=.d)
+
+%.o : %.c
+	$(CC) -c $(CFLAGS) $*.c -o $*.o
+	$(CC) -MM $(CFLAGS) $*.c > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
 .PHONY: clean
 clean:
