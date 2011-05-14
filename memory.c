@@ -9,9 +9,19 @@
 #include "shared/string.h"
 #include "memory.h"
 
+#define NUM_MEM_BLKS 32
+
+/* 
+ * Globals
+ */
+
+// Start of free memory
 extern void* __end;
 
+// Head pointer of the start of the free list
 void *memory_head;
+
+// Field to keep track of allocated memory blocks
 UINT32 memory_alloc_field;
 
 /**
@@ -20,7 +30,7 @@ UINT32 memory_alloc_field;
  * allocation field.
  */ 
 int get_block_index(void* addr) {
-    return ((int)addr - (int)&__end) / 128;
+    return ((int)addr - (int)&__end) / (NUM_MEM_BLKS*4);
 }
 
 /**
@@ -36,7 +46,7 @@ void init_memory() {
     // Since this is pointer arithmetic, adding 1 adds 4 bytes.
     //
 
-    memory_head = &__end + (31*32);
+    memory_head = &__end + (NUM_MEM_BLKS-1*NUM_MEM_BLKS);
 
     //
     // Iterate through the memory pool and setup the free list.
@@ -48,9 +58,9 @@ void init_memory() {
     //
 
     iter = (int*)memory_head;
-    for (i = 0; i < 32; i++) {
-        *iter = (int)iter - 128;
-        iter -= 32;
+    for (i = 0; i < NUM_MEM_BLKS; i++) {
+        *iter = (int)iter - (NUM_MEM_BLKS*4);
+        iter -= NUM_MEM_BLKS;
     }
     *iter = NULL;
 
@@ -111,12 +121,15 @@ int s_release_memory_block(void* memory_block)
 
       memory_alloc_field &= ((0x01 << index) ^ 0xFFFFFFFF);
 
+      //
       // Success
+      //
+
       return RTX_SUCCESS;
     }
 
     //
-    // This memory block is not currently allocated
+    // This memory block is not currently allocated, failure
     //
     
     return RTX_ERROR;
