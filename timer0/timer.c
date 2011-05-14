@@ -1,9 +1,10 @@
-#include "../rtx_inc.h"
 #include "../dbug/dbug.h"
 #include "../shared/string.h"
+#include "../shared/rtx_inc.h"
+#include "../shared/uart/uart.h"
 
 SINT32 counter = 0;
-
+volatile BYTE char_out = '\0';
 int __main(void) {
     return 0;
 }
@@ -11,6 +12,15 @@ int __main(void) {
 void c_timer_handler(void) {
     counter++;
     TIMER0_TER = 2;
+}
+
+void c_serial_handler(void) {
+    BYTE temp;
+    temp = SERIAL1_USR;
+    if(temp & 0x04) {
+       SERIAL1_WD = char_out;
+       SERIAL1_IMR = 2;
+    }
 }
 
 SINT32 coldfire_vbr_init(void) {
@@ -28,6 +38,10 @@ int main (void) {
     int hours, minutes, seconds;
     char out_string[] = "hh:mm:ss"; // may need \n\r
     char temp_string[] = "00";
+    int i;
+    uart_config uart1_config;
+    uart_interrupt_config uart1_interrupt_config;
+
     asm("move.w #0x2700,%sr");
     coldfire_vbr_init();
     // Store the timer ISR at auto-vector #6
@@ -48,11 +62,18 @@ int main (void) {
     mask &= 0x0003fdff;
     SIM_IMR = mask;
 
+    // Setup the UART1 and install handler at autovector interrupt 64
+    uart1_config.vector = 64;
+    uart1_setup(&uart1_config);
+
     // Let the timer interrupt fire, lower running priority
     asm("move.w #0x2000, %sr");
 
-    counter = 86390;
+    counter = 86390; // 23:59:50
+
     last_counter = counter;
+    uart1_interrupt_config.tx_rdy = true;
+    i = -1;
     while(0) {
         if (last_counter != counter) {
             hours = (counter/3600) - (counter % 3600)/3600;
@@ -72,6 +93,13 @@ int main (void) {
             itoa(seconds, temp_string);
             out_string[6] = temp_string[0];
             out_string[7] = temp_string[0];
+
+            uart1_set_interrupts(&uart1_interrupt_config);
+            i = 0;
+        }
+        if( i >= 0 && i < 8) {
+            char_out = out_string[i];
+            uart1_set_interrupts(&uart1_interrupt_config);
         }
     }
 }

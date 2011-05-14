@@ -1,3 +1,6 @@
+#include "uart.h"
+#include "../rtx_inc.h"
+
 void uart1_set_interrupts(uart_interrupt_config* config) {
     uint8_t mask = 0;
     if (config->rx_rdy) {

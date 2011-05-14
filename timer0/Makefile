@@ -28,11 +28,15 @@ timer.s19: timer_entry.s $(TIMER_OBJS)
 	$(OBJDMP) -xdC timer.bin > timer.lst
 	chmod u+x timer.s19
 
+../shared/uart/uart.o: ../shared/uart/uart.c ../shared/uart/uart.h
+	$(CC) $(CFLAGS) -c uart.c	
+
 timer.o: timer.c
 	$(CC) $(CFLAGS) -c timer.c
 
 ../dbug/dbug.o: ../dbug/dbug.c ../dbug/dbug.h
 	make -C ../dbug
+
 
 .PHONY: clean
 clean:

@@ -1,3 +1,5 @@
+#include "../rtx_inc.h"
+
 #ifndef _UART_H_
 #define _UART_H_
 
