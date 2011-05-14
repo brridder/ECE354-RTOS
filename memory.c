@@ -36,6 +36,11 @@ UINT32 memory_alloc_field;
  * allocation field.
  */ 
 int get_block_index(void* addr) {
+    //
+    // The block index is its offset into the free memory region (in bytes)
+    // divided by the block size.
+    //
+ 
     return ((int)addr - (int)&__end) / (NUM_MEM_BLKS*4);
 }
 
