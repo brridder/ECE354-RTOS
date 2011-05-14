@@ -20,14 +20,14 @@ LDFLAGS=-T../shared/rtx.ld -Wl,-Map=serial.map
 
 SERIAL_OBJS=../dbug/dbug.o serial.o
 
-# Note, GCC builds things in order, it's important to put yhe
+# Note, GCC builds things in order, it's important to put the
 #  ASM first, so that it is located at the beginning of our program.
 serial.s19: serial_entry.s $(SERIAL_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o serial.bin $(ASM) $(SERIAL_OBJS) 
 	$(OBJCPY) --output-format=srec serial.bin serial.s19
 	$(OBJDMP) -xdC serial.bin > serial.lst
 	chmod u+x serial.s19
-
+x
 serial.o: serial.c
 	$(CC) $(CFLAGS) -c serial.c
 
