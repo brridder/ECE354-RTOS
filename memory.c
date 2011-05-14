@@ -46,7 +46,7 @@ void init_memory() {
     // Since this is pointer arithmetic, adding 1 adds 4 bytes.
     //
 
-    memory_head = &__end + (NUM_MEM_BLKS-1*NUM_MEM_BLKS);
+    memory_head = &__end + ((NUM_MEM_BLKS-1)*NUM_MEM_BLKS);
 
     //
     // Iterate through the memory pool and setup the free list.
