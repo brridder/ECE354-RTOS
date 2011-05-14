@@ -19,7 +19,7 @@ void c_serial_handler(void) {
     temp = SERIAL1_USR;
     if(temp & 0x04) {
        SERIAL1_WD = char_out;
-       SERIAL1_IMR = 2;
+       SERIAL1_IMR = 0;
     }
 }
 
@@ -47,6 +47,10 @@ int main (void) {
     // Store the timer ISR at auto-vector #6
     asm("move.l #asm_timer_entry, %d0");
     asm("move.l %d0, 0x10000078");
+    
+    // Store the uart1 ISR at user vector #64
+    asm("move.l #asm_serial_entry, %d0");
+    asm("move.l %d0, 0x10000100");
 
     // Setup to use auto-vectored interrupt level 6, priority 3
     TIMER0_ICR = 0x9B;
@@ -74,33 +78,37 @@ int main (void) {
     last_counter = counter;
     uart1_interrupt_config.tx_rdy = true;
     i = -1;
-    while(0) {
+    while(1) {
         if (last_counter != counter) {
             hours = (counter/3600) - (counter % 3600)/3600;
             seconds = counter - hours*3600;
             minutes = (seconds)/60 - (seconds%60)/60;
             seconds = seconds - minutes*60;
+            
             // TODO :: refactor this.
             itoa(hours, temp_string);
-
             out_string[0] = temp_string[0];
             out_string[1] = temp_string[1];
 
             itoa(minutes, temp_string);
             out_string[3] = temp_string[0];
-            out_string[4] = temp_string[0];
+            out_string[4] = temp_string[1];
     
             itoa(seconds, temp_string);
             out_string[6] = temp_string[0];
-            out_string[7] = temp_string[0];
+            out_string[7] = temp_string[1];
 
             uart1_set_interrupts(&uart1_interrupt_config);
             i = 0;
+
+            last_counter = counter;
         }
         if( i >= 0 && i < 8) {
             char_out = out_string[i];
             uart1_set_interrupts(&uart1_interrupt_config);
+            i++;
         }
     }
+    return 0;
 }
 

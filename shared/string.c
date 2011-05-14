@@ -20,7 +20,7 @@ void itoa(int n, char s[]) {
     reverse(s);
 }
 
-void reverse(s) {
+void reverse(char s[]) {
     int i,j;
     char c;
     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
