@@ -4,13 +4,18 @@
 #include "../dbug.h"
 
 SINT32 counter = 0;
+unsigned int timer_count = 0;
 volatile BYTE char_out = '\0';
 int __main(void) {
     return 0;
 }
 
 void c_timer_handler(void) {
-    counter++;
+    //timer_count++;
+    //if (timer_count == 100) {
+        counter++;
+        //timer_count = 0;
+    //}
     TIMER0_TER = 2;
 }
 
@@ -19,7 +24,7 @@ void c_serial_handler(void) {
     temp = SERIAL1_USR;
     if(temp & 0x04) {
        SERIAL1_WD = char_out;
-       SERIAL1_IMR = 0;
+       SERIAL1_IMR = 0x00;
     }
 }
 
@@ -36,14 +41,17 @@ int main (void) {
     UINT32 mask;
     SINT32 last_counter;
     int hours, minutes, seconds;
-    char out_string[] = "hh:mm:ss"; // may need \n\r
+    char out_string[] = "hh:mm:ss\r"; // may need \n\r
     char temp_string[] = "00";
     int i;
     uart_config uart1_config;
     uart_interrupt_config uart1_interrupt_config;
-
+    
+    // Disable all interrupts
     asm("move.w #0x2700,%sr");
+
     coldfire_vbr_init();
+
     // Store the timer ISR at auto-vector #6
     asm("move.l #asm_timer_entry, %d0");
     asm("move.l %d0, 0x10000078");
@@ -63,7 +71,7 @@ int main (void) {
 
     // Set the interrupt mask
     mask = SIM_IMR;
-    mask &= 0x0003fdff;
+    mask &= 0x0003ddff;
     SIM_IMR = mask;
 
     // Setup the UART1 and install handler at autovector interrupt 64
@@ -77,34 +85,51 @@ int main (void) {
 
     last_counter = counter;
     uart1_interrupt_config.tx_rdy = true;
+    uart1_interrupt_config.rx_rdy = false;
     i = -1;
     while(1) {
         if (last_counter != counter) {
             hours = (counter/3600) - (counter % 3600)/3600;
             seconds = counter - hours*3600;
+            hours = hours % 24;
             minutes = (seconds)/60 - (seconds%60)/60;
             seconds = seconds - minutes*60;
             
             // TODO :: refactor this.
             itoa(hours, temp_string);
-            out_string[0] = temp_string[0];
-            out_string[1] = temp_string[1];
+            if (hours < 10) {
+                out_string[0] = '0';
+                out_string[1] = temp_string[0];
+            } else {
+                out_string[0] = temp_string[0];
+                out_string[1] = temp_string[1];
+            }
 
             itoa(minutes, temp_string);
-            out_string[3] = temp_string[0];
-            out_string[4] = temp_string[1];
-    
+            if (minutes < 10) {
+                out_string[3] = '0';
+                out_string[4] = temp_string[0];
+            } else { 
+                out_string[3] = temp_string[0];
+                out_string[4] = temp_string[1];
+            } 
+            
             itoa(seconds, temp_string);
-            out_string[6] = temp_string[0];
-            out_string[7] = temp_string[1];
+            if (seconds < 10) {
+                out_string[6] = '0';
+                out_string[7] = temp_string[0];
+            } else { 
+                out_string[6] = temp_string[0];
+                out_string[7] = temp_string[1];
+            } 
 
             uart1_set_interrupts(&uart1_interrupt_config);
             i = 0;
 
             last_counter = counter;
         }
-        if( i >= 0 && i < 8) {
-            char_out = out_string[i];
+        if( i >= 0 && i < 9) {
+            char_out = (char)out_string[i];
             uart1_set_interrupts(&uart1_interrupt_config);
             i++;
         }
