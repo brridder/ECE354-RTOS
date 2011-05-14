@@ -1,6 +1,8 @@
 # Makefile
 include Makefile.inc
 
+DIRS=dbug shared timer0 uart1
+
 START_ASM = start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 DEPS=dbug.h memory.h
@@ -15,7 +17,8 @@ main.s19: $(OBJS)
 	$(OBJCPY) --output-format=srec main.bin main.s19
 
 %.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c $(CFLAGS) $*.c -o $*.o
+	$(CC) -MM $(CFLAGS) $*.c > $*.d
 
 uart1: shared force_look
 	cd uart1; $(MAKE) $(MFLAGS)
@@ -24,7 +27,7 @@ timer0: shared force_look
 	cd timer0; $(MAKE) $(MFLAGS)
 
 shared:
-	cd shared; $(MAKE) $(MFLAGS)1
+	cd shared; $(MAKE) $(MFLAGS)
 
 .PHONY: clean
 clean:
