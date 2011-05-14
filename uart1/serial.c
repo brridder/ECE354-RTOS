@@ -120,19 +120,19 @@ int main( void )
     SERIAL1_UBG2 = 0x92;    /* lab board baud rate 9600 */
 #endif /* _CFSERVER_ */
 
-    /* Set clock mode */
+    // Set UART1 clock mode
     SERIAL1_UCSR = 0xDD;
 
-    /* Setup the UART (no parity, 8 bits ) */
+    // Set UART1 to no parity, 8 bits
     SERIAL1_UMR = 0x13;
     
-    /* Setup the rest of the UART (noecho, 1 stop bit ) */
+    // Set UART1 noecho, 1 stop bit
     SERIAL1_UMR = 0x07;
-
-    /* Setup for transmit and receive */
+    
+    // Setup UART1 tx and rx
     SERIAL1_UCR = 0x05;
 
-    /* Enable interupts */
+    // Enable interupts
     mask = SIM_IMR;
     mask &= 0x0003dfff;
     SIM_IMR = mask;

@@ -12,7 +12,7 @@
  */
 
 #include "rtx_inc.h"
-#include "dbug/dbug.h"
+#include "dbug.h"
 #include "memory.h"
 
 #define NUM_MEM_BLKS 32

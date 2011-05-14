@@ -25,8 +25,8 @@ main.s19: $(OBJS)
 memory.o: memory.c memory.h
 	$(CC) $(CFLAGS) -c memory.c
 
-dbug/dbug.o: dbug/dbug.c dbug/dbug.h
-	make -C dbug/
+dbug.o: dbug.c dbug.h
+	$(CC) $(CFLAGS) -c dbug.c
 
 .PHONY: clean
 clean:
