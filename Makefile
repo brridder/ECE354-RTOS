@@ -6,7 +6,7 @@ LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 DEPS=dbug.h memory.h
 OBJS=dbug.o memory.o main.o
 
-all: main serial
+all: main serial timer0
 
 # Note, GCC builds things in order, it's important to put the
 # ASM first, so that it is located at the beginning of our program.
