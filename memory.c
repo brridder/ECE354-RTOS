@@ -11,10 +11,6 @@
 
 #define NUM_MEM_BLKS 32
 
-/* 
- * Globals
- */
-
 //
 // Start of free memory
 //
@@ -32,6 +28,7 @@ void *memory_head;
 //
 
 UINT32 memory_alloc_field;
+
 
 /**
  * @brief calculate the index for a particular block
