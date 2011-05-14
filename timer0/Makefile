@@ -13,7 +13,6 @@ timer.s19: timer_entry.s $(TIMER_OBJS)
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-
 .PHONY: clean
 clean:
 	rm -f *.s19 *.o *.bin *.lst *.map
