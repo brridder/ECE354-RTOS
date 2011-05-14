@@ -64,8 +64,10 @@ void init_memory() {
     // The first 4 bytes of each memory block contain the address
     // of the next free memory block.
     //
-    // When decrementing the pointer, 32 is used because this corresponds to
-    // 128 bytes.
+    // When decrementing the pointer, the number of blocks*4 is used
+    // because this corresponds to number of bytes (integer math). The pointer
+    // is decremented by just the number of blocks because this corresponds
+    // to blocks*4 bytes (pointer math).
     //
 
     iter = (int*)memory_head;
