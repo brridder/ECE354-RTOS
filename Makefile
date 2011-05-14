@@ -6,7 +6,7 @@ DIRS=shared timer0 uart1
 START_ASM = start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 DEPS=dbug.h memory.h
-OBJS=dbug.o memory.o main.o
+OBJS=dbug.o memory.o main.o shared/string.o
 
 all: main.s19 uart1 timer0
 

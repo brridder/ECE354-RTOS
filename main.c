@@ -38,7 +38,7 @@ int main( VOID )
         } else if (p_mem_array[i] > 0x10200000) {
             rtx_dbug_outs((CHAR *) "Memory out of bound. \r\n");
         } else {
-            rtx_dbug_outs((CHAR *) "Request meory block: almost OK\r\n");
+            rtx_dbug_outs((CHAR *) "Request memory block: almost OK\r\n");
         }
     }
 

@@ -5,14 +5,62 @@
  */
 
 #include "rtx_inc.h"
+#include "dbug.h"
+#include "shared/string.h"
 #include "memory.h"
+
+extern void* __end;
+
+void *memory_head;
+UINT32 memory_alloc_field;
+
+/**
+ * @brief calculate the index for a particular block
+ * Internal function used to set bits in the memory 
+ * allocation field.
+ */ 
+int get_block_index(void* addr) {
+    return ((int)addr - (int)&__end) / 128;
+}
 
 /**
  * @brief memory management initialization routine
  */
-void init_memory()
-{
-    /* Add your own code here */
+void init_memory() {
+    int i;
+    int *iter;
+    
+    //
+    // The head pointer starts at the start of free memory plus
+    // the space required for all our memory blocks (32 blocks * 128 bytes).
+    // Since this is pointer arithmetic, adding 1 adds 4 bytes.
+    //
+
+    memory_head = &__end + (31*32);
+
+    //
+    // Iterate through the memory pool and setup the free list.
+    // The first 4 bytes of each memory block contain the address
+    // of the next free memory block.
+    //
+    // When decrementing the pointer, 32 is used because this equals
+    // 128 bytes.
+    //
+
+    iter = (int*)memory_head;
+    for (i = 0; i < 32; i++) {
+        *iter = (int)iter - 128;
+        iter -= 32;
+    }
+    *iter = NULL;
+
+    //
+    // Setup the memory allocation field. Each bit in this field
+    // represents one block in the pool. A value of 0 means 
+    // the block has not been allocated, 1 means the block has been allocated.
+    //
+    
+    memory_alloc_field = 0;
 }
 
 /**
@@ -21,12 +69,21 @@ void init_memory()
  *         and NULL on error 
  */
 
-void* s_request_memory_block()
-{
-    /* Add your own code here */
+void* s_request_memory_block() {   
+    int index;
+    void* mem;
+    
+    mem = memory_head;
+    memory_head = (void*)*(UINT32*)mem;
 
-    /* replace NULL with a non-zero memory address */
-    return NULL; 
+    //
+    // Set the bit in the memory field corresponding to this block
+    // 
+
+    index = get_block_index(mem);
+    memory_alloc_field |= (0x01 << index);
+
+    return mem;
 }
 
 /**
@@ -34,12 +91,33 @@ void* s_request_memory_block()
  * @return: 0 on sucess, non-zero on error
  */
 
-int s_release_memory_block( void* memory_block )
+int s_release_memory_block(void* memory_block)
 {
-    /* Add your own code here */
+    int index;
 
+    //
+    // Check the memory allocation field to see if this block has already
+    // been deallocated.
+    //
+    
+    index = get_block_index(memory_block);
+    if (memory_alloc_field & (0x01 << index)) {
+      *(int*)memory_block = (int)memory_head;
+      memory_head = memory_block;
 
-    /* add code to return non-zero if releasing memory block fails */
+      //
+      // Update the allocated memory field
+      //
 
-    return 0; // 0 on success
+      memory_alloc_field &= ((0x01 << index) ^ 0xFFFFFFFF);
+
+      // Success
+      return RTX_SUCCESS;
+    }
+
+    //
+    // This memory block is not currently allocated
+    //
+    
+    return RTX_ERROR;
 }
