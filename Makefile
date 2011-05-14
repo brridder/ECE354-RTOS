@@ -1,7 +1,4 @@
-
 # Makefile
-# David Grant, 2004
-# Irene Huang, 2011/01/07
 
 CC=m68k-elf-gcc
 CXX=m68k-elf-g++
@@ -14,7 +11,8 @@ OBJCPY=m68k-elf-objcopy
 ASM=./start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 
-OBJS=dbug/dbug.o memory.o main.o
+DEPS=dbug.h memory.h
+OBJS=dbug.o memory.o main.o
 
 # Note, GCC builds things in order, it's important to put the
 #  ASM first, so that it is located at the beginning of our program.
@@ -22,11 +20,8 @@ main.s19: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o main.bin $(ASM) $(OBJS) 
 	$(OBJCPY) --output-format=srec main.bin main.s19
 
-memory.o: memory.c memory.h
-	$(CC) $(CFLAGS) -c memory.c
-
-dbug.o: dbug.c dbug.h
-	$(CC) $(CFLAGS) -c dbug.c
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean
 clean:

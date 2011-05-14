@@ -54,6 +54,8 @@
 #define VOID    void
 #define BOOLEAN signed long int
 
+typedef unsigned char uint8_t;
+
 
 #define ESC                 0x1B
 #define BKSP                '\b'
@@ -65,8 +67,16 @@
 #define TRUE 1
 #endif
 
+#if !defined( true )
+#define true 1
+#endif
+
 #if !defined( FALSE )
 #define FALSE 0
+#endif
+
+#if !defined( false )
+#define false 0
 #endif
 
 #if !defined( NULL )

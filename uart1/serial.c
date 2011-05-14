@@ -5,6 +5,7 @@
  * @date: 2011/05/13
  */
 #include "../shared/rtx_inc.h"
+#include "../shared/uart/uart.h"
 #include "../dbug/dbug.h"
 
 /*
@@ -17,7 +18,7 @@ CHAR string_format[] = "You Typed a Q\n\r";
 
 int __main(void)
 {
-  return 0;
+    return 0;
 }
 
 VOID c_serial_handler( VOID )
@@ -65,7 +66,7 @@ VOID c_serial_handler( VOID )
     return;
 }
 
-SINT32 coldfire_vbr_init( VOID )
+SINT32 coldfire_vbr_init(void)
 {
     asm( "move.l %a0, -(%a7)" );
     asm( "move.l #0x10000000, %a0 " );
@@ -78,59 +79,23 @@ SINT32 coldfire_vbr_init( VOID )
 /*
  * Entry point, check with m68k-coff-nm
  */
-int main( void )
-{
+int main(void) {
     UINT32 mask;
+    uart_config uart1_config;
+    uart_interrupt_config uart1_interrupt_config;
 
     // Disable all interrupts
-    asm( "move.w #0x2700,%sr" );
+    asm("move.w #0x2700,%sr");
     
     coldfire_vbr_init();
+
+    // Store the serial ISR at user vector #64 
+    asm("move.l #asm_serial_entry,%d0");
+    asm("move.l %d0,0x10000100");
     
-    /*
-     * Store the serial ISR at user vector #64
-     */
-    asm( "move.l #asm_serial_entry,%d0" );
-    asm( "move.l %d0,0x10000100" );
-
-    // Reset UART1
-    SERIAL1_UCR = 0x10;
-
-    // Reset UART1 receiver
-    SERIAL1_UCR = 0x20;
-
-    // Reset UART1 transmitter
-    SERIAL1_UCR = 0x30;
-    
-    // Reset UART1 error condition
-    SERIAL1_UCR = 0x40;
-
-    // Install UART1 interrupt
-    SERIAL1_ICR = 0x17;
-    SERIAL1_IVR = 64;
-
-    // Enable UART1 RX interrupts
-    SERIAL1_IMR = 0x02;
-
-    // Set UART1 baud rate
-    SERIAL1_UBG1 = 0x00;
-#ifdef _CFSERVER_           /* add -D_CFSERVER_ for cf-server build */
-    SERIAL1_UBG2 = 0x49;    /* cf-server baud rate 19200 */ 
-#else
-    SERIAL1_UBG2 = 0x92;    /* lab board baud rate 9600 */
-#endif /* _CFSERVER_ */
-
-    // Set UART1 clock mode
-    SERIAL1_UCSR = 0xDD;
-
-    // Set UART1 to no parity, 8 bits
-    SERIAL1_UMR = 0x13;
-    
-    // Set UART1 noecho, 1 stop bit
-    SERIAL1_UMR = 0x07;
-    
-    // Setup UART1 tx and rx
-    SERIAL1_UCR = 0x05;
+    // Setup UART1 and install handler at autovector interrupt 64
+    uart1_config.vector = 64;
+    uart1_setup(&uart1_config);
 
     // Enable interupts
     mask = SIM_IMR;
@@ -138,15 +103,13 @@ int main( void )
     SIM_IMR = mask;
     
     // Enable all interupts
-    asm( "move.w #0x2000,%sr" );
+    asm("move.w #0x2000,%sr");
 
     rtx_dbug_outs((CHAR *) "Type Q or q on RTX terminal to quit.\n\r" );
     
-    /* Busy Loop */
-    while( char_in != 'q' && char_in != 'Q' )
-    {
-        if(!char_handled)
-        {
+    uart1_interrupt_config.tx_rdy = true;
+    while(char_in != 'q' && char_in != 'Q') {
+        if(!char_handled) {
             char_handled = TRUE;
             char_out = char_in;
             
@@ -156,7 +119,7 @@ int main( void )
             string_format[12] = char_in;
 
             /* enable tx interrupts  */
-            SERIAL1_IMR = 3;
+            uart1_set_interrupts(&uart1_interrupt_config);
 
             /* Now print the string to debug, 
              * note that interrupts are now back on. 
