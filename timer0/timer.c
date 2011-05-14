@@ -1,7 +1,7 @@
-#include "../dbug/dbug.h"
-#include "../shared/string.h"
 #include "../shared/rtx_inc.h"
+#include "../shared/string.h"
 #include "../shared/uart/uart.h"
+#include "../dbug.h"
 
 SINT32 counter = 0;
 volatile BYTE char_out = '\0';

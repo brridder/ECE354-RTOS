@@ -6,7 +6,7 @@
  */
 #include "../shared/rtx_inc.h"
 #include "../shared/uart/uart.h"
-#include "../dbug/dbug.h"
+#include "../dbug.h"
 
 /*
  * Global Variables

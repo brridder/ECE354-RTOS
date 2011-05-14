@@ -1,7 +1,7 @@
 # Makefile
 include Makefile.inc
 
-DIRS=dbug shared timer0 uart1
+DIRS=shared timer0 uart1
 
 START_ASM = start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
@@ -28,18 +28,18 @@ main.s19: $(OBJS)
 	@rm -f $*.d.tmp
 
 uart1: shared force_look
-	cd uart1; $(MAKE) $(MFLAGS)
+	@cd uart1; $(MAKE) $(MFLAGS)
 
 timer0: shared force_look
-	cd timer0; $(MAKE) $(MFLAGS)
+	@cd timer0; $(MAKE) $(MFLAGS)
 
 shared:
-	cd shared; $(MAKE) $(MFLAGS)
+	@cd shared; $(MAKE) $(MFLAGS)
 
 .PHONY: clean
 clean:
-	rm -f *.s19 *.o *.bin *.map *.d
-	-for d in $(DIRS); do (cd $$d; $(MAKE) clean ); done
+	rm -f *.s19 *.o *.bin *.map *.lst *.d
+	@for d in $(DIRS); do (cd $$d; $(MAKE) clean ); done
 
 force_look:
 	@true

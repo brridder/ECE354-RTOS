@@ -25,4 +25,4 @@ timer.s19: $(OBJS) timer_entry.s
 
 .PHONY: clean
 clean:
-	rm -f *.s19 *.o *.bin *.lst *.map
+	rm -f *.s19 *.o *.bin *.lst *.map *.d

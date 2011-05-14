@@ -23,5 +23,5 @@ all: $(OBJS)
 .PHONY: clean
 clean:
 	rm -f *.s19 *.o *.bin *.lst *.map *.d
-	-for d in $(DIRS); do (cd $$d; $(MAKE) clean); done
+	@for d in $(DIRS); do (cd $$d; $(MAKE) clean); done
 
