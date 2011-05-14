@@ -1,11 +1,12 @@
 include ../Makefile.inc
 
+DEPS=../shared/string.o ../shared/uart/uart.o ../dbug.o
+
 START_ASM=../shared/start.s timer_entry.s
 LDFLAGS=-T../shared/rtx.ld -Wl,-Map=serial.map
+OBJS=$(patsubst %.c,%.o,$(wildcard *.c)) $(DEPS)
 
-OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
-
-timer.s19: timer_entry.s $(TIMER_OBJS)
+timer.s19: $(OBJS) timer_entry.s
 	$(CC) $(CFLAGS) $(LDFLAGS) -o timer.bin $(START_ASM) $(OBJS) 
 	$(OBJCPY) --output-format=srec timer.bin timer.s19
 	$(OBJDMP) -xdC timer.bin > timer.lst

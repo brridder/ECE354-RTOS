@@ -1,6 +1,6 @@
 # Makefile
 
-include ../Makefile.inc
+include ../../Makefile.inc
 
 OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 
@@ -17,4 +17,4 @@ all: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f *.s19 *.o *.bin *.lst *.map
+	rm -f *.s19 *.o *.bin *.lst *.map *.d

@@ -10,5 +10,4 @@ OBJCPY=m68k-elf-objcopy
 OBJDMP=m68k-elf-objdump
 PRJLDFLAGS = Wl
 RM=rm
-DIRS=dbug shared timer0 uart1
 ECHO=echo

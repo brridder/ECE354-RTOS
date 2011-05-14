@@ -2,9 +2,11 @@
 
 include ../Makefile.inc
 
+DEPS=../shared/uart/uart.o ../dbug.o
+
 START_ASM = ../start.s serial_entry.s
 LDFLAGS = -T../rtx.ld -Wl,-Map=../main.map
-OBJS = serial.o
+OBJS=$(patsubst %.c,%.o,$(wildcard *.c)) $(DEPS)
 
 serial.s19: $(OBJS) serial_entry.s 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o serial.bin $(START_ASM) $(OBJS) 

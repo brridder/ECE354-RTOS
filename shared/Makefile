@@ -7,6 +7,9 @@ DIRS=uart
 OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 
 all: $(OBJS)
+	-for d in $(DIRS); do (cd $$d; $(MAKE) ); done
+
+-include $(OBJS:.o=.d)
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $*.c -o $*.o
@@ -19,4 +22,6 @@ all: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f *.s19 *.o *.bin *.lst *.map
+	rm -f *.s19 *.o *.bin *.lst *.map *.d
+	-for d in $(DIRS); do (cd $$d; $(MAKE) clean); done
+
