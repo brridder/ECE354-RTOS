@@ -43,7 +43,7 @@ void init_memory() {
     // The first 4 bytes of each memory block contain the address
     // of the next free memory block.
     //
-    // When decrementing the pointer, 32 is used because this equals
+    // When decrementing the pointer, 32 is used because this corresponds to
     // 128 bytes.
     //
 
