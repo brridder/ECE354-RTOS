@@ -1,6 +1,8 @@
 #ifndef _UART_H_
 #define _UART_H_
 
+#include "../rtx_inc.h"
+
 /**
  * UART interrupt configuration
  * @rx_rdy if tru, enables FFULL/RxRDY UART interrupt
