@@ -50,7 +50,7 @@ int get_block_index(void* addr) {
  */
 void init_memory() {
     int i;
-    int *iter;
+    int *current_block;
     
     //
     // The head pointer starts at the start of free memory plus
@@ -70,12 +70,12 @@ void init_memory() {
     // can be used (integer math).
     //
  
-    iter = (int*)memory_head + BLOCK_SIZE/sizeof(void*);
+    current_block = (int*)memory_head + BLOCK_SIZE/sizeof(void*);
     for (i = 0; i < NUM_MEM_BLKS; i++) {
-        iter -= BLOCK_SIZE/sizeof(void*);
-        *iter = (int)iter - BLOCK_SIZE;
+        current_block -= BLOCK_SIZE/sizeof(void*);
+        *current_block = (int)current_block - BLOCK_SIZE;
     }
-    *iter = NULL;
+    *current_block = NULL;
 
     //
     // Setup the memory allocation field. Each bit in this field
@@ -93,8 +93,8 @@ void init_memory() {
  */
 
 void* s_request_memory_block() {   
-    int index;
-    void* mem;
+    int block_index;
+    void* block;
     
     //
     // Check if we have any free memory left. If not, return NULL
@@ -106,17 +106,17 @@ void* s_request_memory_block() {
         // the head of the free list to the next available block
         //
 
-        mem = memory_head;
-        memory_head = (void*)*(UINT32*)mem;
+        block = memory_head;
+        memory_head = (void*)*(UINT32*)block;
 
         //
         // Set the bit in the memory field corresponding to this block
         // 
 
-        index = get_block_index(mem);
-        memory_alloc_field |= (0x01 << index);
+        block_index = get_block_index(block);
+        memory_alloc_field |= (0x01 << block_index);
 
-        return mem;
+        return block;
     }
     
     return NULL;
@@ -129,15 +129,15 @@ void* s_request_memory_block() {
 
 int s_release_memory_block(void* memory_block)
 {
-    int index;
+    int block_index;
 
     //
     // Check the memory allocation field to see if this block has already
     // been deallocated.
     //
     
-    index = get_block_index(memory_block);
-    if (memory_alloc_field & (0x01 << index)) {
+    block_index = get_block_index(memory_block);
+    if (memory_alloc_field & (0x01 << block_index)) {
       *(int*)memory_block = (int)memory_head;
       memory_head = memory_block;
 
@@ -145,7 +145,7 @@ int s_release_memory_block(void* memory_block)
       // Update the allocated memory field
       //
 
-      memory_alloc_field &= ((0x01 << index) ^ 0xFFFFFFFF);
+      memory_alloc_field &= ((0x01 << block_index) ^ 0xFFFFFFFF);
 
       //
       // Success
