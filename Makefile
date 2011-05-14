@@ -1,14 +1,14 @@
 # Makefile
 include Makefile.inc
 
-DIRS=shared timer0 uart1
+DIRS=shared timer0 uart1 tests
 
 START_ASM = start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 DEPS=dbug.h memory.h
 OBJS=dbug.o memory.o main.o shared/string.o
 
-all: main.s19 uart1 timer0
+all: main.s19 uart1 timer0 tests
 
 # Note, GCC builds things in order, it's important to put the
 # ASM first, so that it is located at the beginning of our program.
@@ -32,6 +32,9 @@ uart1: shared force_look
 
 timer0: shared force_look
 	@cd timer0; $(MAKE) $(MFLAGS)
+
+tests: shared force_look
+	@cd tests; $(MAKE) $(MFLAGS)
 
 shared:
 	@cd shared; $(MAKE) $(MFLAGS)

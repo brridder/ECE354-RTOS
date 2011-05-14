@@ -10,6 +10,7 @@
 #include "memory.h"
 
 #define NUM_MEM_BLKS 32
+#define BLOCK_SIZE 128
 
 //
 // Start of free memory
@@ -41,7 +42,7 @@ int get_block_index(void* addr) {
     // divided by the block size.
     //
  
-    return ((int)addr - (int)&__end) / (NUM_MEM_BLKS*4);
+    return ((int)addr - (int)&__end) / BLOCK_SIZE;
 }
 
 /**
@@ -64,16 +65,15 @@ void init_memory() {
     // The first 4 bytes of each memory block contain the address
     // of the next free memory block.
     //
-    // When decrementing the pointer, the number of blocks*4 is used
-    // because this corresponds to number of bytes (integer math). The pointer
-    // is decremented by just the number of blocks because this corresponds
-    // to blocks*4 bytes (pointer math).
+    // When decrementing the pointer, block_size/4 must be used (pointer math).
+    // When decrementing the valud pointed to by the iterator, block_size 
+    // can be used (integer math).
     //
-
-    iter = (int*)memory_head;
+ 
+    iter = (int*)memory_head + BLOCK_SIZE/sizeof(void*);
     for (i = 0; i < NUM_MEM_BLKS; i++) {
-        *iter = (int)iter - (NUM_MEM_BLKS*4);
-        iter -= NUM_MEM_BLKS;
+        iter -= BLOCK_SIZE/sizeof(void*);
+        *iter = (int)iter - BLOCK_SIZE;
     }
     *iter = NULL;
 
