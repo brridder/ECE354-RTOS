@@ -15,13 +15,22 @@
  * Globals
  */
 
+//
 // Start of free memory
+//
+
 extern void* __end;
 
+//
 // Head pointer of the start of the free list
+//
+
 void *memory_head;
 
+//
 // Field to keep track of allocated memory blocks
+//
+
 UINT32 memory_alloc_field;
 
 /**
