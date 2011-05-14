@@ -89,17 +89,30 @@ void* s_request_memory_block() {
     int index;
     void* mem;
     
-    mem = memory_head;
-    memory_head = (void*)*(UINT32*)mem;
-
     //
-    // Set the bit in the memory field corresponding to this block
-    // 
+    // Check if we have any free memory left. If not, return NULL
+    //
 
-    index = get_block_index(mem);
-    memory_alloc_field |= (0x01 << index);
+    if (memory_head != NULL) {
+        //
+        // Allocate the block on the top of the free list, moving
+        // the head of the free list to the next available block
+        //
 
-    return mem;
+        mem = memory_head;
+        memory_head = (void*)*(UINT32*)mem;
+
+        //
+        // Set the bit in the memory field corresponding to this block
+        // 
+
+        index = get_block_index(mem);
+        memory_alloc_field |= (0x01 << index);
+
+        return mem;
+    }
+    
+    return NULL;
 }
 
 /**
