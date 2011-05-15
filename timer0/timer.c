@@ -102,7 +102,7 @@ int main (void) {
         rtx_dbug_outs((char*) "loop\r\n");
 #endif
         if (last_counter != counter) {
-            rtx_dbug_outs((char*) "        \r"); // :S
+            rtx_dbug_outs((char*) "        \r"); // Ugh
             // Split up our counter into something more human readable.
             hours = (counter/3600) - (counter % 3600)/3600;
             seconds = counter - hours*3600;
