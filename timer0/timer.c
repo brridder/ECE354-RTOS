@@ -2,20 +2,24 @@
 #include "../shared/string.h"
 #include "../shared/uart/uart.h"
 #include "../dbug.h"
+//#define _DEBUG_
 
+// Globals
 SINT32 counter = 0;
 unsigned int timer_count = 0;
 volatile BYTE char_out = '\0';
+
 int __main(void) {
     return 0;
 }
 
 void c_timer_handler(void) {
-    //timer_count++;
-    //if (timer_count == 100) {
+    timer_count++;
+    if (timer_count == 100) {
+        //rtx_dbug_outs((char *) "Timer ++ ");
         counter++;
-        //timer_count = 0;
-    //}
+        timer_count = 0;
+    }
     TIMER0_TER = 2;
 }
 
@@ -23,8 +27,14 @@ void c_serial_handler(void) {
     BYTE temp;
     temp = SERIAL1_USR;
     if(temp & 0x04) {
-       SERIAL1_WD = char_out;
-       SERIAL1_IMR = 0x00;
+#ifdef _DEBUG_
+        rtx_dbug_outs((char *) "writing data: ");
+        rtx_dbug_out_char(char_out);
+        rtx_dbug_outs((char*) "\r\n");
+#endif /* _DEBUG_ */
+        SERIAL1_WD = char_out;
+        SERIAL1_IMR = 2;//0x00;
+        char_out = '\0';
     }
 }
 
@@ -83,19 +93,24 @@ int main (void) {
 
     counter = 86390; // 23:59:50
 
-    last_counter = counter;
+    last_counter = 0; //counter; // So it will print the first time.
     uart1_interrupt_config.tx_rdy = true;
     uart1_interrupt_config.rx_rdy = false;
     i = -1;
     while(1) {
+#ifdef _DEBUG_
+        rtx_dbug_outs((char*) "loop\r\n");
+#endif
         if (last_counter != counter) {
+            rtx_dbug_outs((char*) "        \r");
+            // Split up our counter into something more human readable.
             hours = (counter/3600) - (counter % 3600)/3600;
             seconds = counter - hours*3600;
             hours = hours % 24;
             minutes = (seconds)/60 - (seconds%60)/60;
             seconds = seconds - minutes*60;
-            
-            // TODO :: refactor this.
+
+            // Convert ints to strings;
             itoa(hours, temp_string);
             if (hours < 10) {
                 out_string[0] = '0';
@@ -128,7 +143,15 @@ int main (void) {
 
             last_counter = counter;
         }
-        if( i >= 0 && i < 9) {
+        // 
+        // Check to see if we have a change in string
+        // If i is between the length of the string and the char_out is reset
+        // to '\0', load up the next char.
+        //
+        if( i >= 0 && i < 9 && char_out == '\0') { 
+#ifdef _DEBUG_
+            rtx_dbug_outs((char*)"char_out");
+#endif
             char_out = (char)out_string[i];
             uart1_set_interrupts(&uart1_interrupt_config);
             i++;
