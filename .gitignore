@@ -5,3 +5,5 @@
 *.o
 *.lst
 *.d
+*.aux
+*.log

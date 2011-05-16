@@ -3,7 +3,7 @@ include ../Makefile.inc
 DEPS=../shared/string.o ../shared/uart/uart.o ../dbug.o
 
 START_ASM=../shared/start.s timer_entry.s
-LDFLAGS=-T../shared/rtx.ld -Wl,-Map=serial.map
+LDFLAGS=-T../shared/rtx.ld -Wl,-Map=timer.map
 OBJS=$(patsubst %.c,%.o,$(wildcard *.c)) $(DEPS)
 
 timer.s19: $(OBJS) timer_entry.s
