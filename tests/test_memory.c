@@ -35,7 +35,12 @@ int main( VOID )
     for (i=0; i< NUM_MEM_BLKS; i++) {
         int temp;
         temp = s_release_memory_block( p_mem_array[i] );
-        if (temp == 0 ) {
+
+        //
+        // This should not be successful
+        //
+        
+        if (temp == RTX_SUCCESS) {
             failures++;
         }
     }    
@@ -117,6 +122,47 @@ int main( VOID )
     } else {
         rtx_dbug_outs((CHAR *) "    ok\r\n");
     }
+
+    //
+    // Allocate all memory, write 128 bytes to each block, deallocate, and then reallocate
+    // 
+    
+    failures = 0;
+    rtx_dbug_outs((CHAR *) "  Allocate all memory, write 128 bytes to each block, deallocate, and then reallocate...\r\n");
+    for (i=0; i< NUM_MEM_BLKS; i++) {
+        p_mem_array[i] = s_request_memory_block();
+        
+        int j;        
+        unsigned char *current_byte = p_mem_array[i];
+        for (j=0; j < 128; j++) {
+          *current_byte = 0xFF;
+          current_byte++;
+        }
+    }
+
+    for (i=0; i< NUM_MEM_BLKS; i++) {
+        int temp;
+        temp = s_release_memory_block(p_mem_array[i]);
+        if (temp == RTX_ERROR) {
+            rtx_dbug_outs((CHAR *) "    Failed to deallocate block\r\n");            
+            failures++;
+        }
+    }
+
+    for (i=0; i< NUM_MEM_BLKS; i++) {
+        p_mem_array[i] = s_request_memory_block();
+
+        if (p_mem_array[i] == NULL || p_mem_array[i] > 0x10200000) {
+            rtx_dbug_outs((CHAR *) "    Failed to allocate block\r\n");
+            failures++;
+        }        
+    }
+
+    if (failures > 0) {
+        rtx_dbug_outs((CHAR *) "    fail\r\n");
+    } else {
+        rtx_dbug_outs((CHAR *) "    ok\r\n");
+    }    
 
     return 0;
 }
