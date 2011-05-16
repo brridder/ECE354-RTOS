@@ -61,4 +61,54 @@ int main (void) {
 \end{lstlisting}
 
 \subsection*{Memory Management}
+The memory pool was implemented using a data structure known as a free list. A free list is a singly linked list used to coordinate unallocated memory blocks. Instead of storing a separate next point the first four bytes of each memory block in the list are used to store the address of the next free memory block. The only storage required is a pointer to the head of the list. The reason this data structure was chosen over a singly linked list is that the runtime for all the operations of the free list is $O(1)$ as opposed to $O(n)$. 
+
+Additionally, a field of thirty-two bits is used to track the status of each block, 0 for allocated and 1 for deallocated. This was implemented to prevent against double deallocation as well as allocating against blocks that are not currently free. The advantage of this is that it can be done in $O(1)$ time instead having to traverse the entire free list.
+
+The pseudocode associated to the memory.c file is as follows:
+\begin{lstlisting}
+declare start of free memory
+declare start of free list
+declare memory allocation field
+
+int get_block_index(void* addr) {
+    return (addr - start of free memory) / BLOCK_SIZE
+}
+
+void init_memory() {
+    declare local variables
+	
+    set the head of free list = start of free memory + 31 blocks
+    iterate over blocks in free list{
+        store location of next free memory block in current memory block	
+    }
+
+    set memory allocation field = 0
+}
+
+void* s_request_memory_block() {
+    declare local variables
+	
+    if (the head of the free list not null) {
+        pop a block of memory off the free list
+        set corresponding bit in memory allocation field to 1		
+        return the address of the memory block
+    }
+	
+    return NULL
+}
+
+int s_release_memory_block(void* memory_block) {
+    declare local variables
+	
+    if (the memory block has been allocated) {
+        push the block onto the free list
+        clear the corresponding bit in the memory allocation field
+        return success
+    }
+
+    return failure
+
+}
+\end{lstlisting}
 \end{document}
