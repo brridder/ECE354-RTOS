@@ -3,6 +3,11 @@
 
 #include "shared/rtx_inc.h"
 
+typedef enum {
+    STATE_RUNNING = 0,
+    STATE_STOPPED
+} process_state;
+
 typedef struct _process_control_block {
   uint8_t pid;
   uint8_t priority;
@@ -14,6 +19,8 @@ typedef struct _process_control_block {
 
   uint32_t start_addr;
   uint32_t end_addr;
+  
+  process_state state;
 
   process_control_block* next;
 } process_control_block;
