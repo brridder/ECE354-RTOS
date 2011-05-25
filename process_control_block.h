@@ -13,9 +13,9 @@ typedef struct _process_control_block {
   UINT8 priority; 
   
   UINT32 data_registers[8];
-  UINT32 addr_registers[8];
+  UINT32 addr_registers[8]; // Stack pointer is A7
   UINT32 pc_register;
-  UINT32 sr_register;
+  UINT32 sr_register; 
 
   UINT32 start_addr;
   UINT32 end_addr;
