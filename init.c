@@ -86,6 +86,8 @@ void init_rtx_process_tables() {
     __REGISTER_TEST_PROCS_ENTRY__();
     //
     // Copy the test_process_table into the RTX proc_table
+    // Assuming we are using the rtx_test_dummy.c file
+    // This may change.
     //
     for(i = 0; i < NUM_TEST_PROCS; i++) {
         proc_table[i+1].pid = g_test_proc[i].pid;
