@@ -44,11 +44,11 @@ rtx_test_dummy.s19: $(RTX_TEST_DUMMY_OBJS)
 	$(OBJDUMP) -xdC rtx_test_dummy.bin > rtx_test_dummy.lst
 
 m2.s19: rtx_test_dummy.s19 rtx.s19
-	python merge.py m2.s19 rtx.s19 rtx_test_dummy.s19 
+	python2 merge.py m2.s19 rtx.s19 rtx_test_dummy.s19 
 	chmod u+x m2.s19
 
 mdummy.s19: m2.s19 rtx_loader.s19
-	python merge.py mdummy.s19 m2.s19 rtx_loader.s19 
+	python2 merge.py mdummy.s19 m2.s19 rtx_loader.s19 
 	chmod u+x mdummy.s19
 
 .c.o:

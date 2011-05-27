@@ -1,3 +1,10 @@
+/**
+ * @file: rtx_config_table.h
+ * @brief: data structures for the configuration tables
+ * @author: Ben Ridder
+ * @date: 05/24/2011
+ */
+
 #ifndef _RTX_CONFIG_TABLE_H_
 #define _RTX_CONFIG_TABLE_H_
 
