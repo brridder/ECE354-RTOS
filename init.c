@@ -105,7 +105,7 @@ void init_rtx_process_tables() {
 void init_null_process() {
     proc_table[0].pid = 0;
     proc_table[0].priority = 4;
-    proc_table[0].stack_size = 4096; // TODO :: make smaller?
+    proc_table[0].stack_size = 1024; // TODO :: make smaller? DOES IT REALLY NEED A STACK?
 
     //
     // Set the process_entry to the null_process function defined in

@@ -8,3 +8,11 @@
 int release_processor() {
     return 0;
 }
+
+int set_process_priority(int process_ID, int priority) {
+    return 0;
+}
+
+int get_process_priority(int process_ID) {
+    return 0;
+}

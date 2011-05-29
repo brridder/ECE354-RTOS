@@ -1,0 +1,24 @@
+\documentclass[oneside]{article}
+\usepackage{listings}
+\begin{document}
+\lstset{language=C}
+\section*{ECE 354: Project Part 1}
+\subsection*{RTX Initialization} 
+WORDS
+
+\subsection*{Release Processor}
+MORE WORDS
+
+\subsection*{Priority Setter and Getter}
+EVEN MORE WORDS
+
+\subsection*{Null Process}
+The null process was implemented as defined by the project specifications. It
+has a priority of 4 and a process ID of 0. The process method is defined in
+\texttt{system\_process.c} as an infinite loop that constantly calls
+\texttt{release\_processor()}. It is added to the process table through a call to
+\texttt{init\_null\_process()} found in init.c. This call should always be the first
+call made to add processes to the process tables as it assumes that it is at
+the 0th index of the process table array. This will be fine as the
+initialization of this process is handled by the main function of the RTX.
+\end{document}
