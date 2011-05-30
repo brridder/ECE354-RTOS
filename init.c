@@ -10,6 +10,7 @@
 #include "dummy/rtx_test.h"
 #include "system_processes.h"
 #include "process_control_block.h"
+#include "soft_interrupts.h"
 
 // 
 // Test processes info. Registration function provided by test script
@@ -78,6 +79,32 @@ void init_processes(UINT32 stack_start) {
         pcbs[i].state = STATE_STOPPED;
         pcbs[i].next = NULL;
     }
+}
+
+void init_interrupts() {
+	asm("move.l %a0, -(%a7)");
+	asm("move.l %d0, -(%a7)");
+	
+	//
+	// Init the VBR
+	//
+	
+    asm("move.l #0x10000000, %a0");
+    asm("movec.l %a0, %vbr");
+	
+	//
+	// Move the sys_call function into the first vector in the VBR
+	//
+	
+	asm("move.l #sys_call, %d0");
+	asm("move.l %d0, 0x10000080"); // TODO :: Make less magic?
+	
+	asm("move.l (%a7)+, %d0");
+	asm("move.l (%a7)+, %a0");
+	
+	//
+	// Other shit; like timers and uart0 and junk
+	//
 }
 
 void init_rtx_process_tables() {

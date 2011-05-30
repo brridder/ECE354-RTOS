@@ -5,8 +5,8 @@ DIRS=shared timer0 uart1 tests
 
 START_ASM = start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
-DEPS=dbug.h memory.h rtx.h system_processes.h init.h globals.h 
-OBJS=dbug.o memory.o rtx.o system_processes.o init.o main.o shared/string.o
+DEPS=dbug.h memory.h kernel.h soft_interrupts.h rtx.h system_processes.h init.h globals.h 
+OBJS=dbug.o memory.o kernel.o soft_interrupts.o rtx.o system_processes.o init.o main.o shared/string.o
 
 all: main.s19 uart1 timer0 tests
 
