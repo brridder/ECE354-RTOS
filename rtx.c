@@ -14,14 +14,22 @@ int release_processor() {
 	asm("move.l #0, %d0");
 	asm("trap #0");
 	asm("move.l %d0, %0" : "=r" (ret_value));
-
+        
 	return ret_value;
 }
 
-int set_process_priority(int process_ID, int priority) {
+int set_process_priority(int pid, int priority) {
+    
+
     return 0;
 }
 
-int get_process_priority(int process_ID) {
-    return 0;
+int get_process_priority(int pid) {
+    int priority;
+    
+    asm("move.l #0, %d0");
+    asm("trap #0");
+    asm("move.l %d0, %0" : "=r" (priority));
+
+    return priority;
 }

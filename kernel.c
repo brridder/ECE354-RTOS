@@ -6,10 +6,21 @@
 /**
  * @brief: System call used by a running proccess to release the processor.
  */
-
 int k_release_processor() {
     rtx_dbug_outs("k_release_processor()\r\n");
     return 0;
+}
+
+/**
+ * @brief: Returns the priority of a process
+ * @param: pid the pid of the process
+ */
+int k_get_process_priority(int pid) {
+    //
+    // TODO: Error handling
+    // 
+
+    return processes[pid].priority;
 }
 
 /**
@@ -17,7 +28,6 @@ int k_release_processor() {
  *         process begins executing in user mode.
  * @param: process the process to switch to.
  */
-
 void k_change_process(process_control_block* process) {
     process_control_block* previous_process;
 

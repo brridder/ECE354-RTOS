@@ -12,7 +12,13 @@
 process_control_block* running_process;
 process_control_block processes[NUM_PROCESSES];
 
-int k_release_processor();
 void k_change_process(process_control_block* process_control);
+
+/**
+ * System calls
+ */
+
+int k_release_processor();
+int k_get_process_priority(int pid);
 
 #endif
