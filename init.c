@@ -52,14 +52,14 @@ void init_processes(VOID* stack_start) {
         //
         // Setup the process' stack pointer. The stack grows downward,
         // so the stack pointer for each process must be set to the end of the
-        // memory allocated for each processes stack.
+        // memory allocated for each process' stack.
         //        
         
         current_process->stack = stack_start + current_process->stack_size;
 
         //
         // Setup the process' stack with values of 0 for each register,
-        // and the exception frame which points to the entry point 
+        // and an exception frame which points to the entry point 
         // of the process.
         //
 
@@ -82,6 +82,10 @@ void init_processes(VOID* stack_start) {
              register_iter++) {
             *(--stack_iter) = 0;
         }
+
+        //
+        // Save the stack pointer
+        // 
         
         current_process->stack = (void*)stack_iter;
 
@@ -89,7 +93,7 @@ void init_processes(VOID* stack_start) {
         // All processes are currently stopped
         // 
         
-        processes[0].state = STATE_STOPPED;
+        current_process->state = STATE_STOPPED;
 
         //
         // Update the location of the next stack and move to the next process
