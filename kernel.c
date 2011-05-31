@@ -5,7 +5,7 @@
 #include "globals.h"
 
 int k_release_processor() {
-    rtx_dbug_outs("k_release_processor()");
+    rtx_dbug_outs("k_release_processor()\r\n");
     return 0;
 }
 
@@ -69,10 +69,6 @@ void k_change_process(process_control_block* process) {
     //
     // Return to user process execution
     //
-
-    // DEBUG
-    //asm("move.l #0, %d0");
-    //asm("trap #15");
 
     asm("rte");
 };

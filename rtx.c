@@ -7,13 +7,16 @@
  
 #include "rtx.h"
 #include "globals.h"
+#include "dbug.h"
 
 int release_processor() {
 	int ret_value;
-	asm("move.l #0x0, %d0");
-	asm("trap #0x0");
-	asm("move.l %d0, %0" : "=m" (ret_value));
-	return ret_value;	
+
+	asm("move.l #0, %d0");
+	asm("trap #0");
+	asm("move.l %d0, %0" : "=r" (ret_value));
+
+	return ret_value;
 }
 
 int set_process_priority(int process_ID, int priority) {

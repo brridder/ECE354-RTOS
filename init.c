@@ -13,6 +13,8 @@
 #include "process.h"
 #include "soft_interrupts.h"
 
+#define PROCESS_NUM_REGISTERS 15
+
 // 
 // Test processes info. Registration function provided by test script
 // The __REGISTER_TEST_PROCS_ENTRY__ symbol is in the linker scripts
@@ -26,6 +28,8 @@ extern void __REGISTER_TEST_PROCS_ENTRY__();
  */
 
 void init_processes(VOID* stack_start) {
+    int register_iter;
+    int* stack_iter;
     process_control_block* current_process;
 
     //
@@ -34,7 +38,7 @@ void init_processes(VOID* stack_start) {
     //
     
     processes[0].pid = 0;
-    processes[0].priority = 4; 
+    processes[0].priority = 4;
     processes[0].stack_size = 1024; 
     processes[0].entry = &process_null;
     processes[0].is_i_process = FALSE;
@@ -57,51 +61,30 @@ void init_processes(VOID* stack_start) {
         // Setup the process' stack with values of 0 for each register,
         // and the exception frame which points to the entry point 
         // of the process.
-        // 
         //
 
-        asm("move.l %a0, -(%a7)");
-        asm("move.l %d0, -(%a7)");
-
-        asm("move.l %0, %%a0" : : "m" (current_process->stack));
+        stack_iter = (int*)current_process->stack;
 
         //
         // Exception frame
+        // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
 
-        asm("move.l %0, -(%%a0)" : : "m" (&(current_process->entry))); // PC
-        asm("move.l #0x40000000, -(%a0)"); // F/V and SR
-
+        *(--stack_iter) = 0x40000000; // SR
+        *(--stack_iter) = (int)current_process->entry; // PC 
+        
         //
-        // Registers
+        // Registers, A0-A6, D0-D7. Set all to 0.
         //
         
-        asm("move.l #0, -(%a0)"); // A0        
-        asm("move.l #0, -(%a0)"); // A1
-        asm("move.l #0, -(%a0)"); // A2
-        asm("move.l #0, -(%a0)"); // A3
-        asm("move.l #0, -(%a0)"); // A4
-        asm("move.l #0, -(%a0)"); // A5
-        asm("move.l #0, -(%a0)"); // A6
-        asm("move.l #0, -(%a0)"); // D0
-        asm("move.l #0, -(%a0)"); // D1
-        asm("move.l #0, -(%a0)"); // D2
-        asm("move.l #0, -(%a0)"); // D3
-        asm("move.l #0, -(%a0)"); // D4
-        asm("move.l #0, -(%a0)"); // D5
-        asm("move.l #0, -(%a0)"); // D6
-        asm("move.l #0, -(%a0)"); // D7
-
-        //
-        // Save stack pointer
-        //
-
-        asm("move.l %a0, %d0");
-        asm("move.l %%d0, %0" : "=m" (current_process->stack));
-
-        asm("move.l (%a7)+, %d0");
-        asm("move.l (%a7)+, %a0");
+        for (register_iter = 0;
+             register_iter <= PROCESS_NUM_REGISTERS;
+             register_iter++) {
+            *(--stack_iter) = 0;
+        }
         
+        current_process->stack = (void*)stack_iter;
+
         // 
         // All processes are currently stopped
         // 

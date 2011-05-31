@@ -6,13 +6,17 @@
 void system_call() {
     int call_id;
 
-    rtx_dbug_outs("System call");
-
     // 
-    // In supervisor mode
+    // In supervisor mode. Disable interrupts.
     //
 
-    asm("move.w #0x2700,%sr");
+    asm("move.w #0x2700, %sr");
+
+    //
+    // Get call ID
+    // 
+    
+    asm("move.l %d0, %0" : "=r" (call_id));
 	
     asm("move.l %a0, -(%a7)");
     asm("move.l %a1, -(%a7)");
@@ -30,22 +34,28 @@ void system_call() {
     asm("move.l %d6, -(%a7)");
     asm("move.l %d7, -(%a7)");
 	
-    asm("move.l %d0, %0" : "=m" (call_id));
-	
     switch(call_id) {
 
         //
         // 0 : release_processor()
         // 
 
-        case 0: 
-            k_release_processor();
+        case 0:
+            k_release_processor(); 
             break;
+
+        //
+        // Invalid call ID
+        //
+
         default:
-           // TODO: Handle this case
-           break;
+            // TODO: Handle this case
+
+            rtx_dbug_outs("Error: Invalid system call ID\r\n");
+
+            break;
     }
-	
+   
     asm("move.l (%a7)+, %d7");
     asm("move.l (%a7)+, %d6");
     asm("move.l (%a7)+, %d5");
@@ -62,5 +72,12 @@ void system_call() {
     asm("move.l (%a7)+, %a1");
     asm("move.l (%a7)+, %a0");
 	
+    //
+    // Return from the exception. We have to unlink the 
+    // frame pointer manually because GCC
+    // doesn't know we are exiting early.
+    //
+
+    asm("unlk %a6");
     asm("rte");
 }
