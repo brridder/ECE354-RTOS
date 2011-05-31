@@ -1,7 +1,7 @@
 #ifndef _SCHEDULER_H
 #define _SCHEDULER_H
 
-#include "shared/rtx_inc.h"
+#include "rtx_inc.h"
 
 enum process_state {
     STATE_RUNNING,

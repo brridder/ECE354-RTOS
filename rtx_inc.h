@@ -8,22 +8,25 @@
  *
  *****************************************************************/
 
-/*  $Id: rtx_inc.h,v 1.1 2011/01/12 16:03:33 yqhuang Exp $ */
+/*  $Id: rtx_inc.h,v 1.2 2011/01/07 18:41:09 yqhuang Exp $ */
 
 /******************************************************************
  *
- *  $Source: /usr/local/CVS_Repository/ece354/os_src/P1/c/2student/rtx_inc.h,v $
+ *  $Source: /usr/local/CVS_Repository/ece354/manual/m5307v3/shared/rtx_inc.h,v $
  *  $Author: yqhuang $
- *  $Date: 2011/01/12 16:03:33 $
+ *  $Date: 2011/01/07 18:41:09 $
  *
  *  Purpose:   Base include file for the RTX
  *
  *  $Log: rtx_inc.h,v $
- *  Revision 1.1  2011/01/12 16:03:33  yqhuang
+ *  Revision 1.2  2011/01/07 18:41:09  yqhuang
  *  *** empty log message ***
  *
- *  Revision 1.1.1.1  2007/11/19 02:06:38  yqhuang
- *  initial commit of myversion of manual sample code
+ *  Revision 1.1  2011/01/04 21:30:27  yqhuang
+ *  *** empty log message ***
+ *
+ *  Revision 1.1  2010/05/03 21:32:25  yqhuang
+ *  *** empty log message ***
  *
  *
  *  [LOG REMOVED]
@@ -51,6 +54,10 @@
 #define VOID    void
 #define BOOLEAN signed long int
 
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
+typedef unsigned long int uint32_t;
+
 
 #define ESC                 0x1B
 #define BKSP                '\b'
@@ -62,8 +69,16 @@
 #define TRUE 1
 #endif
 
+#if !defined( true )
+#define true 1
+#endif
+
 #if !defined( FALSE )
 #define FALSE 0
+#endif
+
+#if !defined( false )
+#define false 0
 #endif
 
 #if !defined( NULL )
@@ -101,6 +116,7 @@
 #define SERIAL1_UBG1    *( RTX_COLDFIRE_MBAR + 0x218 )
 #define SERIAL1_UBG2    *( RTX_COLDFIRE_MBAR + 0x21C )
 #define SERIAL1_UCSR    *( RTX_COLDFIRE_MBAR + 0x204 )
+#define SERIAL1_USR     *( RTX_COLDFIRE_MBAR + 0x204 )
 #define SERIAL1_UMR     *( RTX_COLDFIRE_MBAR + 0x200 )
 #define SERIAL1_ICR     *( RTX_COLDFIRE_MBAR + 0x51  )
 #define SERIAL1_IVR     *( RTX_COLDFIRE_MBAR + 0x230 )
@@ -116,4 +132,3 @@
 #define RTX_ERROR   -1
 
 #endif
-
