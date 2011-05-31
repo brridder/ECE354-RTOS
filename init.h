@@ -3,8 +3,7 @@
 
 #include "rtx_inc.h"
 
-void init_processes(UINT32 stack_start);
+void init_processes(VOID* stack_start);
 void init_interrupts();
-void init_rtx_process_tables();
-void init_null_process();
+
 #endif 

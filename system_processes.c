@@ -4,16 +4,21 @@
  * @author: Ben Ridder
  * @date: 05/24/2011
  */
+
 #include "system_processes.h"
 #include "rtx.h"
+
+#include "dbug.h"
 
 /**
  * @brief: null_process that does nothing
  */
 
-void null_process() {
+void process_null() {
     while (1) {
+        rtx_dbug_outs("Null process run");
+
         // TODO :: Remove when we get preemption working
-        release_processor(); 
+        release_processor();
     }
 }

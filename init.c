@@ -2,6 +2,7 @@
  * @file: init.c
  * @brief: initilization functions for RTX
  * @author: Ben Ridder
+ * @author: Casey Banner
  * @date: 05/24/2011
  */
 
@@ -9,13 +10,14 @@
 #include "globals.h"
 #include "dummy/rtx_test.h"
 #include "system_processes.h"
-#include "process_control_block.h"
+#include "process.h"
 #include "soft_interrupts.h"
 
 // 
 // Test processes info. Registration function provided by test script
 // The __REGISTER_TEST_PROCS_ENTRY__ symbol is in the linker scripts
 //
+
 extern void __REGISTER_TEST_PROCS_ENTRY__();
 
 /**
@@ -23,122 +25,130 @@ extern void __REGISTER_TEST_PROCS_ENTRY__();
  * @param: stack_start the starting memory location for stacks
  */
 
-void init_processes(UINT32 stack_start) {
-    int i,j;
+void init_processes(VOID* stack_start) {
+    process_control_block* current_process;
 
-    // 
-    // Copy the process tables into the process control blocks.
-    // *pcbs and *proc_table are defined in globals.h 
     //
+    // Setup null process
+    // Entry point is defined in system_processes.c 
+    //
+    
+    processes[0].pid = 0;
+    processes[0].priority = 4; 
+    processes[0].stack_size = 1024; 
+    processes[0].entry = &process_null;
+    processes[0].is_i_process = FALSE;
+    processes[0].next = NULL;
 
-    for(i = 0; i < NUM_PROCESSES; i++) {
-        pcbs[i].pid = proc_table[i].pid;
-        pcbs[i].priority = proc_table[i].priority;
-        for(j = 0; j < 8; j++) {
-            //
-            // Set all the registers to 0
-            //
-            pcbs[i].data_registers[j] = 0;
-            pcbs[i].addr_registers[j] = 0;
-        }
+    current_process = &processes[0];
 
+    // TODO: Setup all processes
+
+    while (current_process) {
+        //
+        // Setup the process' stack pointer. The stack grows downward,
+        // so the stack pointer for each process must be set to the end of the
+        // memory allocated for each processes stack.
+        //        
+        
+        current_process->stack = stack_start + current_process->stack_size;
+
+        //
+        // Setup the process' stack with values of 0 for each register,
+        // and the exception frame which points to the entry point 
+        // of the process.
         // 
-        // Set the stack pointer to the stack_start memory location
         //
 
-        pcbs[i].addr_registers[7] = stack_start; 
+        asm("move.l %a0, -(%a7)");
+        asm("move.l %d0, -(%a7)");
+
+        asm("move.l %0, %%a0" : : "m" (current_process->stack));
 
         //
-        // Calculate the next starting location of the stack using the stack
-        // size of the current process.
+        // Exception frame
         //
 
-        stack_start = stack_start + proc_table[i].stack_size;
+        asm("move.l %0, -(%%a0)" : : "m" (&(current_process->entry))); // PC
+        asm("move.l #0x40000000, -(%a0)"); // F/V and SR
 
+        //
+        // Registers
+        //
+        
+        asm("move.l #0, -(%a0)"); // A0        
+        asm("move.l #0, -(%a0)"); // A1
+        asm("move.l #0, -(%a0)"); // A2
+        asm("move.l #0, -(%a0)"); // A3
+        asm("move.l #0, -(%a0)"); // A4
+        asm("move.l #0, -(%a0)"); // A5
+        asm("move.l #0, -(%a0)"); // A6
+        asm("move.l #0, -(%a0)"); // D0
+        asm("move.l #0, -(%a0)"); // D1
+        asm("move.l #0, -(%a0)"); // D2
+        asm("move.l #0, -(%a0)"); // D3
+        asm("move.l #0, -(%a0)"); // D4
+        asm("move.l #0, -(%a0)"); // D5
+        asm("move.l #0, -(%a0)"); // D6
+        asm("move.l #0, -(%a0)"); // D7
+
+        //
+        // Save stack pointer
+        //
+
+        asm("move.l %a0, %d0");
+        asm("move.l %%d0, %0" : "=m" (current_process->stack));
+
+        asm("move.l (%a7)+, %d0");
+        asm("move.l (%a7)+, %a0");
+        
         // 
-        // Zero out the pc and sr starting values
-        //
+        // All processes are currently stopped
+        // 
         
-        pcbs[i].pc_register = 0;
-        pcbs[i].sr_register = 0;
-        
+        processes[0].state = STATE_STOPPED;
+
         //
-        // Set the entry point of the function
-        // TODO :: Change this to a proper function pointer
-        // TODO :: Remove end_addr ?
-        //
-        
-        pcbs[i].start_addr = (int)(proc_table[i].proc_entry);
-        pcbs[i].end_addr = 0; 
-        
-        //
-        // Set the state to stopped and the next process to none.
-        // This will be handled by the scheduler
-        //
-        
-        pcbs[i].state = STATE_STOPPED;
-        pcbs[i].next = NULL;
+        // Update the location of the next stack and move to the next process
+        // 
+
+        current_process = current_process->next;
+        stack_start = stack_start + current_process->stack_size;
     }
-}
 
-void init_interrupts() {
-	asm("move.l %a0, -(%a7)");
-	asm("move.l %d0, -(%a7)");
-	
-	//
-	// Init the VBR
-	//
-	
-    asm("move.l #0x10000000, %a0");
-    asm("movec.l %a0, %vbr");
-	
-	//
-	// Move the sys_call function into the first vector in the VBR
-	//
-	
-	asm("move.l #sys_call, %d0");
-	asm("move.l %d0, 0x10000080"); // TODO :: Make less magic?
-	
-	asm("move.l (%a7)+, %d0");
-	asm("move.l (%a7)+, %a0");
-	
-	//
-	// Other shit; like timers and uart0 and junk
-	//
-}
-
-void init_rtx_process_tables() {
-    int i;
-
-    __REGISTER_TEST_PROCS_ENTRY__();
     //
-    // Copy the test_process_table into the RTX proc_table
-    // Assuming we are using the rtx_test_dummy.c file
-    // This may change.
+    // No process is running
     //
-    for(i = 0; i < NUM_TEST_PROCS; i++) {
-        proc_table[i+1].pid = g_test_proc[i].pid;
-        proc_table[i+1].priority = g_test_proc[i].priority;
-        proc_table[i+1].stack_size = g_test_proc[i].sz_stack;
-        proc_table[i+1].proc_entry = g_test_proc[i].entry;
-    }
+
+    running_process = NULL;
 }
 
 /**
- * @brief: Set the null process into the process table with pid of 0 and
- * priority 4
+ * @brief: Initialize the VBR and install interrupts.
  */
 
-void init_null_process() {
-    proc_table[0].pid = 0;
-    proc_table[0].priority = 4;
-    proc_table[0].stack_size = 1024; // TODO :: make smaller? DOES IT REALLY NEED A STACK?
-
+void init_interrupts() {
+    asm("move.l %a0, -(%a7)");
+    asm("move.l %d0, -(%a7)");
+    
     //
-    // Set the process_entry to the null_process function defined in
-    // "system_processes.c"
+    // Initialize the VBR
     //
     
-    proc_table[0].proc_entry = &null_process;
-    proc_table[0].is_i_process = FALSE;
+    asm("move.l #0x10000000, %a0");
+    asm("movec.l %a0, %vbr");
+	
+    //
+    // Install the system_call function into the first vector in the VBR
+    //
+    
+    asm("move.l #system_call, %d0");
+    asm("move.l %d0, 0x10000080");
+
+    //
+    // TODO: Setup UART and Timer interrupts
+    //
+
+    asm("move.l (%a7)+, %d0");
+    asm("move.l (%a7)+, %a0");    
 }

@@ -4,6 +4,7 @@
 #include "init.h"
 #include "globals.h"
 #include "init.h"
+#include "kernel.h"
 
 extern void* __end;
 
@@ -12,11 +13,37 @@ int __main(void) {
 }
 
 int main(void) {
-    UINT32 stack_start;
+    VOID* stack_start;
 
-    stack_start  = &__end;
+    //
+    // Disable interrupts
+    //
+
+    asm("move.w #0x2700, %sr");
+
+    stack_start = &__end;
+
     // TODO :: Find top of stack.
+    rtx_dbug_outs("Initializing processes...");
     init_processes(stack_start);
+    rtx_dbug_outs("done.\r\n");
+
+    rtx_dbug_outs("Initializing interrupts...");
+    init_interrupts();
+    rtx_dbug_outs("done.\r\n");
+
+    //
+    // Change to null process (PID 0)
+    //
+
+    rtx_dbug_outs("Switching to null process...\r\n");
+    k_change_process(&processes[0]);
+
+    //
+    // Enable interrupts
+    // 
+
+    asm("move.w #0x2000, %sr");
 
     return 0;
 }
