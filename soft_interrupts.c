@@ -74,7 +74,7 @@ void system_call() {
 	
     //
     // Return from the exception. We have to unlink the 
-    // frame pointer manually because GCC
+    // frame pointer manually because GCC 
     // doesn't know we are exiting early.
     //
 

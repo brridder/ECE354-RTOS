@@ -44,10 +44,14 @@ void init_processes(VOID* stack_start) {
     processes[0].is_i_process = FALSE;
     processes[0].next = NULL;
 
+    // TODO: Add all processes to process list
+
+
+    //
+    // Iterate through all processes and setup their stack and state
+    //
+
     current_process = &processes[0];
-
-    // TODO: Setup all processes
-
     while (current_process) {
         //
         // Setup the process' stack pointer. The stack grows downward,

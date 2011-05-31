@@ -12,7 +12,9 @@ int k_release_processor() {
 void k_change_process(process_control_block* process) {
     process_control_block* previous_process;
 
-    // TODO: Null check on `process`
+    if (!process) {
+        return;
+    }
 
     // 
     // Get current running process

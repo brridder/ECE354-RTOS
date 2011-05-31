@@ -13,9 +13,6 @@ typedef struct _process_control_block {
     UINT8 pid;
     UINT8 priority;
 
-    UINT32 pc_register;
-    UINT16 sr_register; 
-    
     VOID* stack;
     UINT32 stack_size;
 
