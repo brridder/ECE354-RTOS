@@ -10,11 +10,11 @@ enum process_state {
 };
 
 typedef struct _process_control_block {
-    UINT8 pid;
-    UINT8 priority;
+    int pid;
+    int priority;
 
-    VOID* stack;
-    UINT32 stack_size;
+    void* stack;
+    int stack_size;
 
     void (*entry)();
     BOOLEAN is_i_process;

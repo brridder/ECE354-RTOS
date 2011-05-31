@@ -7,16 +7,17 @@
  * @brief: Software interrupt handler used to make system calls.
  *
  * This is installed in vector 0. The system call to make is passed in D0.
- * Return value is in D0.
+ * Return value is in D0. Arguments are passed in D1-D3.
  * 
  * Supported system calls:
  *   0: release_processor()
- *   1: get_process_priority()
+ *   1: get_process_priority(int pid)
  *           
  */
 
 void system_call() {
     int call_id;
+    int args[3];
     int return_value;    
 
     // 
@@ -29,7 +30,10 @@ void system_call() {
     // Get call ID
     // 
     
-    asm("move.l %d0, %0" : "=r" (call_id));
+    asm("move.l %%d0, %0" : "=r" (call_id));
+    asm("move.l %%d1, %0" : "=r" (args[0]));
+    asm("move.l %%d2, %0" : "=r" (args[1]));
+    asm("move.l %%d3, %0" : "=r" (args[2]));
 
     asm("move.l %a0, -(%a7)");
     asm("move.l %a1, -(%a7)");
@@ -58,7 +62,7 @@ void system_call() {
             break;
 
         case 1:
-            return_value = k_get_process_priority(call_id);    
+            return_value = k_get_process_priority(args[0]);
             break;    
 
         //

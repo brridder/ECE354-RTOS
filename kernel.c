@@ -16,9 +16,11 @@ int k_release_processor() {
  * @param: pid the pid of the process
  */
 int k_get_process_priority(int pid) {
+    rtx_dbug_outs("k_get_process_priority()\r\n");
+
     //
     // TODO: Error handling
-    // 
+    //
 
     return processes[pid].priority;
 }
