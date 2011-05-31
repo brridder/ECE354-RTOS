@@ -7,7 +7,7 @@
  */
 
 #include "init.h"
-#include "globals.h"
+#include "kernel.h"
 #include "dummy/rtx_test.h"
 #include "system_processes.h"
 #include "process.h"

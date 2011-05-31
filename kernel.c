@@ -2,12 +2,21 @@
 
 #include "dbug.h"
 #include "process.h"
-#include "globals.h"
+
+/**
+ * @brief: System call used by a running proccess to release the processor.
+ */
 
 int k_release_processor() {
     rtx_dbug_outs("k_release_processor()\r\n");
     return 0;
 }
+
+/**
+ * @brief: Performs a context switch. After the context switch, the 
+ *         process begins executing in user mode.
+ * @param: process the process to switch to.
+ */
 
 void k_change_process(process_control_block* process) {
     process_control_block* previous_process;

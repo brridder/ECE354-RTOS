@@ -2,8 +2,6 @@
 #include "dbug.h"
 #include "memory.h"
 #include "init.h"
-#include "globals.h"
-#include "init.h"
 #include "kernel.h"
 
 extern void* __end;

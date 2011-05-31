@@ -6,7 +6,6 @@
  */
  
 #include "rtx.h"
-#include "globals.h"
 #include "dbug.h"
 
 int release_processor() {
