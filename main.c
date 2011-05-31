@@ -41,7 +41,7 @@ int main(void) {
     // Register the test processes. Required by test suite.
     //
 
-    __REGISTER_TEST_PROCS_ENTRY__();
+    //__REGISTER_TEST_PROCS_ENTRY__();
 
     //
     // Change to null process (PID 0)
