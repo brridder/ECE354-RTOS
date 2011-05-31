@@ -3,6 +3,16 @@
 #include "kernel.h"
 #include "dbug.h"
 
+/**
+ * @brief: Software interrupt handler used to make system calls.
+ *
+ * This is installed in vector 0. The system call to make is passed in D0. 
+ * 
+ * Supported system calls:
+ *   0: release_processor()
+ *           
+ */
+
 void system_call() {
     int call_id;
 
