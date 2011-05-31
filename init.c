@@ -8,7 +8,6 @@
 
 #include "init.h"
 #include "kernel.h"
-#include "dummy/rtx_test.h"
 #include "system_processes.h"
 #include "process.h"
 #include "soft_interrupts.h"

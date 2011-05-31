@@ -6,7 +6,6 @@
 
 #include "rtx_inc.h"
 #include "dbug.h"
-#include "shared/string.h"
 #include "memory.h"
 
 #define NUM_MEM_BLKS 32

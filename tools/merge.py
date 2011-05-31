@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 ## Example for merging S19/SREC files
 # @author: Copyright 2009,2010 Thomas Reidemeister
