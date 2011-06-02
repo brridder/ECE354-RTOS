@@ -3,6 +3,8 @@
 #include "kernel.h"
 #include "dbug.h"
 
+#include "rtx.h"
+
 /**
  * @brief: Software interrupt handler used to make system calls.
  *
@@ -18,7 +20,6 @@
 void system_call() {
     int call_id;
     int args[3];
-    int* stack_iter;
     int return_value;
 
     // 
@@ -37,36 +38,20 @@ void system_call() {
     asm("move.l %%d3, %0" : "=r" (args[2]));
 
     //
-    // Save current user process state (register contents), as well as 
-    // exception frame. It is necessary to save state at this point
-    // because this system call could potentially cause a context switch.
+    // Save current user process state (register contents),
     //
-
-    stack_iter = (int*)running_process->stack;
-    asm("move.l (8, %%sp), %0" : "=r" (*(--stack_iter))); // PC
-    asm("move.l (4, %%sp), %0" : "=r" (*(--stack_iter))); // SR
-
-    /*
-    asm("move.l %%a0, %0" : "=r" (*(--stack_iter))); // A0
-    asm("move.l %%a1, %0" : "=r" (*(--stack_iter))); // A1
-    asm("move.l %%a2, %0" : "=r" (*(--stack_iter))); // A2
-    asm("move.l %%a3, %0" : "=r" (*(--stack_iter))); // A3
-    asm("move.l %%a4, %0" : "=r" (*(--stack_iter))); // A4
-    asm("move.l %%a5, %0" : "=r" (*(--stack_iter))); // A5
-    asm("move.l %%a6, %0" : "=r" (*(--stack_iter))); // A6
-    asm("move.l %%d0, %0" : "=r" (*(--stack_iter))); // D0
-    asm("move.l %%d1, %0" : "=r" (*(--stack_iter))); // D1
-    asm("move.l %%d2, %0" : "=r" (*(--stack_iter))); // D2
-    asm("move.l %%d3, %0" : "=r" (*(--stack_iter))); // D3
-    asm("move.l %%d4, %0" : "=r" (*(--stack_iter))); // D4
-    asm("move.l %%d5, %0" : "=r" (*(--stack_iter))); // D5
-    asm("move.l %%d6, %0" : "=r" (*(--stack_iter))); // D6
-    asm("move.l %%d7, %0" : "=r" (*(--stack_iter))); // D7
-    */
-
-    running_process->stack = (void*)stack_iter;
-    running_process->state = STATE_READY;
     
+    asm("move.l %a0, -(%sp)"); // A0
+    asm("move.l %a1, -(%sp)"); // A1
+    asm("move.l %a2, -(%sp)"); // A2
+    asm("move.l %a3, -(%sp)"); // A3
+    asm("move.l %a4, -(%sp)"); // A4
+    asm("move.l %a5, -(%sp)"); // A5
+    asm("move.l %a6, -(%sp)"); // A6
+    asm("move.l %d4, -(%sp)"); // D4
+    asm("move.l %d5, -(%sp)"); // D5
+    asm("move.l %d6, -(%sp)"); // D6
+    asm("move.l %d7, -(%sp)"); // D7
 
     return_value = -1;
     switch(call_id) {
@@ -98,41 +83,21 @@ void system_call() {
     }
 
     //
-    // Restore user process registers and exception frame. 
-    // At this point, we know that the running process is the one that 
-    // initiated the system call because a process change would have already
-    // `rte`ed, and the following code would not run.
+    // Restore user process registers.
     //
 
-    /*
-    asm("move.l %0, %%d7" : : "r" (*(stack_iter++)) : "%%d7"); // D7
-    asm("move.l %0, %%d6" : : "r" (*(stack_iter++)) : "%%d6"); // D6
-    asm("move.l %0, %%d5" : : "r" (*(stack_iter++)) : "%%d5"); // D5
-    asm("move.l %0, %%d4" : : "r" (*(stack_iter++)) : "%%d4"); // D4
-    asm("move.l %0, %%d3" : : "r" (*(stack_iter++)) : "%%d4"); // D3
-    asm("move.l %0, %%d2" : : "r" (*(stack_iter++)) : "%%d4"); // D2
-    asm("move.l %0, %%d1" : : "r" (*(stack_iter++)) : "%%d4"); // D1
-    asm("move.l %0, %%d0" : : "r" (*(stack_iter++)) : "%%d4"); // D0
-    asm("move.l %0, %%a6" : : "r" (*(stack_iter++)) : "%%a6"); // A6
-    asm("move.l %0, %%a5" : : "r" (*(stack_iter++)) : "%%a5"); // A5
-    asm("move.l %0, %%a4" : : "r" (*(stack_iter++)) : "%%a4"); // A4
-    asm("move.l %0, %%a3" : : "r" (*(stack_iter++)) : "%%a3"); // A3
-    asm("move.l %0, %%a2" : : "r" (*(stack_iter++)) : "%%a2"); // A2
-    asm("move.l %0, %%a1" : : "r" (*(stack_iter++)) : "%%a1"); // A1
-    asm("move.l %0, %%a0" : : "r" (*(stack_iter++)) : "%%a0"); // A0
-    */
+    asm("move.l (%sp)+, %d7"); // D7
+    asm("move.l (%sp)+, %d6"); // D6
+    asm("move.l (%sp)+, %d5"); // D5
+    asm("move.l (%sp)+, %d4"); // D4
+    asm("move.l (%sp)+, %a6"); // A6
+    asm("move.l (%sp)+, %a5"); // A5
+    asm("move.l (%sp)+, %a4"); // A4
+    asm("move.l (%sp)+, %a3"); // A3
+    asm("move.l (%sp)+, %a2"); // A2
+    asm("move.l (%sp)+, %a1"); // A1
+    asm("move.l (%sp)+, %a0"); // A0
 
-    asm("move.l %0, %%sp" : : "r" (stack_iter) : "%%sp"); //SP
-    stack_iter = stack_iter + 2;
-
-    //
-    // Save the user process' stack pointer. We add 8 bytes to skip past the
-    // exception frame which will be removed by the following `rte` instruction
-    //    
-
-    running_process->stack = (void*)stack_iter;
-    running_process->state = STATE_RUNNING;
-	
     //
     // Return from the exception. We have to unlink the 
     // frame pointer manually because GCC 

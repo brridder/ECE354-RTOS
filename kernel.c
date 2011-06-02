@@ -12,7 +12,7 @@ int k_release_processor() {
     //
     // TODO: Make a decision on what process to run
     //
-
+    
     //k_change_process(running_process);
 
     return 0;
@@ -62,31 +62,29 @@ void k_change_process(process_control_block* process) {
 
         if (previous_process->state == STATE_RUNNING) {
             rtx_dbug_outs("  Saving process state\r\n");
-            
-            stack_iter = (int*)previous_process->stack;
-        
+      
             //
-            // Save register contents. It is expected that the exception
-            // frame has already been saved onto the user process' stack.
+            // Save register contents. The exception frame is already on the 
+            // stack.
             //
 
-            asm("move.l %%a0, %0" : "=r" (*(--stack_iter))); // A0
-            asm("move.l %%a1, %0" : "=r" (*(--stack_iter))); // A1
-            asm("move.l %%a2, %0" : "=r" (*(--stack_iter))); // A2
-            asm("move.l %%a3, %0" : "=r" (*(--stack_iter))); // A3
-            asm("move.l %%a4, %0" : "=r" (*(--stack_iter))); // A4
-            asm("move.l %%a5, %0" : "=r" (*(--stack_iter))); // A5
-            asm("move.l %%a6, %0" : "=r" (*(--stack_iter))); // A6
-            asm("move.l %%d0, %0" : "=r" (*(--stack_iter))); // D0
-            asm("move.l %%d1, %0" : "=r" (*(--stack_iter))); // D1
-            asm("move.l %%d2, %0" : "=r" (*(--stack_iter))); // D2
-            asm("move.l %%d3, %0" : "=r" (*(--stack_iter))); // D3
-            asm("move.l %%d4, %0" : "=r" (*(--stack_iter))); // D4
-            asm("move.l %%d5, %0" : "=r" (*(--stack_iter))); // D5
-            asm("move.l %%d6, %0" : "=r" (*(--stack_iter))); // D6
-            asm("move.l %%d7, %0" : "=r" (*(--stack_iter))); // D7
-        
-            previous_process->stack = (void*)stack_iter;
+            asm("move.l %a0, -(%sp)"); // A0
+            asm("move.l %a1, -(%sp)"); // A1
+            asm("move.l %a2, -(%sp)"); // A2
+            asm("move.l %a3, -(%sp)"); // A3
+            asm("move.l %a4, -(%sp)"); // A4
+            asm("move.l %a5, -(%sp)"); // A5
+            asm("move.l %a6, -(%sp)"); // A6
+            asm("move.l %d0, -(%sp)"); // D0
+            asm("move.l %d1, -(%sp)"); // D1
+            asm("move.l %d2, -(%sp)"); // D2
+            asm("move.l %d3, -(%sp)"); // D3
+            asm("move.l %d4, -(%sp)"); // D4
+            asm("move.l %d5, -(%sp)"); // D5
+            asm("move.l %d6, -(%sp)"); // D6
+            asm("move.l %d7, -(%sp)"); // D7
+            asm("move.l %%sp, %0": "=r" (previous_process->stack));
+
             previous_process->state = STATE_READY;
         }
     }    
@@ -104,21 +102,21 @@ void k_change_process(process_control_block* process) {
 
     asm("move.l %0, %%sp" : : "r" (running_process->stack));
 
-    asm("move.l (%a7)+, %d7"); // D7
-    asm("move.l (%a7)+, %d6"); // D6
-    asm("move.l (%a7)+, %d5"); // D5
-    asm("move.l (%a7)+, %d4"); // D4
-    asm("move.l (%a7)+, %d3"); // D3
-    asm("move.l (%a7)+, %d2"); // D2
-    asm("move.l (%a7)+, %d1"); // D1
-    asm("move.l (%a7)+, %d0"); // D0
-    asm("move.l (%a7)+, %a6"); // A6
-    asm("move.l (%a7)+, %a5"); // A5
-    asm("move.l (%a7)+, %a4"); // A4
-    asm("move.l (%a7)+, %a3"); // A3
-    asm("move.l (%a7)+, %a2"); // A2
-    asm("move.l (%a7)+, %a1"); // A1
-    asm("move.l (%a7)+, %a0"); // A0
+    asm("move.l (%sp)+, %d7"); // D7
+    asm("move.l (%sp)+, %d6"); // D6
+    asm("move.l (%sp)+, %d5"); // D5
+    asm("move.l (%sp)+, %d4"); // D4
+    asm("move.l (%sp)+, %d3"); // D3
+    asm("move.l (%sp)+, %d2"); // D2
+    asm("move.l (%sp)+, %d1"); // D1
+    asm("move.l (%sp)+, %d0"); // D0
+    asm("move.l (%sp)+, %a6"); // A6
+    asm("move.l (%sp)+, %a5"); // A5
+    asm("move.l (%sp)+, %a4"); // A4
+    asm("move.l (%sp)+, %a3"); // A3
+    asm("move.l (%sp)+, %a2"); // A2
+    asm("move.l (%sp)+, %a1"); // A1
+    asm("move.l (%sp)+, %a0"); // A0
 
     //
     // Return to user process execution. We do not need to UNLK the frame 

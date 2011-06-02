@@ -25,11 +25,14 @@ int do_system_call(int call_id, int** args, int num_args) {
     //
 
     // 
-    // Preserve running process' SP
+    // Preserve running process' D0-D3
     //
-    
-    asm("move.l (12, %%sp), %0" : "=r" (running_process->stack));
 
+    asm("move.l %d0, -(%sp)");
+    asm("move.l %d1, -(%sp)");
+    asm("move.l %d2, -(%sp)");
+    asm("move.l %d3, -(%sp)");
+    
     asm("move.l %0, %%d0" : : "r" (call_id) : "%%d0");
 
     /*
@@ -47,7 +50,12 @@ int do_system_call(int call_id, int** args, int num_args) {
     */
 
     asm("trap #0");
-    asm("move.l %%d0, %0" : "=r" (return_value));
+    asm("move.l %%d0, %0" : "=m" (return_value));
+
+    asm("move.l (%sp)+, %d3");
+    asm("move.l (%sp)+, %d2");
+    asm("move.l (%sp)+, %d1");
+    asm("move.l (%sp)+, %d0");
 
     return return_value;
 }
