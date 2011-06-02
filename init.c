@@ -73,19 +73,19 @@ void init_processes(VOID* stack_start) {
         // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
 
-        *(--stack_iter) = 0x40000000; // SR
         *(--stack_iter) = (int)current_process->entry; // PC 
+        *(--stack_iter) = 0x40000000; // SR
         
         //
         // Registers, A0-A6, D0-D7. Set all to 0.
         //
         
         for (register_iter = 0;
-             register_iter <= PROCESS_NUM_REGISTERS;
+             register_iter < PROCESS_NUM_REGISTERS;
              register_iter++) {
             *(--stack_iter) = 0;
         }
-
+        
         //
         // Save the stack pointer
         // 

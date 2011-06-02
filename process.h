@@ -5,7 +5,7 @@
 
 enum process_state {
     STATE_RUNNING,
-    STATE_PAUSED,
+    STATE_READY,
     STATE_STOPPED
 };
 
