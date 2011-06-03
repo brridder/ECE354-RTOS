@@ -36,15 +36,21 @@ void init_processes(VOID* stack_start) {
     // Entry point is defined in system_processes.c 
     //
     
+    processes[1].pid = 1;
+    processes[1].priority = 4;
+    processes[1].stack_size = 1024; 
+    processes[1].entry = &process_test;
+    processes[1].is_i_process = FALSE;
+    processes[1].next = NULL;
+
     processes[0].pid = 0;
     processes[0].priority = 4;
     processes[0].stack_size = 1024; 
     processes[0].entry = &process_null;
     processes[0].is_i_process = FALSE;
-    processes[0].next = NULL;
+    processes[0].next = &processes[1];
 
     // TODO: Add all processes to process list
-
 
     //
     // Iterate through all processes and setup their stack and state
@@ -61,31 +67,20 @@ void init_processes(VOID* stack_start) {
         current_process->stack = stack_start + current_process->stack_size;
 
         //
-        // Setup the process' stack with values of 0 for each register,
-        // and an exception frame which points to the entry point 
-        // of the process.
+        // Setup the process' stack with an exception frame which points
+        // to the entry point of the process.
         //
 
         stack_iter = (int*)current_process->stack;
 
         //
-        // Exception frame
+        // Exception frame used to start this process
         // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
 
         *(--stack_iter) = (int)current_process->entry; // PC 
         *(--stack_iter) = 0x40000000; // SR
-        
-        //
-        // Registers, A0-A6, D0-D7. Set all to 0.
-        //
-        
-        for (register_iter = 0;
-             register_iter < PROCESS_NUM_REGISTERS;
-             register_iter++) {
-            *(--stack_iter) = 0;
-        }
-        
+
         //
         // Save the stack pointer
         // 
@@ -93,7 +88,7 @@ void init_processes(VOID* stack_start) {
         current_process->stack = (void*)stack_iter;
 
         // 
-        // All processes are currently stopped
+        // The process is currently stopped
         // 
         
         current_process->state = STATE_STOPPED;
@@ -102,8 +97,8 @@ void init_processes(VOID* stack_start) {
         // Update the location of the next stack and move to the next process
         // 
 
-        current_process = current_process->next;
         stack_start = stack_start + current_process->stack_size;
+        current_process = current_process->next;
     }
 
     //

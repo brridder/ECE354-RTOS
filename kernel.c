@@ -2,6 +2,7 @@
 
 #include "dbug.h"
 #include "process.h"
+#include "soft_interrupts.h"
 
 /**
  * @brief: System call used by a running proccess to release the processor.
@@ -12,8 +13,17 @@ int k_release_processor() {
     //
     // TODO: Make a decision on what process to run
     //
-    
-    //k_change_process(running_process);
+
+    //
+    // TODO: Right now we simple toggle between two dummy processes
+    // for testing purposes.
+    // 
+
+    if (running_process == &processes[0]) {
+        k_change_process(&processes[1]);
+    } else {
+        k_change_process(&processes[0]);
+    }
 
     return 0;
 }
@@ -38,7 +48,6 @@ int k_get_process_priority(int pid) {
  * @param: process the process to switch to.
  */
 void k_change_process(process_control_block* process) {
-    int* stack_iter;
     process_control_block* previous_process;
 
     rtx_dbug_outs("k_change_process()\r\n");
@@ -83,6 +92,7 @@ void k_change_process(process_control_block* process) {
             asm("move.l %d5, -(%sp)"); // D5
             asm("move.l %d6, -(%sp)"); // D6
             asm("move.l %d7, -(%sp)"); // D7
+            
             asm("move.l %%sp, %0": "=r" (previous_process->stack));
 
             previous_process->state = STATE_READY;
@@ -94,35 +104,49 @@ void k_change_process(process_control_block* process) {
     //
 
     running_process = process;
-    running_process->state = STATE_RUNNING;
+    asm("move.l %0, %%sp" : : "r" (running_process->stack) : "%%sp");
 
-    //
-    // Restore stack pointer and registers from the stack
-    //
+    if (running_process->state == STATE_STOPPED) {
+        rtx_dbug_outs("  Starting process\r\n");
 
-    asm("move.l %0, %%sp" : : "r" (running_process->stack));
+        running_process->state = STATE_RUNNING;
 
-    asm("move.l (%sp)+, %d7"); // D7
-    asm("move.l (%sp)+, %d6"); // D6
-    asm("move.l (%sp)+, %d5"); // D5
-    asm("move.l (%sp)+, %d4"); // D4
-    asm("move.l (%sp)+, %d3"); // D3
-    asm("move.l (%sp)+, %d2"); // D2
-    asm("move.l (%sp)+, %d1"); // D1
-    asm("move.l (%sp)+, %d0"); // D0
-    asm("move.l (%sp)+, %a6"); // A6
-    asm("move.l (%sp)+, %a5"); // A5
-    asm("move.l (%sp)+, %a4"); // A4
-    asm("move.l (%sp)+, %a3"); // A3
-    asm("move.l (%sp)+, %a2"); // A2
-    asm("move.l (%sp)+, %a1"); // A1
-    asm("move.l (%sp)+, %a0"); // A0
+        //
+        // If the process has not been started yet, we need to start it by
+        // calling `rte`. The exception frame generated in init_processes is 
+        // the only thing on its stack.
+        //
 
-    //
-    // Return to user process execution. We do not need to UNLK the frame 
-    // pointer because we are using the user process' frame pointer at this
-    // point. The `rte` will remove the exception frame from the stack.
-    //
+        asm("rte");
+    } else if (running_process->state == STATE_READY) {
+        rtx_dbug_outs("  Loading process state\r\n");
 
-    asm("rte");
+        running_process->state = STATE_RUNNING;
+
+        //
+        // This process has already been started and has had its state saved 
+        // on its stack. Restore the registers, and return. Whatever caused this
+        // process to be switched out in the first place will end up calling
+        // `rte`.
+        //
+    
+        asm("move.l (%sp)+, %d7"); // D7
+        asm("move.l (%sp)+, %d6"); // D6
+        asm("move.l (%sp)+, %d5"); // D5
+        asm("move.l (%sp)+, %d4"); // D4
+        asm("move.l (%sp)+, %d3"); // D3
+        asm("move.l (%sp)+, %d2"); // D2
+        asm("move.l (%sp)+, %d1"); // D1
+        asm("move.l (%sp)+, %d0"); // D0
+        asm("move.l (%sp)+, %a6"); // A6
+        asm("move.l (%sp)+, %a5"); // A5
+        asm("move.l (%sp)+, %a4"); // A4
+        asm("move.l (%sp)+, %a3"); // A3
+        asm("move.l (%sp)+, %a2"); // A2
+        asm("move.l (%sp)+, %a1"); // A1
+        asm("move.l (%sp)+, %a0"); // A0
+    } else {
+        rtx_dbug_outs("  Error: trying to switch to a process that is in an"
+                      " unknown state\r\n");
+    }
 };
