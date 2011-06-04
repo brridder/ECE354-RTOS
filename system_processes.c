@@ -9,6 +9,7 @@
 #include "rtx.h"
 #include "kernel.h"
 #include "dbug.h"
+#include "string.h"
 
 /**
  * @brief: null_process that does nothing
@@ -27,6 +28,10 @@ void process_test() {
     while (1) {
         rtx_dbug_outs("Test process run.\r\n");
         
+        printf_0("   Test printf with no format\r\n");
+        printf_0("   Test printf with no format, literal %%\r\n");
+        printf_1("   Test printf with int format: %i\r\n", 1);
+
         set_process_priority(running_process->pid,3);
         if (get_process_priority(running_process->pid) == 3) {
             rtx_dbug_outs("   SUCCESS: Test Process priority has been changed.\r\n");
