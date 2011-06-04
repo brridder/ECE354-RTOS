@@ -15,12 +15,15 @@ int release_processor() {
 }
 
 int set_process_priority(int pid, int priority) {
-    return 0;
+    int args[2];
+    args[0] = pid;
+    args[1] = priority;
+    return do_system_call(2, args, 2);
 }
 
 int get_process_priority(int pid) {
     int args[1];
     args[0] = pid;
 
-    return do_system_call(1, &args, 1);
+    return do_system_call(1, args, 1);
 }

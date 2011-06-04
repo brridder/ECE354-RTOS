@@ -48,7 +48,7 @@ int main(void) {
     //
 
     rtx_dbug_outs("Switching to null process...\r\n");
-    k_change_process(&processes[0]);
+    k_switch_process(1);
 
     //
     // Enable interrupts
@@ -69,7 +69,8 @@ void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx()
     rtx_dbug_outs((CHAR *)"rtx: Entering register_rtx()\r\n");
     
     g_test_fixture.release_processor = release_processor;
-
+    g_test_fixture.set_process_priority = set_process_priority;
+    g_test_fixture.get_process_priority = get_process_priority;
     //
     // TODO: Implement required OS functions
     //
@@ -79,8 +80,6 @@ void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx()
     //g_test_fixture.request_memory_block = request_memory_block;
     //g_test_fixture.release_memory_block = release_memory_block;
     //g_test_fixture.delayed_send = delayed_send;
-    //g_test_fixture.set_process_priority = set_process_priority;
-    //g_test_fixture.get_process_priority = get_process_priority;
 
     rtx_dbug_outs((CHAR *)"rtx: leaving register_rtx()\r\n");
 }

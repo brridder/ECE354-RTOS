@@ -5,27 +5,44 @@
 #include "soft_interrupts.h"
 
 /**
- * @brief: System call used by a running proccess to release the processor.
+ * @brief: System call used by a running process to release the processor.
  */
+
 int k_release_processor() {
-    rtx_dbug_outs("k_release_processor()\r\n");
+    int current_priority;
+    process_control_block* process;
     
+#ifdef DEBUG
+    rtx_dbug_outs("k_release_processor()\r\n");
+#endif  
     //
     // TODO: Make a decision on what process to run
     //
+    
+    current_priority = running_process->priority;
+    process = k_priority_dequeue_process(current_priority);
 
-    //
-    // TODO: Right now we simple toggle between two dummy processes
-    // for testing purposes.
-    // 
-
-    if (running_process == &processes[0]) {
-        k_change_process(&processes[1]);
-    } else {
-        k_change_process(&processes[0]);
+    while (process == NULL) {
+        current_priority = (current_priority + 1) % 4;
+        process = k_priority_dequeue_process(current_priority);
     }
+    return k_switch_process(process->pid);
+}
 
-    return 0;
+/**
+ * @brief:
+ * @param:
+ */
+
+int k_switch_process(int pid) {
+    if (pid != 1 && pid != 2) {
+        return RTX_ERROR;
+    }
+    if (running_process != NULL) {
+        k_priority_enqueue_process(running_process);
+    }   
+    k_context_switch(&processes[pid]);
+    return RTX_SUCCESS;
 }
 
 /**
@@ -33,13 +50,52 @@ int k_release_processor() {
  * @param: pid the pid of the process
  */
 int k_get_process_priority(int pid) {
-    rtx_dbug_outs("k_get_process_priority()\r\n");
 
+#ifdef DEBUG
+    rtx_dbug_outs("k_get_process_priority()\r\n");
+#endif 
     //
-    // TODO: Error handling
+    // Invalid pid was passed in
     //
+
+    if (pid >= NUM_PROCESSES) {
+        return RTX_ERROR;
+    }
 
     return processes[pid].priority;
+}
+
+/**
+ * @brief: 
+ * @params:
+ */
+
+int k_set_process_priority(int pid, int priority) {
+    process_control_block* process;
+
+#ifdef DEBUG
+    rtx_dbug_outs("k_set_process_priority()\r\n");
+#endif
+
+    //
+    // Invalid pid or invalid priority was passed in
+    //
+
+    if (pid >= NUM_PROCESSES || pid <= 0 || priority >= 4 || priority < 0) {
+        return RTX_ERROR;
+    }
+
+    // If running
+    if (running_process->pid == pid) {
+        running_process->priority = priority;
+        goto k_set_process_priority_done;
+    } 
+    
+    process = k_priority_queue_remove(pid);
+    process->priority = priority;
+    k_priority_enqueue_process(process);
+k_set_process_priority_done:
+    return RTX_SUCCESS;
 }
 
 /**
@@ -47,21 +103,24 @@ int k_get_process_priority(int pid) {
  *         process begins executing in user mode.
  * @param: process the process to switch to.
  */
-void k_change_process(process_control_block* process) {
+int k_context_switch(process_control_block* process) {
     process_control_block* previous_process;
 
-    rtx_dbug_outs("k_change_process()\r\n");
+#ifdef DEBUG
+    rtx_dbug_outs("k_context_switch()\r\n");
+#endif
 
     if (!process) {
+#ifdef DEBUG
         rtx_dbug_outs("  Invalid process handle\r\n");
-        return;
+#endif
+        return RTX_ERROR;
     }
 
     // 
     // Get current running process. If there is a process currently running,
     // perform a context switch.
     // 
-
     previous_process = running_process;
     if (previous_process) {
 
@@ -70,8 +129,6 @@ void k_change_process(process_control_block* process) {
         //
 
         if (previous_process->state == STATE_RUNNING) {
-            rtx_dbug_outs("  Saving process state\r\n");
-      
             //
             // Save register contents. The exception frame is already on the 
             // stack.
@@ -107,8 +164,6 @@ void k_change_process(process_control_block* process) {
     asm("move.l %0, %%sp" : : "r" (running_process->stack) : "%%sp");
 
     if (running_process->state == STATE_STOPPED) {
-        rtx_dbug_outs("  Starting process\r\n");
-
         running_process->state = STATE_RUNNING;
 
         //
@@ -119,8 +174,6 @@ void k_change_process(process_control_block* process) {
 
         asm("rte");
     } else if (running_process->state == STATE_READY) {
-        rtx_dbug_outs("  Loading process state\r\n");
-
         running_process->state = STATE_RUNNING;
 
         //
@@ -146,7 +199,86 @@ void k_change_process(process_control_block* process) {
         asm("move.l (%sp)+, %a1"); // A1
         asm("move.l (%sp)+, %a0"); // A0
     } else {
+#ifdef DEBUG
         rtx_dbug_outs("  Error: trying to switch to a process that is in an"
                       " unknown state\r\n");
+#endif
+        return RTX_ERROR;
     }
-};
+    return RTX_SUCCESS;
+}
+
+/**
+ * @brief:
+ * @params:
+ */
+
+void k_priority_enqueue_process(process_control_block* process) {
+    if (!process) {
+        return;
+    }
+    if (!priority_queue_heads[process->priority]) {
+        priority_queue_heads[process->priority] = process;
+        priority_queue_tails[process->priority] = process;
+        process->previous = NULL;
+        process->next = NULL;
+        return;
+    } else {
+        process->previous = priority_queue_tails[process->priority];
+        process->next = NULL;
+        priority_queue_tails[process->priority]->next = process;
+        priority_queue_tails[process->priority] = process;
+    }
+}
+
+/**
+ * @brief:
+ * @params:
+ */
+
+process_control_block* k_priority_dequeue_process(int priority) {
+    process_control_block* process;
+    
+    if (priority_queue_heads[priority] == NULL 
+        || priority >= 4 || priority < 0) {
+        return NULL;
+    }
+
+    if (priority_queue_heads[priority] == priority_queue_tails[priority]) {
+        priority_queue_tails[priority] = NULL;
+        process = priority_queue_heads[priority];
+        priority_queue_heads[priority] = NULL;
+    } else {
+        process = priority_queue_heads[priority];
+
+        priority_queue_heads[priority] = process->next;
+        priority_queue_heads[priority]->previous = NULL;
+
+        process->next = NULL;
+        process->previous = NULL;
+    }
+    return process;
+}
+
+process_control_block* k_priority_queue_remove(int pid) {
+    process_control_block* process;
+    if (pid < 0 || pid >= NUM_PROCESSES) {
+        return NULL;     
+    }
+    process = &processes[pid];
+    if (process->next == NULL && process->previous == NULL) { // Only item
+        priority_queue_heads[process->priority] = NULL;
+        priority_queue_tails[process->priority] = NULL;
+    } else if (process->next == NULL) { // TAIL
+        process->previous->next = NULL;
+        priority_queue_tails[process->priority] = process->previous;
+    } else if (process->previous == NULL) { // HEAD
+        process->next->previous = NULL;
+        priority_queue_heads[process->priority] = process->next;
+    } else {
+        process->next->previous = process->previous;
+        process->previous->next = process->next;
+    }
+    return process;
+}
+

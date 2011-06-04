@@ -7,6 +7,7 @@
  */
 
 #include "init.h"
+#include "dbug.h"
 #include "kernel.h"
 #include "system_processes.h"
 #include "process.h"
@@ -27,7 +28,6 @@ extern void __REGISTER_TEST_PROCS_ENTRY__();
  */
 
 void init_processes(VOID* stack_start) {
-    int register_iter;
     int* stack_iter;
     process_control_block* current_process;
 
@@ -36,16 +36,23 @@ void init_processes(VOID* stack_start) {
     // Entry point is defined in system_processes.c 
     //
     
+    processes[2].pid = 2;
+    processes[2].priority = 3;
+    processes[2].stack_size = 4096; 
+    processes[2].entry = &process_test_get_priority;
+    processes[2].is_i_process = FALSE;
+    processes[2].next = NULL;
+
     processes[1].pid = 1;
-    processes[1].priority = 4;
-    processes[1].stack_size = 1024; 
+    processes[1].priority = 3;
+    processes[1].stack_size = 4096; 
     processes[1].entry = &process_test;
     processes[1].is_i_process = FALSE;
-    processes[1].next = NULL;
+    processes[1].next = &processes[2];
 
     processes[0].pid = 0;
     processes[0].priority = 4;
-    processes[0].stack_size = 1024; 
+    processes[0].stack_size = 4096; 
     processes[0].entry = &process_null;
     processes[0].is_i_process = FALSE;
     processes[0].next = &processes[1];
@@ -106,6 +113,8 @@ void init_processes(VOID* stack_start) {
     //
 
     running_process = NULL;
+
+    init_priority_queues();
 }
 
 /**
@@ -136,4 +145,21 @@ void init_interrupts() {
 
     asm("move.l (%a7)+, %d0");
     asm("move.l (%a7)+, %a0");    
+}
+
+/**
+ * @brief: Initialize the priority queues
+ */
+
+void init_priority_queues() {
+    int i;
+
+    for (i = 0; i < NUM_PRIORITIES; i++) {
+        priority_queue_heads[i] = NULL;
+        priority_queue_tails[i] = NULL;
+    }
+       
+    for (i = 1; i < 3; i++) {
+        k_priority_enqueue_process(&processes[i]);
+    }
 }

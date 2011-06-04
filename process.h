@@ -22,6 +22,7 @@ typedef struct _process_control_block {
     enum process_state state;
 
     struct _process_control_block* next;
+    struct _process_control_block* previous;
 } process_control_block;
 
 #endif

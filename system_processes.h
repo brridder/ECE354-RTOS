@@ -3,5 +3,6 @@
 
 void process_null();
 void process_test();
+void process_test_get_priority();
 
 #endif 

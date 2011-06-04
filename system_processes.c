@@ -7,7 +7,7 @@
 
 #include "system_processes.h"
 #include "rtx.h"
-
+#include "kernel.h"
 #include "dbug.h"
 
 /**
@@ -26,7 +26,44 @@ void process_null() {
 void process_test() {
     while (1) {
         rtx_dbug_outs("Test process run.\r\n");
+        
+        set_process_priority(running_process->pid,3);
+        if (get_process_priority(running_process->pid) == 3) {
+            rtx_dbug_outs("   SUCCESS: Test Process priority has been changed.\r\n");
+        } else {
+            rtx_dbug_outs("   FAIL: Test Process priority has not been changed.\r\n");
+        }
 
+        set_process_priority(0,1);
+        if (get_process_priority(0) == 4) {
+            rtx_dbug_outs("   SUCCESS: Setting Null Process priority fail.\r\n");
+        } else {
+            rtx_dbug_outs("   FAIL: Null Process priority has been changed.\r\n");
+        }
+
+        if (set_process_priority(100, 1) == RTX_ERROR) {
+            rtx_dbug_outs("   SUCCESS: Setting invalid PID returns error.\r\n");
+        } else {
+            rtx_dbug_outs("   FAIL: Setting invalid PID succeeds.\r\n");   
+        }
+        if (set_process_priority(1,4) == RTX_ERROR) {
+            rtx_dbug_outs("   SUCCESS: Setting invalid priority returns error.\r\n");
+        } else {
+            rtx_dbug_outs("   FAIL: Setting invalid priority succeeds.\r\n");   
+        }
+        
         release_processor();        
+    }
+}
+
+void process_test_get_priority() {
+    while (1) {
+        rtx_dbug_outs("Test process: Get_priority() run.\r\n");
+        if (get_process_priority(10) == RTX_ERROR) {
+            rtx_dbug_outs("   SUCCESS: Getting process priority with invalid PID returns error.\r\n");
+        } else {
+            rtx_dbug_outs("   FAIL: Getting process priority with invalid PID succeeds.\r\n");
+        }
+        release_processor();
     }
 }

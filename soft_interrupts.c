@@ -10,7 +10,7 @@
  * @param: num_args length of args. Maximum is 3.
  */
 
-int do_system_call(int call_id, int** args, int num_args) {
+int do_system_call(int call_id, int* args, int num_args) {
     int return_value;
 
     //
@@ -29,7 +29,10 @@ int do_system_call(int call_id, int** args, int num_args) {
     
     asm("move.l %0, %%d0" : : "r" (call_id) : "%%d0");
 
-    /*
+    // 
+    // Nested if since we can't change the strings at run time in a for loop
+    //
+    
     if (num_args > 0) {
         asm("move.l %0, %%d1" : : "m" (args[0]) : "%%d1");
         
@@ -41,7 +44,6 @@ int do_system_call(int call_id, int** args, int num_args) {
             }
         }
     }
-    */
 
     asm("trap #0");
     asm("move.l %%d0, %0" : "=m" (return_value));
@@ -119,7 +121,14 @@ void system_call() {
         case 1:
             return_value = k_get_process_priority(args[0]);
             break;
-            
+   
+        //
+        // 2: set_process_priority(int pid, int priority)
+        //
+
+        case 2:
+            return_value = k_set_process_priority(args[0], args[1]);
+            break;
         //
         // Invalid call ID
 
