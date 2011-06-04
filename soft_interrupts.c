@@ -122,7 +122,6 @@ void system_call() {
             
         //
         // Invalid call ID
-        //
 
         default:
             // TODO: Handle this case

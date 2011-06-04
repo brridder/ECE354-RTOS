@@ -27,6 +27,6 @@ void process_test() {
     while (1) {
         rtx_dbug_outs("Test process run.\r\n");
 
-        release_processor();
+        release_processor();        
     }
 }
