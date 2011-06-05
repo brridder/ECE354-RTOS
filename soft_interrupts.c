@@ -110,7 +110,7 @@ void system_call() {
         // 0: release_processor()
         // 
 
-        case 0:
+        case CALL_RELEASE_PROCESSOR:
             return_value = k_release_processor(); 
             break;
 
@@ -118,7 +118,7 @@ void system_call() {
         // 1: get_process_priority(int pid)
         //
             
-        case 1:
+        case CALL_GET_PROCESS_PRIORITY:
             return_value = k_get_process_priority(args[0]);
             break;
    
@@ -126,7 +126,7 @@ void system_call() {
         // 2: set_process_priority(int pid, int priority)
         //
 
-        case 2:
+        case CALL_SET_PROCESS_PRIORITY:
             return_value = k_set_process_priority(args[0], args[1]);
             break;
         //
