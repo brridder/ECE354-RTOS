@@ -27,8 +27,6 @@ void process_null() {
 void process_test() {
     while (1) {
         rtx_dbug_outs("Test process run.\r\n");
-        
-        
 
         printf_0("   Test printf with no format\r\n");
         printf_0("   Test printf with no format, literal %%\r\n");

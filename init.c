@@ -23,6 +23,29 @@
 extern void __REGISTER_TEST_PROCS_ENTRY__();
 
 /**
+ * @brief: Handles all the initilization of the OS
+ * @param: stack_start the starting memory location for process stacks
+ */
+
+void init(void* stack_start) {
+#ifdef DEBUG
+    rtx_dbug_outs("Initilizating processes...");
+#endif
+    init_processes(stack_start);
+#ifdef DEBUG
+    rtx_dbug_outs(" done\r\nInitializing priority queues...");
+#endif
+    init_priority_queues();
+#ifdef DEBUG
+    rtx_dbug_outs(" done\r\nInitilizating interrupts...");
+#endif
+    init_interrupts();
+#ifdef DEBUG
+    rtx_dbug_outs(" done\r\n");
+#endif
+}
+
+/**
  * @brief: Copies the process tables entries into the PCBs
  * @param: stack_start the starting memory location for stacks
  */
@@ -113,8 +136,6 @@ void init_processes(VOID* stack_start) {
     //
 
     running_process = NULL;
-
-    init_priority_queues();
 }
 
 /**

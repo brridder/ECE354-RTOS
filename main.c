@@ -28,14 +28,8 @@ int main(void) {
     //
 
     stack_start = &__end;
-
-    rtx_dbug_outs("Initializing processes...");
-    init_processes(stack_start);
-    rtx_dbug_outs("done.\r\n");
-
-    rtx_dbug_outs("Initializing interrupts...");
-    init_interrupts();
-    rtx_dbug_outs("done.\r\n");
+    
+    init(stack_start);
 
     //
     // Register the test processes. Required by test suite.
