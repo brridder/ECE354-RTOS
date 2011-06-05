@@ -5,8 +5,8 @@
 #include "string.h"
 #include "dbug.h"
 
-#define SNPRINTF_BUFFER_SIZE 100
-#define FORMAT_INT_BUFFER_SIZE 12
+#define SNPRINTF_BUFFER_SIZE 128
+#define FORMAT_INT_BUFFER_SIZE 16
 
 /**
  * Globals used for string formatting
@@ -33,6 +33,22 @@ void itoa(int n, char s[]) {
     if (sign < 0) {
         s[i++] = '-';
     }
+    s[i] = '\0';
+    reverse(s);
+}
+
+void itox(unsigned int n, char s[]) {
+    int i;
+    char digit;
+
+    i = 0;
+    do {
+        digit = n % 16 + '0';
+        if (digit > 57) {
+            digit += 7;
+        }
+        s[i++] = digit;
+    } while((n/=16) != 0);
     s[i] = '\0';
     reverse(s);
 }
@@ -85,6 +101,36 @@ void snprintf_1(char* buffer, int buffer_size, const char* format, int input) {
                 //
 
                 itoa(input, format_int_buffer);
+                subformat_iter = format_int_buffer;
+                while (*subformat_iter) {
+                    buffer[index] = *subformat_iter;
+                    subformat_iter++;
+
+                    index++;
+                    if (index == buffer_size) {
+                        goto format_done;
+                    }
+                }
+            } else if (*format_iter == 'x') {
+                format_iter++;                
+
+                buffer[index] = '0';
+                index++;                
+                if (index == buffer_size) {
+                    goto format_done;
+                }
+
+                buffer[index] = 'x';
+                index++;
+                if (index == buffer_size) {
+                    goto format_done;
+                }                                
+
+                //
+                // Format the input as hex
+                //
+
+                itox(input, format_int_buffer);
                 subformat_iter = format_int_buffer;
                 while (*subformat_iter) {
                     buffer[index] = *subformat_iter;
