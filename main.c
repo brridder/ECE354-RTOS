@@ -47,7 +47,7 @@ int main(void) {
     // Change to null process (PID 0)
     //
 
-    rtx_dbug_outs("Switching to null process...\r\n");
+    //rtx_dbug_outs("Switching to null process...\r\n");
     k_switch_process(1);
 
     //
@@ -64,8 +64,7 @@ int main(void) {
  * @brief: Registration function used by test suite
  */  
 
-void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() 
-{
+void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
     rtx_dbug_outs((CHAR *)"rtx: Entering register_rtx()\r\n");
     
     g_test_fixture.release_processor = release_processor;

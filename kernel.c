@@ -15,8 +15,9 @@ int k_release_processor() {
 #ifdef DEBUG
     rtx_dbug_outs("k_release_processor()\r\n");
 #endif  
+
     //
-    // TODO: Make a decision on what process to run
+    // TODO: Make the decision process better
     //
     
     current_priority = running_process->priority;
@@ -30,25 +31,10 @@ int k_release_processor() {
 }
 
 /**
- * @brief:
- * @param:
- */
-
-int k_switch_process(int pid) {
-    if (pid != 1 && pid != 2) {
-        return RTX_ERROR;
-    }
-    if (running_process != NULL) {
-        k_priority_enqueue_process(running_process);
-    }   
-    k_context_switch(&processes[pid]);
-    return RTX_SUCCESS;
-}
-
-/**
  * @brief: Returns the priority of a process
  * @param: pid the pid of the process
  */
+
 int k_get_process_priority(int pid) {
 
 #ifdef DEBUG
@@ -66,8 +52,9 @@ int k_get_process_priority(int pid) {
 }
 
 /**
- * @brief: 
- * @params:
+ * @brief: Set the priority of a process
+ * @param: PID the pid of the process
+ * @param: priority the priority to set the process at
  */
 
 int k_set_process_priority(int pid, int priority) {
@@ -85,15 +72,24 @@ int k_set_process_priority(int pid, int priority) {
         return RTX_ERROR;
     }
 
-    // If running
+    //
+    // If the running process is the one to change, update it but with no need 
+    // to change the priority queues.
+    //
+
     if (running_process->pid == pid) {
         running_process->priority = priority;
         goto k_set_process_priority_done;
     } 
-    
+   
+    // 
+    // Process isn't being run, so remove it from its current priority queue,
+    // change the priority and enqueue it back onto the appropriate queue.
+    //
     process = k_priority_queue_remove(pid);
     process->priority = priority;
     k_priority_enqueue_process(process);
+
 k_set_process_priority_done:
     return RTX_SUCCESS;
 }
@@ -209,76 +205,169 @@ int k_context_switch(process_control_block* process) {
 }
 
 /**
- * @brief:
- * @params:
+ * @brief: Kernel function to facilitate process switching
+ * @param: pid the pid of the process
+ */
+
+int k_switch_process(int pid) {
+#ifdef DEBUG
+    rtx_dbug_outs("k_switch_process()\r\n");
+#endif
+    if (pid != 1 && pid != 2) {
+        return RTX_ERROR;
+    }
+    if (running_process != NULL) {
+        k_priority_enqueue_process(running_process);
+    }   
+    k_context_switch(&processes[pid]);
+    return RTX_SUCCESS;
+}
+
+/**
+ * @brief: Enqueue a process onto the appropriate priority queue
+ * @param: process the process to enqueue
  */
 
 void k_priority_enqueue_process(process_control_block* process) {
+#ifdef DEBUG
+    rtx_dbug_outs("k_priority_enqueue_process()\r\n");
+#endif 
+    
+    //
+    // The process is null, so break early.
+    //
+    
     if (!process) {
-        return;
+        goto k_priority_enqueue_process_done;
     }
+    
     if (!priority_queue_heads[process->priority]) {
+
+        //
+        // The queue is empty. Assign the head and tail pointers of the queue to
+        // the process. 
+        //
+        
         priority_queue_heads[process->priority] = process;
         priority_queue_tails[process->priority] = process;
         process->previous = NULL;
         process->next = NULL;
-        return;
     } else {
+
+        // 
+        // The queue is not empty. Attach the passed-in process to the current 
+        // tail and update the tail pointer.
+        //
+
         process->previous = priority_queue_tails[process->priority];
         process->next = NULL;
         priority_queue_tails[process->priority]->next = process;
         priority_queue_tails[process->priority] = process;
     }
+
+k_priority_enqueue_process_done:
+    return; 
 }
 
 /**
- * @brief:
- * @params:
+ * @brief: Dequeue the head of the priority param.
+ * @params: priority the priority queue to dequeue from
  */
 
 process_control_block* k_priority_dequeue_process(int priority) {
     process_control_block* process;
     
-    if (priority_queue_heads[priority] == NULL 
-        || priority >= 4 || priority < 0) {
+#ifdef DEBUG
+    rtx_dbug_outs("k_priority_dequeue_process()\r\n");
+#endif 
+    
+    //
+    // End early if the priority queue is empty or the priority level is
+    // out of range. Priority is checked first to ensure that the head checking
+    // is short-circuited.
+    //
+
+    if (priority >= 4 || priority < 0 
+        || priority_queue_heads[priority] == NULL) {
         return NULL;
     }
-
+    
     if (priority_queue_heads[priority] == priority_queue_tails[priority]) {
+
+        // 
+        // Only one item on the queue
+        //
+        
         priority_queue_tails[priority] = NULL;
         process = priority_queue_heads[priority];
         priority_queue_heads[priority] = NULL;
     } else {
-        process = priority_queue_heads[priority];
 
+        // 
+        // Pop the head
+        //
+        process = priority_queue_heads[priority];
         priority_queue_heads[priority] = process->next;
         priority_queue_heads[priority]->previous = NULL;
-
         process->next = NULL;
         process->previous = NULL;
     }
     return process;
 }
 
+/**
+ * @brief: Remove an arbitrary process from the queue it is in. Used for
+ *         setting the process priority.
+ * @param: pid the process pid to remove from the queues.
+ */
+
 process_control_block* k_priority_queue_remove(int pid) {
     process_control_block* process;
+
+#ifdef DEBUG
+    rtx_dbug_outs("k_priority_queue_remove()\r\n");
+#endif 
+
+    //
+    //  PID is out of range so break early.
+    //
+    
     if (pid < 0 || pid >= NUM_PROCESSES) {
         return NULL;     
     }
+    
     process = &processes[pid];
-    if (process->next == NULL && process->previous == NULL) { // Only item
+
+    if (process->next == NULL && process->previous == NULL) { 
+        // 
+        // Process is the only item in the queue.  
+        //
+        
         priority_queue_heads[process->priority] = NULL;
         priority_queue_tails[process->priority] = NULL;
-    } else if (process->next == NULL) { // TAIL
+    } else if (process->next == NULL) { 
+        // 
+        // Process is the tail
+        //
+        
         process->previous->next = NULL;
         priority_queue_tails[process->priority] = process->previous;
-    } else if (process->previous == NULL) { // HEAD
+    } else if (process->previous == NULL) { 
+        // 
+        // Process is the tail
+        //
+        
         process->next->previous = NULL;
         priority_queue_heads[process->priority] = process->next;
     } else {
+        // 
+        // Process is in the middle somewhere.
+        // 
+        
         process->next->previous = process->previous;
         process->previous->next = process->next;
     }
+
     return process;
 }
 
