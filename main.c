@@ -4,7 +4,7 @@
 #include "init.h"
 #include "kernel.h"
 #include "rtx.h"
-#include "loader/rtx_test.h"
+//#include "loader/rtx_test.h"
 
 extern void* __end;
 extern void __REGISTER_TEST_PROCS_ENTRY__();
@@ -57,7 +57,7 @@ int main(void) {
 /**
  * @brief: Registration function used by test suite
  */  
-
+/*
 void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
     rtx_dbug_outs((CHAR *)"rtx: Entering register_rtx()\r\n");
     
@@ -75,4 +75,4 @@ void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
     //g_test_fixture.delayed_send = delayed_send;
 
     rtx_dbug_outs((CHAR *)"rtx: leaving register_rtx()\r\n");
-}
+}*/

@@ -12,6 +12,10 @@
 #include "system_processes.h"
 #include "process.h"
 #include "soft_interrupts.h"
+#include "loader/rtx_test.h"
+#include "rtx.h"
+#include "string.h"
+
 
 #define PROCESS_NUM_REGISTERS 15
 
@@ -21,7 +25,6 @@
 //
 
 extern void __REGISTER_TEST_PROCS_ENTRY__();
-
 /**
  * @brief: Handles all the initilization of the OS
  * @param: stack_start the starting memory location for process stacks
@@ -58,20 +61,22 @@ void init_processes(VOID* stack_start) {
     // Setup null process
     // Entry point is defined in system_processes.c 
     //
-    
-    processes[2].pid = 2;
-    processes[2].priority = 3;
-    processes[2].stack_size = 4096; 
-    processes[2].entry = &process_test_get_priority;
-    processes[2].is_i_process = FALSE;
-    processes[2].next = NULL;
+   /* 
+    processes[NUM_TEST_PROCS + 2].pid = NUM_TEST_PROCS + 2;
+    processes[NUM_TEST_PROCS + 2].priority = 3;
+    processes[NUM_TEST_PROCS + 2].stack_size = 4096; 
+    processes[NUM_TEST_PROCS + 2].entry = &process_test_get_priority;
+    processes[NUM_TEST_PROCS + 2].is_i_process = FALSE;
+    processes[NUM_TEST_PROCS + 2].next = NULL;
 
-    processes[1].pid = 1;
-    processes[1].priority = 3;
-    processes[1].stack_size = 4096; 
-    processes[1].entry = &process_test;
-    processes[1].is_i_process = FALSE;
-    processes[1].next = &processes[2];
+    processes[NUM_TEST_PROCS + 1].pid = NUM_TEST_PROCS + 1;
+    processes[NUM_TEST_PROCS + 1].priority = 3;
+    processes[NUM_TEST_PROCS + 1].stack_size = 4096; 
+    processes[NUM_TEST_PROCS + 1].entry = &process_test;
+    processes[NUM_TEST_PROCS + 1].is_i_process = FALSE;
+    processes[NUM_TEST_PROCS + 1].next = &processes[2];
+   */ 
+    init_test_procs();
 
     processes[0].pid = 0;
     processes[0].priority = 4;
@@ -88,6 +93,7 @@ void init_processes(VOID* stack_start) {
 
     current_process = &processes[0];
     while (current_process) {
+        printf_1("Loading up processes: %i\r\n", current_process->pid);
         //
         // Setup the process' stack pointer. The stack grows downward,
         // so the stack pointer for each process must be set to the end of the
@@ -128,13 +134,20 @@ void init_processes(VOID* stack_start) {
         // 
 
         stack_start = stack_start + current_process->stack_size;
+        printf_1("Done: %i\r\n", current_process->pid);
         current_process = current_process->next;
+        if (current_process->pid > 6) { 
+            // TODO :: FIX THIS PROPERLY
+            current_process = NULL;
+        } else {
+            printf_1("Next: %i\r\n", current_process->pid);
+        }
     }
 
     //
     // No process is running
     //
-
+    printf_0("Done!\r\n");
     running_process = NULL;
 }
 
@@ -180,7 +193,55 @@ void init_priority_queues() {
         priority_queue_tails[i] = NULL;
     }
        
-    for (i = 1; i < 3; i++) {
-        k_priority_enqueue_process(&processes[i]);
+    for (i = 0; i < NUM_TEST_PROCS-1; i++) {
+        k_priority_enqueue_process(&processes[i+1]);
     }
+}
+
+/**
+ * @brief: Initialize test processes
+ */
+
+void init_test_procs() {
+    // TODO :: make this more robust
+//#ifdef NUM_TEST_PROCS 
+    int i;
+    __REGISTER_TEST_PROCS_ENTRY__();
+    
+    for (i = 0; i < NUM_TEST_PROCS; i++) {
+        processes[i+1].pid = g_test_proc[i].pid;
+        processes[i+1].priority = g_test_proc[i].priority;
+        processes[i+1].stack_size = g_test_proc[i].sz_stack; 
+        processes[i+1].entry = g_test_proc[i].entry;
+        processes[i+1].is_i_process = FALSE;
+        if (i == NUM_TEST_PROCS - 1) {
+            processes[i+1].next = NULL;
+        } else {
+            processes[i+1].next = &processes[i+2];
+        }
+    }
+//#endif
+}
+
+/**
+ * @brief: Registration function used by test suite
+ */  
+
+void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
+    rtx_dbug_outs((CHAR *)"rtx: Entering register_rtx()\r\n");
+    
+    g_test_fixture.release_processor = release_processor;
+    g_test_fixture.set_process_priority = set_process_priority;
+    g_test_fixture.get_process_priority = get_process_priority;
+    //
+    // TODO: Implement required OS functions
+    //
+     
+    //g_test_fixture.send_message = send_message;
+    //g_test_fixture.receive_message = receive_message;
+    //g_test_fixture.request_memory_block = request_memory_block;
+    //g_test_fixture.release_memory_block = release_memory_block;
+    //g_test_fixture.delayed_send = delayed_send;
+
+    rtx_dbug_outs((CHAR *)"rtx: leaving register_rtx()\r\n");
 }

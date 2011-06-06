@@ -9,19 +9,31 @@ OBJS=dbug.o memory.o kernel.o soft_interrupts.o rtx.o system_processes.o init.o 
 
 all: full.s19
 
+test: test.s19
+	
+
 # Note, GCC builds things in order, it's important to put the
 # ASM first, so that it is located at the beginning of our program.
 rtx.s19: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o rtx.bin $(ASM) $(OBJS) 
 	$(OBJCPY) --output-format=srec rtx.bin rtx.s19
 
-loader/rtx_loader.s19:
+rtx_loader.s19:
 	cd loader; $(MAKE) rtx_loader.s19;
 
-full.s19: rtx.s19 loader/rtx_loader.s19
+rtx_test_dummy.s19:
+	cd loader; $(MAKE) rtx_test_dummy.s19;
+
+full.s19: rtx.s19 rtx_loader.s19 
 	$(ECHO) Merging rtx with loader...
 	$(MERGE) full.s19 rtx.s19 loader/rtx_loader.s19
 	chmod u+x full.s19
+
+test.s19: rtx.s19 rtx_loader.s19 rtx_test_dummy.s19
+	$(ECHO) Merging rtx with loader...
+	$(MERGE) temp.s19 rtx.s19 loader/rtx_test_dummy.s19
+	$(MERGE) test.s19 temp.s19 loader/rtx_loader.s19
+	chmod u+x test.s19
 
 -include $(OBJS:.o=.d)
 

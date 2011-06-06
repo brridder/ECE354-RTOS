@@ -4,6 +4,7 @@
 #include "process.h"
 #include "soft_interrupts.h"
 
+
 /**
  * @brief: System call used by a running process to release the processor.
  */
@@ -22,7 +23,6 @@ int k_release_processor() {
     
     current_priority = running_process->priority;
     process = k_priority_dequeue_process(current_priority);
-
     while (process == NULL) {
         current_priority = (current_priority + 1) % 4;
         process = k_priority_dequeue_process(current_priority);
@@ -36,15 +36,15 @@ int k_release_processor() {
  */
 
 int k_get_process_priority(int pid) {
-
 #ifdef DEBUG
     rtx_dbug_outs("k_get_process_priority()\r\n");
 #endif 
+    
     //
-    // Invalid pid was passed in
+    // An invalid pid was passed in
     //
 
-    if (pid >= NUM_PROCESSES) {
+    if (pid >= NUM_PROCESSES || pid < 0) {
         return RTX_ERROR;
     }
 
@@ -107,9 +107,9 @@ int k_context_switch(process_control_block* process) {
 #endif
 
     if (!process) {
-#ifdef DEBUG
+//#ifdef DEBUG
         rtx_dbug_outs("  Invalid process handle\r\n");
-#endif
+//#endif
         return RTX_ERROR;
     }
 
@@ -158,7 +158,6 @@ int k_context_switch(process_control_block* process) {
 
     running_process = process;
     asm("move.l %0, %%sp" : : "r" (running_process->stack) : "%%sp");
-
     if (running_process->state == STATE_STOPPED) {
         running_process->state = STATE_RUNNING;
 
@@ -213,12 +212,14 @@ int k_switch_process(int pid) {
 #ifdef DEBUG
     rtx_dbug_outs("k_switch_process()\r\n");
 #endif
-    if (pid != 1 && pid != 2) {
-        return RTX_ERROR;
-    }
+//    if (pid != 1 && pid != 2) {
+ //       return RTX_ERROR;
+  //  }
     if (running_process != NULL) {
         k_priority_enqueue_process(running_process);
-    }   
+    } else {
+        k_priority_dequeue_process(3); // REMOVE THIS
+    }
     k_context_switch(&processes[pid]);
     return RTX_SUCCESS;
 }
@@ -276,7 +277,6 @@ k_priority_enqueue_process_done:
 
 process_control_block* k_priority_dequeue_process(int priority) {
     process_control_block* process;
-    
 #ifdef DEBUG
     rtx_dbug_outs("k_priority_dequeue_process()\r\n");
 #endif 
@@ -292,8 +292,7 @@ process_control_block* k_priority_dequeue_process(int priority) {
         return NULL;
     }
     
-    if (priority_queue_heads[priority] == priority_queue_tails[priority]) {
-
+    if (priority_queue_heads[priority]->next == NULL) {
         // 
         // Only one item on the queue
         //
@@ -302,10 +301,10 @@ process_control_block* k_priority_dequeue_process(int priority) {
         process = priority_queue_heads[priority];
         priority_queue_heads[priority] = NULL;
     } else {
-
         // 
         // Pop the head
         //
+        
         process = priority_queue_heads[priority];
         priority_queue_heads[priority] = process->next;
         priority_queue_heads[priority]->previous = NULL;
