@@ -15,11 +15,6 @@
  * Queue
  */
 
-typedef enum _queue_type {
-    QUEUE_READY = 0,
-    QUEUE_DONE = 1
-} queue_type;
-
 
 process_control_block* running_process;
 process_control_block processes[NUM_PROCESSES];
@@ -44,8 +39,8 @@ process_control_block* k_get_next_process();
  */
 
 void k_init_priority_queues();
-void k_priority_enqueue_process(process_control_block* process, queue_type queue);
-process_control_block* k_priority_dequeue_process(int priority, queue_type queue);
-process_control_block* k_priority_queue_remove(int pid, queue_type queue);
+void k_priority_enqueue_process(process_control_block* process, enum queue_type queue);
+process_control_block* k_priority_dequeue_process(int priority, enum queue_type queue);
+process_control_block* k_priority_queue_remove(int pid, enum queue_type queue);
 
 #endif

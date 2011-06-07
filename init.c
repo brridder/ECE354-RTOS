@@ -199,7 +199,7 @@ void init_test_procs() {
         processes[pid].entry = g_test_proc[i].entry;
         processes[pid].is_i_process = FALSE;
         processes[pid].next = NULL;
-        processes[pid].previous= NULL;
+        processes[pid].previous = NULL;
     }
 //#endif
 }

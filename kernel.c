@@ -44,6 +44,9 @@ int k_release_processor() {
             queues_h[QUEUE_DONE][i] = NULL;
             queues_t[QUEUE_DONE][i] = NULL;
         }
+        for (i = 0; i < NUM_PROCESSES; i++) {
+            processes[i].queue = QUEUE_READY;
+        }
         process = k_get_next_process();
     }
 
@@ -121,9 +124,9 @@ int k_set_process_priority(int pid, int priority) {
     // Process isn't being run, so remove it from its current priority queue,
     // change the priority and enqueue it back onto the appropriate queue.
     //
-    process = k_priority_queue_remove(pid, QUEUE_READY);
+    process = k_priority_queue_remove(pid, process->queue);
     process->priority = priority;
-    k_priority_enqueue_process(process, QUEUE_READY);
+    k_priority_enqueue_process(process, process->queue);
 
 k_set_process_priority_done:
     return RTX_SUCCESS;
@@ -244,7 +247,7 @@ int k_context_switch(process_control_block* process) {
  * @param: queue the queue type to use
  */
 
-void k_priority_enqueue_process(process_control_block* process, queue_type queue) {
+void k_priority_enqueue_process(process_control_block* process, enum queue_type queue) {
 #ifdef DEBUG
     rtx_dbug_outs("k_priority_enqueue_process()\r\n");
 #endif 
@@ -281,6 +284,8 @@ void k_priority_enqueue_process(process_control_block* process, queue_type queue
         queues_t[queue][process->priority] = process;
     }
 
+    process->queue = queue;
+
 k_priority_enqueue_process_done:
 #ifdef DEBUG
     printf_1("Enqueued process: %i\r\n", process->pid);
@@ -294,7 +299,7 @@ k_priority_enqueue_process_done:
  * @param: queue the queue type to use
  */
 
-process_control_block* k_priority_dequeue_process(int priority, queue_type queue) {
+process_control_block* k_priority_dequeue_process(int priority, enum queue_type queue) {
     process_control_block* process;
 #ifdef DEBUG
     rtx_dbug_outs("k_priority_dequeue_process()\r\n");
@@ -330,9 +335,13 @@ process_control_block* k_priority_dequeue_process(int priority, queue_type queue
         process->next = NULL;
         process->previous = NULL;
     }   
+    
+    process->queue = QUEUE_NONE;
+
 #ifdef DEBUG
     printf_1("Dequeued process: %i\r\n", process->pid);
 #endif
+
     return process;
 }
 
@@ -343,7 +352,7 @@ process_control_block* k_priority_dequeue_process(int priority, queue_type queue
  * @param: queue the queue type to use
  */
 
-process_control_block* k_priority_queue_remove(int pid, queue_type queue) {
+process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
     process_control_block* process;
 
 #ifdef DEBUG
@@ -389,7 +398,6 @@ process_control_block* k_priority_queue_remove(int pid, queue_type queue) {
         process->next->previous = process->previous;
         process->previous->next = process->next;
     }
-
     return process;
 }
 

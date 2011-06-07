@@ -9,6 +9,13 @@ enum process_state {
     STATE_STOPPED
 };
 
+enum queue_type {
+    QUEUE_READY = 0,
+    QUEUE_DONE = 1,
+    QUEUE_NONE = 2
+};
+
+
 typedef struct _process_control_block {
     int pid;
     int priority;
@@ -20,6 +27,8 @@ typedef struct _process_control_block {
     BOOLEAN is_i_process;
 
     enum process_state state;
+
+    enum queue_type queue;
 
     struct _process_control_block* next;
     struct _process_control_block* previous;
