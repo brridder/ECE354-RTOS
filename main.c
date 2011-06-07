@@ -42,7 +42,8 @@ int main(void) {
     //
 
     //rtx_dbug_outs("Switching to null process...\r\n");
-    k_switch_process(1);
+    //k_switch_process(1);
+    k_release_processor();
 
     //
     // Enable interrupts

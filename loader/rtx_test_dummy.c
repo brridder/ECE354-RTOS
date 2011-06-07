@@ -12,6 +12,7 @@
 
 #include "rtx_test.h"
 #include "dbug.h"
+#include "../string.h"
 
 /* third party dummy test process 1 */ 
 void test1()
@@ -21,6 +22,7 @@ void test1()
     while (1) 
     {
         /* execute a rtx primitive to test */
+        printf_0("1\r\n");
         g_test_fixture.release_processor();
     }
 }
@@ -31,6 +33,7 @@ void test2()
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
     while (1) 
     {
+        printf_0("2\r\n");
         /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
@@ -42,6 +45,7 @@ void test3()
     while (1) 
     {
         /* execute a rtx primitive to test */
+        printf_0("3\r\n");
         g_test_fixture.release_processor();
     }
 }
@@ -52,6 +56,7 @@ void test4()
     rtx_dbug_outs((CHAR *)"rtx_test: test4\r\n");
     while (1) 
     {
+        printf_0("4\r\n");
         /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
@@ -62,6 +67,7 @@ void test5()
     rtx_dbug_outs((CHAR *)"rtx_test: test5\r\n");
     while (1) 
     {
+        printf_0("5\r\n");
         /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
@@ -72,6 +78,7 @@ void test6()
     rtx_dbug_outs((CHAR *)"rtx_test: test6\r\n");
     while (1) 
     {
+        printf_0("6\r\n");
         /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
@@ -89,6 +96,10 @@ void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
         g_test_proc[i].priority = 3;
         g_test_proc[i].sz_stack = 2048;
     }
+    g_test_proc[0].priority = 1;
+    g_test_proc[1].priority = 1;
+    g_test_proc[2].priority = 0;
+    g_test_proc[3].priority = 2;
     g_test_proc[0].entry = test1;
     g_test_proc[1].entry = test2;
     g_test_proc[2].entry = test3;

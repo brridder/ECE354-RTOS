@@ -29,6 +29,8 @@ int k_release_processor() {
     rtx_dbug_outs("k_release_processor()\r\n");
 #endif  
 
+    k_priority_enqueue_process(running_process, QUEUE_DONE);
+ 
     process = k_get_next_process();
    
     //
@@ -39,11 +41,13 @@ int k_release_processor() {
         for (i = 0; i < NUM_PRIORITIES; i++) {
             queues_h[QUEUE_READY][i] = queues_h[QUEUE_DONE][i];
             queues_t[QUEUE_READY][i] = queues_t[QUEUE_DONE][i];
+            queues_h[QUEUE_DONE][i] = NULL;
+            queues_t[QUEUE_DONE][i] = NULL;
         }
         process = k_get_next_process();
     }
 
-    return k_switch_process(process->pid);
+    return k_context_switch(process);
 }
 
 process_control_block* k_get_next_process() {
@@ -119,7 +123,7 @@ int k_set_process_priority(int pid, int priority) {
     //
     process = k_priority_queue_remove(pid, QUEUE_READY);
     process->priority = priority;
-    k_priority_enqueue_process(process, QUEUE_DONE);
+    k_priority_enqueue_process(process, QUEUE_READY);
 
 k_set_process_priority_done:
     return RTX_SUCCESS;
@@ -235,31 +239,6 @@ int k_context_switch(process_control_block* process) {
 }
 
 /**
- * @brief: Kernel function to facilitate process switching
- * @param: pid the pid of the process
- */
-
-int k_switch_process(int pid) {
-#ifdef DEBUG
-    rtx_dbug_outs("k_switch_process()\r\n");
-#endif
-    if (running_process != NULL) {
-        // 
-        // Not running first time.
-        //
-        
-        k_priority_enqueue_process(running_process, QUEUE_DONE);
-    } else {
-        // 
-        // Running first time, need to pop off the head of that process
-        //
-        k_priority_dequeue_process(processes[pid].priority, QUEUE_READY);
-    }
-    k_context_switch(&processes[pid]);
-    return RTX_SUCCESS;
-}
-
-/**
  * @brief: Enqueue a process onto the appropriate priority queue
  * @param: process the process to enqueue
  * @param: queue the queue type to use
@@ -303,6 +282,9 @@ void k_priority_enqueue_process(process_control_block* process, queue_type queue
     }
 
 k_priority_enqueue_process_done:
+#ifdef DEBUG
+    printf_1("Enqueued process: %i\r\n", process->pid);
+#endif
     return; 
 }
 
@@ -348,6 +330,9 @@ process_control_block* k_priority_dequeue_process(int priority, queue_type queue
         process->next = NULL;
         process->previous = NULL;
     }   
+#ifdef DEBUG
+    printf_1("Dequeued process: %i\r\n", process->pid);
+#endif
     return process;
 }
 
