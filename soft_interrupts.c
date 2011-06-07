@@ -1,6 +1,5 @@
-#include "soft_interrupts.h"
-
 #include "kernel.h"
+#include "soft_interrupts.h"
 #include "dbug.h"
 
 /**

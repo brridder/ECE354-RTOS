@@ -175,14 +175,9 @@ void init_interrupts() {
 
 void init_priority_queues() {
     int i;
-
-    for (i = 0; i < NUM_PRIORITIES; i++) {
-        p_q_ready_h[i] = NULL;
-        p_q_ready_t[i] = NULL;
-    }
-       
+    k_init_priority_queues();
     for (i = 0; i < NUM_TEST_PROCS; i++) {
-        k_priority_enqueue_process(&processes[i+1]);
+        k_priority_enqueue_process(&processes[i+1], QUEUE_READY);
     }
 }
 
@@ -191,7 +186,6 @@ void init_priority_queues() {
  */
 
 void init_test_procs() {
-    // TODO :: make this more robust
 //#ifdef NUM_TEST_PROCS 
     int i;
     int pid;
