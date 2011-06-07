@@ -7,15 +7,21 @@
  * Global kernel state variables.
  */ 
 
-#define NUM_PROCESSES 6
+#define NUM_PROCESSES 7
 #define NUM_PRIORITIES 4
 
 process_control_block* running_process;
 process_control_block processes[NUM_PROCESSES];
 
-process_control_block* priority_queue_heads[NUM_PRIORITIES];
-process_control_block* priority_queue_tails[NUM_PRIORITIES];
+/**
+ * Priority Queues
+ */
 
+process_control_block* p_q_ready_h[NUM_PRIORITIES];
+process_control_block* p_q_ready_t[NUM_PRIORITIES];
+
+process_control_block* p_q_done_h[NUM_PRIORITIES];
+process_control_block* p_q_done_t[NUM_PRIORITIES];
 /**
  * System calls :: primatives
  */

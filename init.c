@@ -55,8 +55,7 @@ void init(void* stack_start) {
 
 void init_processes(VOID* stack_start) {
     int* stack_iter;
-    process_control_block* current_process;
-
+    int i;
     //
     // Setup null process
     // Entry point is defined in system_processes.c 
@@ -83,71 +82,60 @@ void init_processes(VOID* stack_start) {
     processes[0].stack_size = 4096; 
     processes[0].entry = &process_null;
     processes[0].is_i_process = FALSE;
-    processes[0].next = &processes[1];
-
-    // TODO: Add all processes to process list
+    processes[0].next = NULL;
+    processes[0].previous = NULL;
 
     //
     // Iterate through all processes and setup their stack and state
     //
-
-    current_process = &processes[0];
-    while (current_process) {
-        printf_1("Loading up processes: %i\r\n", current_process->pid);
+    
+    // 
+    for (i = 0; i < NUM_PROCESSES; i++) {
         //
         // Setup the process' stack pointer. The stack grows downward,
         // so the stack pointer for each process must be set to the end of the
         // memory allocated for each process' stack.
         //        
         
-        current_process->stack = stack_start + current_process->stack_size;
+        processes[i].stack = stack_start + processes[i].stack_size;
 
         //
         // Setup the process' stack with an exception frame which points
         // to the entry point of the process.
         //
 
-        stack_iter = (int*)current_process->stack;
+        stack_iter = (int*)processes[i].stack;
 
         //
         // Exception frame used to start this process
         // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
 
-        *(--stack_iter) = (int)current_process->entry; // PC 
+        *(--stack_iter) = (int)processes[i].entry; // PC 
         *(--stack_iter) = 0x40000000; // SR
 
         //
         // Save the stack pointer
         // 
         
-        current_process->stack = (void*)stack_iter;
+        processes[i].stack = (void*)stack_iter;
 
         // 
         // The process is currently stopped
         // 
         
-        current_process->state = STATE_STOPPED;
+        processes[i].state = STATE_STOPPED;
 
         //
         // Update the location of the next stack and move to the next process
         // 
 
-        stack_start = stack_start + current_process->stack_size;
-        printf_1("Done: %i\r\n", current_process->pid);
-        current_process = current_process->next;
-        if (current_process->pid > 6) { 
-            // TODO :: FIX THIS PROPERLY
-            current_process = NULL;
-        } else {
-            printf_1("Next: %i\r\n", current_process->pid);
-        }
+        stack_start = stack_start + processes[i].stack_size;
     }
 
     //
     // No process is running
     //
-    printf_0("Done!\r\n");
     running_process = NULL;
 }
 
@@ -189,11 +177,11 @@ void init_priority_queues() {
     int i;
 
     for (i = 0; i < NUM_PRIORITIES; i++) {
-        priority_queue_heads[i] = NULL;
-        priority_queue_tails[i] = NULL;
+        p_q_ready_h[i] = NULL;
+        p_q_ready_t[i] = NULL;
     }
        
-    for (i = 0; i < NUM_TEST_PROCS-1; i++) {
+    for (i = 0; i < NUM_TEST_PROCS; i++) {
         k_priority_enqueue_process(&processes[i+1]);
     }
 }
@@ -206,19 +194,18 @@ void init_test_procs() {
     // TODO :: make this more robust
 //#ifdef NUM_TEST_PROCS 
     int i;
+    int pid;
     __REGISTER_TEST_PROCS_ENTRY__();
-    
+     
     for (i = 0; i < NUM_TEST_PROCS; i++) {
-        processes[i+1].pid = g_test_proc[i].pid;
-        processes[i+1].priority = g_test_proc[i].priority;
-        processes[i+1].stack_size = g_test_proc[i].sz_stack; 
-        processes[i+1].entry = g_test_proc[i].entry;
-        processes[i+1].is_i_process = FALSE;
-        if (i == NUM_TEST_PROCS - 1) {
-            processes[i+1].next = NULL;
-        } else {
-            processes[i+1].next = &processes[i+2];
-        }
+        pid = g_test_proc[i].pid;
+        processes[pid].pid = pid;
+        processes[pid].priority = g_test_proc[i].priority;
+        processes[pid].stack_size = g_test_proc[i].sz_stack; 
+        processes[pid].entry = g_test_proc[i].entry;
+        processes[pid].is_i_process = FALSE;
+        processes[pid].next = NULL;
+        processes[pid].previous= NULL;
     }
 //#endif
 }

@@ -242,15 +242,15 @@ void k_priority_enqueue_process(process_control_block* process) {
         goto k_priority_enqueue_process_done;
     }
     
-    if (!priority_queue_heads[process->priority]) {
+    if (!p_q_ready_h[process->priority]) {
 
         //
         // The queue is empty. Assign the head and tail pointers of the queue to
         // the process. 
         //
         
-        priority_queue_heads[process->priority] = process;
-        priority_queue_tails[process->priority] = process;
+        p_q_ready_h[process->priority] = process;
+        p_q_ready_t[process->priority] = process;
         process->previous = NULL;
         process->next = NULL;
     } else {
@@ -260,10 +260,10 @@ void k_priority_enqueue_process(process_control_block* process) {
         // tail and update the tail pointer.
         //
 
-        process->previous = priority_queue_tails[process->priority];
+        process->previous = p_q_ready_t[process->priority];
         process->next = NULL;
-        priority_queue_tails[process->priority]->next = process;
-        priority_queue_tails[process->priority] = process;
+        p_q_ready_t[process->priority]->next = process;
+        p_q_ready_t[process->priority] = process;
     }
 
 k_priority_enqueue_process_done:
@@ -288,29 +288,29 @@ process_control_block* k_priority_dequeue_process(int priority) {
     //
 
     if (priority >= 4 || priority < 0 
-        || priority_queue_heads[priority] == NULL) {
+        || p_q_ready_h[priority] == NULL) {
         return NULL;
     }
     
-    if (priority_queue_heads[priority]->next == NULL) {
+    if (p_q_ready_h[priority]->next == NULL) {
         // 
         // Only one item on the queue
         //
         
-        priority_queue_tails[priority] = NULL;
-        process = priority_queue_heads[priority];
-        priority_queue_heads[priority] = NULL;
+        p_q_ready_t[priority] = NULL;
+        process = p_q_ready_h[priority];
+        p_q_ready_h[priority] = NULL;
     } else {
         // 
         // Pop the head
         //
         
-        process = priority_queue_heads[priority];
-        priority_queue_heads[priority] = process->next;
-        priority_queue_heads[priority]->previous = NULL;
+        process = p_q_ready_h[priority];
+        p_q_ready_h[priority] = process->next;
+        p_q_ready_h[priority]->previous = NULL;
         process->next = NULL;
         process->previous = NULL;
-    }
+    }   
     return process;
 }
 
@@ -342,22 +342,22 @@ process_control_block* k_priority_queue_remove(int pid) {
         // Process is the only item in the queue.  
         //
         
-        priority_queue_heads[process->priority] = NULL;
-        priority_queue_tails[process->priority] = NULL;
+        p_q_ready_h[process->priority] = NULL;
+        p_q_ready_t[process->priority] = NULL;
     } else if (process->next == NULL) { 
         // 
         // Process is the tail
         //
         
         process->previous->next = NULL;
-        priority_queue_tails[process->priority] = process->previous;
+        p_q_ready_t[process->priority] = process->previous;
     } else if (process->previous == NULL) { 
         // 
         // Process is the tail
         //
         
         process->next->previous = NULL;
-        priority_queue_heads[process->priority] = process->next;
+        p_q_ready_h[process->priority] = process->next;
     } else {
         // 
         // Process is in the middle somewhere.
