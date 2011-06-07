@@ -38,7 +38,7 @@ int k_set_process_priority(int pid, int priority);
 
 int k_context_switch(process_control_block* process_control);
 int k_switch_process(int pid);
-
+process_control_block* k_get_next_process();
 /**
  * Internal queue calls 
  */

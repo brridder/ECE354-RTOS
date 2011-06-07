@@ -22,25 +22,44 @@ process_control_block** queues_t[] = {p_q_ready_t, p_q_done_t};
  */
 
 int k_release_processor() {
-    int current_priority;
+    int i;
     process_control_block* process;
     
 #ifdef DEBUG
     rtx_dbug_outs("k_release_processor()\r\n");
 #endif  
 
+    process = k_get_next_process();
+   
     //
-    // TODO: Make the decision process better
+    // If we still don't have a null process, copy done queues to ready queues
     //
     
-    current_priority = running_process->priority;
-    process = k_priority_dequeue_process(current_priority, QUEUE_READY);
-    while (process == NULL) {
-        current_priority = (current_priority + 1) % 4;
-        process = k_priority_dequeue_process(current_priority, QUEUE_READY);
+    if (process == NULL) {
+        for (i = 0; i < NUM_PRIORITIES; i++) {
+            queues_h[QUEUE_READY][i] = queues_h[QUEUE_DONE][i];
+            queues_t[QUEUE_READY][i] = queues_t[QUEUE_DONE][i];
+        }
+        process = k_get_next_process();
     }
+
     return k_switch_process(process->pid);
 }
+
+process_control_block* k_get_next_process() {
+    int i = 0;
+    process_control_block *process = NULL;
+
+    while(i < NUM_PRIORITIES) {
+        process = k_priority_dequeue_process(i, QUEUE_READY);
+        if (process == NULL) {
+            i++;
+        } else {
+            break;
+        }
+    }
+    return process;
+} 
 
 /**
  * @brief: Returns the priority of a process
@@ -100,7 +119,7 @@ int k_set_process_priority(int pid, int priority) {
     //
     process = k_priority_queue_remove(pid, QUEUE_READY);
     process->priority = priority;
-    k_priority_enqueue_process(process, QUEUE_READY);
+    k_priority_enqueue_process(process, QUEUE_DONE);
 
 k_set_process_priority_done:
     return RTX_SUCCESS;
@@ -229,7 +248,7 @@ int k_switch_process(int pid) {
         // Not running first time.
         //
         
-        k_priority_enqueue_process(running_process, QUEUE_READY);
+        k_priority_enqueue_process(running_process, QUEUE_DONE);
     } else {
         // 
         // Running first time, need to pop off the head of that process
