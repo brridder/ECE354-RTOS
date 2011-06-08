@@ -128,7 +128,17 @@ int k_set_process_priority(int pid, int priority) {
     //
 
     process = k_priority_queue_remove(pid, process->queue);
+
+#ifdef DEBUG
+    printf_1("  process is: %x\r\n", process);
+#endif
+
     process->priority = priority;
+
+#ifdef DEBUG
+    printf_1("  priority is %i, enqueing...\r\n", process->priority);
+#endif
+
     k_priority_enqueue_process(process, process->queue);
 
 k_set_process_priority_done:
@@ -372,17 +382,30 @@ process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
 
     process = &processes[pid];
 
+#ifdef DEBUG
+    printf_1("  process is: %x\r\n", process);
+    printf_1("  queue is: %i\r\n", process->queue);
+#endif
+
     if (process->next == NULL && process->previous == NULL) { 
         // 
         // Process is the only item in the queue.  
         //
         
+#ifdef DEBUG
+      rtx_dbug_outs("  removing only queue item\r\n");
+#endif
+
         queues_h[queue][process->priority] = NULL;
         queues_t[queue][process->priority] = NULL;
     } else if (process->next == NULL) { 
         // 
         // Process is the tail
         //
+
+#ifdef DEBUG
+      rtx_dbug_outs("  removing queue tail\r\n");
+#endif
 
         process->previous->next = NULL;
         queues_t[queue][process->priority] = process->previous;
@@ -391,6 +414,10 @@ process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
         // Process is the head
         //
       
+#ifdef DEBUG
+      rtx_dbug_outs("  removing queue head\r\n");
+#endif
+
         process->next->previous = NULL;
         queues_h[queue][process->priority] = process->next;
     } else {
@@ -398,9 +425,14 @@ process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
         // Process is in the middle somewhere.
         // 
 
+#ifdef DEBUG
+      rtx_dbug_outs("  removing item from middle of queue\r\n");
+#endif
+
         process->next->previous = process->previous;
         process->previous->next = process->next;
     }
+
 
     return process;
 }
