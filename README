@@ -1,0 +1,4 @@
+
+Part 2A documentation is located in docs/p2.pdf
+
+The Makefile generates a combined loader + rtx image located in full.s19.
