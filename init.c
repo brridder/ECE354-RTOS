@@ -130,6 +130,7 @@ void init_processes(VOID* stack_start) {
         // Update the location of the next stack and move to the next process
         // 
 
+        processes[i].queue = QUEUE_NONE;
         stack_start = stack_start + processes[i].stack_size;
     }
 
@@ -194,6 +195,7 @@ void init_test_procs() {
     for (i = 0; i < NUM_TEST_PROCS; i++) {
         pid = g_test_proc[i].pid;
         processes[pid].pid = pid;
+        processes[pid].priority = 0;
         processes[pid].priority = g_test_proc[i].priority;
         processes[pid].stack_size = g_test_proc[i].sz_stack; 
         processes[pid].entry = g_test_proc[i].entry;
