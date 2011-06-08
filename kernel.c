@@ -115,15 +115,18 @@ int k_set_process_priority(int pid, int priority) {
     // to change the priority queues.
     //
 
-    if (running_process->pid == pid) {
+    if (running_process) {
+      if (running_process->pid == pid) {
         running_process->priority = priority;
         goto k_set_process_priority_done;
-    } 
+      } 
+    }
    
     // 
     // Process isn't being run, so remove it from its current priority queue,
     // change the priority and enqueue it back onto the appropriate queue.
     //
+
     process = k_priority_queue_remove(pid, process->queue);
     process->priority = priority;
     k_priority_enqueue_process(process, process->queue);
@@ -366,7 +369,7 @@ process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
     if (pid < 0 || pid >= NUM_PROCESSES) {
         return NULL;     
     }
-    
+
     process = &processes[pid];
 
     if (process->next == NULL && process->previous == NULL) { 
@@ -380,24 +383,25 @@ process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
         // 
         // Process is the tail
         //
-        
+
         process->previous->next = NULL;
         queues_t[queue][process->priority] = process->previous;
     } else if (process->previous == NULL) { 
         // 
-        // Process is the tail
+        // Process is the head
         //
-        
+      
         process->next->previous = NULL;
         queues_h[queue][process->priority] = process->next;
     } else {
         // 
         // Process is in the middle somewhere.
         // 
-        
+
         process->next->previous = process->previous;
         process->previous->next = process->next;
     }
+
     return process;
 }
 
