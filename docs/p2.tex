@@ -128,14 +128,14 @@ are saved to registers as a mode switch to kernel mode needs to be performed.
 These values are retrieved after the mode switch. After the mode switch, a
 check is performed to ensure that the ID and priority is valid. If it isn't,
 \texttt{RTX\_ERROR} is returned. Otherwise, another check is made to see if the
-ID belongs to the currently running process. If this is true, the priority of
-the running process is simply changed and \texttt{RTX\_SUCCESS} is returned. If
-it is not the currently running process, the process is first removed from the
-appropriate queue based on its current priority level. Then the priority is
-updated to the new one and the process is enqueued onto the queue associated
-with the new priority with the same queue type as the one it was removed from.
-Finally, the function returns \texttt{RTX\_SUCCESS} to indicate successful
-completion.
+ID belongs to the currently running process and that there is a running
+process. If this is true, the priority of the running process is simply changed 
+and \texttt{RTX\_SUCCESS} is returned. If it is not the currently running 
+process, the process is first removed from the appropriate queue based on its 
+current priority level. Then the priority is updated to the new one and the 
+process is enqueued onto the queue associated with the new priority with the 
+same queue type as the one it was removed from. Finally, the function returns 
+\texttt{RTX\_SUCCESS} to indicate successful completion.
 
 \lstset{caption={Pseudocode for setting the process priority},
         label=setplisting}
