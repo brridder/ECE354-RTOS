@@ -1,134 +1,213 @@
 \documentclass[oneside]{article}
 \usepackage{listings}
 \begin{document}
-\lstset{language=C}
+\lstset{language=C, frame=single, breaklines=true}
 \section*{ECE 354: Project Part 2}
 \subsection*{RTX Initialization} 
-RTX Initialization does three main initializations, processes, priority queues, and interrupts. The process initialization is called in \texttt{init\_processes()}. All the test processes have a PCB setup for them which is added to the process of list of the kernel. This goes through all processes in the system and initializes their stack pointers and sets up an entry point to each process by putting an exception frame on its stack. At this point no process is running. When initializing priority queues all processes are added to their respective priority queue. When initializing interrupts an interrupt handler for the system call is installed at autovector level 0. 
+The RTX initialization happens in three phases: process, priority queues, 
+and interrupts. Pseudocode for all of these phases can be seen in
+Listing~\ref{initlisting}.
+
+The process initialization happens in \texttt{init\_processes()}. For each test
+process, a PCB is created based on the process table supplied by the test
+cases. This PCB is then added to the kernel's own process list but not added to
+a priority queue yet. Then, for each process in the kernel's process list, a
+stack pointer is setup and a exception frame is added to the process' new
+stack. The format/vector word portion of the exception frame is set to 0x4000
+to represent a 4 byte aligned stack and the SR portion is 0x0000. The program
+counter in this frame is set to the entry point of the process.
+
+Next, priority queues are initialized. The data structures are already
+allocated but are not initialized. To ensure proper operation, the queues are
+put into a consistant empty state. After the queues are setup, the processes
+are added to appropriate queue.
+
+Finally, the interrupts are setup. First, the vector base register (VBR) for the
+interrupts is set to memory location 0x10000000. Next, the soft interrupt for
+\texttt{system\_call()} is installed to the VBR at vector 0.
+
+\lstset{caption={Pseudocode for RTX initialization},label=initlisting}
 \begin{lstlisting}
-void init_processes(){
-    init_test_procs(){
-        for each test proc{
-            setup PCB;
-            add to proccess list;
-        }    
-    }
-
-    for each process in process list{
-        initialize stack pointer;
-        put exception frame on stack;
-    }
+void init() {
+    init_processes()
+    init_priority_queues()
+    init_interrupts()
 }
 
-void init_priority_queues(){
-    for each process{
-        add process to correct priority queue;
-    }
+void init_processes() {
+    init_test_processes()
+    add null process to process list
+    for each process in process list:
+        initialize stack pointer
+        push PC portion of exception frame onto the stack
+        push F/V and SR portions of exception frame onto the stack
 }
 
-void init_interrupts(){
-
-    initialize VBR into real memory;
-    install system call ISR at vector 0;
+void init_test_processes() {
+    for each test process: 
+        setup PCB
+        add to process list
 }
-    
 
+void init_priority_queues() {
+    for each process: 
+        add process to correct priority queue
+}
+
+void init_interrupts() {
+    initialize VBR to 0x10000000
+    install system call ISR at vector 0
+}
 \end{lstlisting}
 
 \subsection*{Release Processor}
-This function allows the kernel to make a scheduling decision by receiving alerts that a process is finished running for the time being. It is initially called in \texttt{rtx.c} and executed in \texttt{k\_release\_processor()} in \texttt{kernel.c}. Initially all process are in a stopped state (STATE\_STOPPED) until they are run. The priority queues with two queues for each priority level, a ready queue and a done queue. Initially all processes are in the ready queue for their respective priority level. After it has been run it is moved into the done queue for its priority level. After all processes have been run (all ready queues are empty) the done queues are copied to their respective ready queues and this process begins from the start.
+The release processor primitive is used to make a scheduling decision.
+Currently, this happens when the currently running process calls
+\texttt{release\_processor()}. After making a mode switch, the kernel makes a
+decision on the next process to execute. When this decision is made, a context
+switch is made to the selected process. See Listing~\ref{releaseproclisting}
+for a high level pseudocode representation of this primitive
+
+The kernel process decision currently uses several priority queues, four
+priority levels with two sub-queues. Every priority level has a \texttt{READY} and a
+\texttt{DONE} queue. Initially, all process in a priority level are in the
+priority level's \texttt{READY} queue and after execution they are moved to the
+\texttt{DONE} queue. In order to decide which process next, the kernel dequeues
+the next process on the highest non-empty \texttt{READY} priority queue. If all
+\texttt{READY} queues are empty, the \texttt{DONE} queues are moved to the
+\texttt{READY} queues and the kernel tries to select a process again.
+
+A context switch is made after the kernel selects the next process. If there is
+a process running, the registers are saved on the stack and it's stack pointer
+is moved to the PCB. It's state is marked as \texttt{STATE\_READY} to indicate
+it's state has been saved and is capable of executing again. Next, the selected
+process' stack pointer is restored. If the process is in the state
+\texttt{STATE\_STOPPED}, meaning it has never been run before, the kernel
+changes the state to \texttt{STATE\_RUNNING} and executes the process by
+returning from the exception. On the other hand, if the process has been run
+before, meaning that it is in the ready state, the data and address registers
+are restored from the stack. In this case, the method returns normally.
+Execution continues at the same it left off.
+
+\lstset{caption={Pseudocode for \texttt{release\_processor()}},
+        label=releaseproclisting}
 \begin{lstlisting}
-int release_processor(){
-    mode switch to kernel mode;
 
-    //retrieve next process from process queue
-    nextProcess = dequeue next process from highest 
-        non-empty priority queue;
-   
-    if(proccess is running){
+int release_processor() {
+    mode switch to kernel mode using system call exception
 
-        Enqueue running process to the appropriate done priority queue;
-     
-        perform context switch{
-            save all of the currently running 
-                processes registers to its stack;
-            save stack pointer to PCB;
-            set process.state = STATE_READY;
-        }
-    }
-        switch to nextProccess{
-            load the selected proccesses stack;
-            if(nextProcess.state == STATE_STOPPED){
-                //at this point the processes stack contains only an 
-                //exception frame pointing to entry point of processs                
-                rte;            
-            }
-        }
-    }
+    if all queues are empty:
+        move DONE queues to READY queues
+
+    dequeue next process from highest non-empty priority queue
+
+    if there is a currently running process:
+        save all of the registers on to the process stack
+        save stack pointer to PCB
+        set state to STATE_READY
+
+    restore next process stack pointer
+    if next process state is STOPPED:
+        return from exception using the next process exception frame
+    else if state is READY: 
+        restore registers from stack
     
-    
-
-    if (context switch is successful){
-        put RTX_SUCCESS into return value register;
-        mode switch to user mode;
-        return contents of return value register;
-    }else{
-        put RTX_ERROR into return value register;
-        mode switch to user mode;
-        return contents of return value register;
-    }
+    mode switch to user mode using system call exception frame
+    return RTX_SUCCESS
 }
-
 \end{lstlisting}
 
 \subsection*{Priority Set and Get}
-The get and set priority functions have the ability to read and update the priority of a process given a specific priority ID. The program switches to kernel mode, makes any necessary reads or writes, and then returns to user mode and gives the result. These functions are initially called in \texttt{rtx.c} with the majority of the work happening in \texttt{kernel.c}.
+The \texttt{set\_process\_priority(...)} and \texttt{get\_process\_priority(...)}
+primitives are used to set and get, respectively, the priorities of the 
+specified process ID. 
+
+Setting the process priority is shown as pseudocode in
+Listing~\ref{setplisting}. First, the values of the process ID and the priority
+are saved to registers as a mode switch to kernel mode needs to be performed.
+These values are retrieved after the mode switch. After the mode switch, a
+check is performed to ensure that the ID and priority is valid. If it isn't,
+\texttt{RTX\_ERROR} is returned. Otherwise, another check is made to see if the
+ID belongs to the currently running process. If this is true, the priority of
+the running process is simply changed and \texttt{RTX\_SUCCESS} is returned. If
+it is not the currently running process, the process is first removed from the
+appropriate queue based on its current priority level. Then the priority is
+updated to the new one and the process is enqueued onto the queue associated
+with the new priority with the same queue type as the one it was removed from.
+Finally, the function returns \texttt{RTX\_SUCCESS} to indicate successful
+completion.
+
+\lstset{caption={Pseudocode for setting the process priority},
+        label=setplisting}
 \begin{lstlisting}
 int set_process_priority(int pid, int priority) {
+    move pid and priority into seperate data registers
+    mode switch to kernel mode
     
-    read arguments into registers;
-    enter kernel mode via exception;
-    read variables from registers;
+    retreive pid and priority from the data registers
 
-    if(pid or priority is not valid){
-        put RTX_ERROR into return value register;
-        mode switch to user mode;
-        return contents of return value register;
-    }
+    if invalid PID or invalid priority:
+        return RTX_ERROR
+    
+    if running process is the process to change:
+        update running procces to the new priority
+    else:
+        dequeue process from appropriate queue
+        update priority of that process
+        enqueue process to its new priority queue
 
-    set priority to the priority argument value;
-    move process to correct process queue;
-    put RTX_SUCCESS into return value register;
-    mode switch to user mode;
-    return contents of return value register;
+    mode switch to user mode
+
+    return RTX_SUCCESS
 }
-    
-int get_process_priority(int pid){
-    
-    read arguments into registers;
-    enter kernel mode;
-    read variables from registers;
-    
-    if(pid is not valid){
-        put RTX_ERROR into return value register;
-        mode switch to user mode;
-        return contents of return value register;
-    }
+\end{lstlisting}
 
-    retrieve process from process list;
-    put process priority into return value register;
-    mode switch to user mode;
-    return contents of return value register;
+Compared to setting the priority level, getting a process' priority is straight
+forward as can be seen in Listing~\ref{getplisting}. Similar to setting the
+priority, the process ID is moved into a data register and system is switched 
+into kernel mode. After retrieving the process ID, a check is made to ensure
+that the process id is valid. If it is invalid \texttt{RTX\_ERROR} is returned.
+The calling process should perform a check of its own to ensure that
+the returned value is not a negative which indicates an error. Finally, the
+process is looked up on the process table and the priority is returned from
+that.
+
+\lstset{caption={Pseudocode for getting the process priority},
+        label=getplisting}
+\begin{lstlisting}
+int get_process_priority(int pid) {
+    move pid into a data register
+    mode switch to kernel mode
+
+    retreive pid from data register
+    
+    if the pid is invalid:
+        return RTX_ERROR
+
+    get process from the process table using pid
+    
+    mode switch to user mode
+
+    return process priority
 }
 \end{lstlisting}
 
 \subsection*{Null Process}
 The null process was implemented to adhere to the project specifications. It
-has a priority of four and a process ID of zero. The process method is defined in
-\texttt{system\_process.c} as an infinite loop that constantly calls
-\texttt{release\_processor()}. It is added to the process table through a call to
-\texttt{init\_null\_process()} found in init.c. This call should always be the first
-call made to add processes to the process tables as it assumes that it is at
-the 0th index of the process table array. This will be fine as the
-initialization of this process is handled by the main function of the RTX.
+has a priority of four and a process ID of zero. The process method is defined 
+as an infinite loop that constantly calls \texttt{release\_processor()}. It is 
+added to the process table through a call to \texttt{init\_processes(...)}. As
+this process is required to always be at process ID zero, care should be taken
+to ensure that this is not overwritten by other processes in the initialization
+methods. This process is outlined in Listing~\ref{nullplisting}.
+
+\lstset{caption={Pseudocode for the null process},
+        label=nullplisting}
+\begin{lstlisting}
+void process_null() {
+    while (true):
+        release_processor();
+}
+\end{lstlisting}
+
 \end{document}
