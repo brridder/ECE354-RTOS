@@ -1,5 +1,6 @@
 #include "kernel.h"
 
+#include "globals.h"
 #include "dbug.h"
 #include "process.h"
 #include "soft_interrupts.h"
@@ -150,12 +151,80 @@ k_set_process_priority_done:
     return RTX_SUCCESS;
 }
 
+//
+// MEMORY
+//
+
 void* k_request_memory_block() {
+    int block_index;
+    void* block;
+    
+    //
+    // Check if we have any free memory left. If not, return NULL
+    //
+
+    if (memory_head != NULL) {
+        //
+        // Allocate the block on the top of the free list, moving
+        // the head of the free list to the next available block
+        //
+
+        block = memory_head;
+        memory_head = (void*)*(UINT32*)block;
+
+        //
+        // Set the bit in the memory field corresponding to this block
+        // 
+
+        block_index = k_get_block_index(block);
+        memory_alloc_field |= (0x01 << block_index);
+
+        return block;
+    }
+    
     return NULL;
 }
 
 int k_release_memory_block(void* memory_block) {
-    return 0;
+    int block_index;
+
+    //
+    // Check the memory allocation field to see if this block has already
+    // been deallocated.
+    //
+    
+    block_index = k_get_block_index(memory_block);
+    if (memory_alloc_field & (0x01 << block_index)) {
+      *(int*)memory_block = (int)memory_head;
+      memory_head = memory_block;
+
+      //
+      // Update the allocated memory field
+      //
+
+      memory_alloc_field &= ((0x01 << block_index) ^ 0xFFFFFFFF);
+
+      //
+      // Success
+      //
+
+      return RTX_SUCCESS;
+    }
+
+    //
+    // This memory block is not currently allocated, failure
+    //
+    
+    return RTX_ERROR;
+}
+
+int k_get_block_index(void* addr) {
+    //
+    // The block index is its offset into the free memory region (in bytes)
+    // divided by the block size.
+    //
+ 
+    return ((int)addr - (int)&mem_end) / MEM_BLK_SIZE;
 }
 
 int k_send_message(int process_id, void* message_envelope) {    

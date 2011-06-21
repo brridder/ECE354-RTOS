@@ -7,6 +7,7 @@
  */
 
 #include "init.h"
+#include "globals.h"
 #include "dbug.h"
 #include "kernel.h"
 #include "system_processes.h"
@@ -16,14 +17,7 @@
 #include "rtx.h"
 #include "string.h"
 
-// MOVE THESE TO A GLOBAL FILE
 
-#define PROCESS_NUM_REGISTERS 15
-#define NUM_MEM_BLKS 32
-#define MEM_BLK_SIZE 128
-
-void* memory_head;
-unsigned long int memory_alloc_field;
 // 
 // Test processes info. Registration function provided by test script
 // The __REGISTER_TEST_PROCS_ENTRY__ symbol is in the linker scripts
@@ -44,6 +38,7 @@ void init(void* stack_start) {
 
     // Probably won't work this easily.
     stack_start = stack_start + NUM_MEM_BLKS*(MEM_BLK_SIZE/sizeof(void*));
+    mem_end = stack_start;
 #ifdef DEBUG
     rtx_dbug_outs(" done");
 #endif

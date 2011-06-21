@@ -134,7 +134,7 @@ void system_call() {
         //
         
         case CALL_REQUEST_MEM_BLK:
-            return_value = k_request_memory_block();
+            return_value = (int)k_request_memory_block();
             break;
 
         // 
@@ -142,7 +142,7 @@ void system_call() {
         //
 
         case CALL_RELEASE_MEM_BLK:
-            return_value = k_release_memory_block(args[0]); 
+            return_value = k_release_memory_block((void*)args[0]); 
             break;
 
         //
@@ -150,7 +150,7 @@ void system_call() {
         //
 
         case CALL_SEND_MESSAGE:
-            return_value = k_send_message(args[0], args[1]);
+            return_value = k_send_message(args[0], (void*)args[1]);
             break;
 
         //
@@ -158,7 +158,7 @@ void system_call() {
         //
         
         case CALL_RECEIVE_MESSAGE:
-            return_value = k_receive_message(args[0]);
+            return_value = (void*)k_receive_message((int*)args[0]);
             break;
 
         //

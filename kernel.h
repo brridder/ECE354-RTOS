@@ -2,19 +2,11 @@
 #define _KERNEL_H_
 
 #include "process.h"
-
-/**
- * Global kernel state variables.
- */ 
-
-#define NUM_PROCESSES 7
-#define NUM_PRIORITIES 4
-
+#include "globals.h"
 
 /**
  * Queue
  */
-
 
 process_control_block* running_process;
 process_control_block processes[NUM_PROCESSES];
@@ -40,6 +32,7 @@ void* k_receive_message(int* sender_id);
 int k_context_switch(process_control_block* process_control);
 process_control_block* k_get_next_process();
 
+int k_get_block_index(void* addr);
 /**
  * Internal queue calls 
  */
