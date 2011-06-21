@@ -27,6 +27,12 @@ int k_release_processor();
 int k_get_process_priority(int pid);
 int k_set_process_priority(int pid, int priority);
 
+void* k_request_memory_block();
+int k_release_memory_block(void* memory_block);
+
+int k_send_message(int process_id, void* message_envelope);
+void* k_receive_message(int* sender_id);
+
 /**
  * Internal kernel calls
  */

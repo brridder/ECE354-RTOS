@@ -29,17 +29,27 @@ int get_process_priority(int pid) {
 }
 
 void* request_memory_block() {
-    return NULL;
+    return (void*)do_system_call(CALL_REQUEST_MEM_BLK, (void*)0, 0);
 }
 
 int release_memory_block(void* memory_block) {
-    return 0;
+    int args[1];
+    args[0] = (int)memory_block;
+    
+    return do_system_call(CALL_RELEASE_MEM_BLK, args, 1);
 }
 
 int send_message(int process_id, void* message_envelope) {
-    return 0;
+    int args[2];
+    args[0] = process_id;
+    args[1] = (int)message_envelope;
+
+    return do_system_call(CALL_SEND_MESSAGE, args, 2);
 }
 
 void* receive_message(int* sender_id) {
-    return NULL;
+    int args[1];
+    args[0] = sender_id;
+
+    return (void*)do_system_call(CALL_RECEIVE_MESSAGE, args, 1);
 }

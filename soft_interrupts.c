@@ -128,9 +128,43 @@ void system_call() {
         case CALL_SET_PROCESS_PRIORITY:
             return_value = k_set_process_priority(args[0], args[1]);
             break;
+
+        //
+        // 3: request_memory_block()
+        //
+        
+        case CALL_REQUEST_MEM_BLK:
+            return_value = k_request_memory_block();
+            break;
+
+        // 
+        // 4: release_memory_block(void* memory_block)
+        //
+
+        case CALL_RELEASE_MEM_BLK:
+            return_value = k_release_memory_block(args[0]); 
+            break;
+
+        //
+        // 5: send_message(int process_id, void* message_envelope)
+        //
+
+        case CALL_SEND_MESSAGE:
+            return_value = k_send_message(args[0], args[1]);
+            break;
+
+        //
+        // 6: receive_message(int* sender_id)
+        //
+        
+        case CALL_RECEIVE_MESSAGE:
+            return_value = k_receive_message(args[0]);
+            break;
+
         //
         // Invalid call ID
-
+        //
+        
         default:
             // TODO: Handle this case
             rtx_dbug_outs("Error: Invalid system call ID\r\n");

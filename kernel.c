@@ -150,6 +150,23 @@ k_set_process_priority_done:
     return RTX_SUCCESS;
 }
 
+void* k_request_memory_block() {
+    return NULL;
+}
+
+int k_release_memory_block(void* memory_block) {
+    return 0;
+}
+
+int k_send_message(int process_id, void* message_envelope) {    
+    return 0;
+}
+
+void* k_receive_message(int* sender_id) {
+    return NULL;
+}
+
+
 /**
  * @brief: Performs a context switch. After the context switch, the 
  *         process begins executing in user mode.
