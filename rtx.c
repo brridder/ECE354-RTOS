@@ -27,3 +27,19 @@ int get_process_priority(int pid) {
 
     return do_system_call(CALL_GET_PROCESS_PRIORITY, args, 1);
 }
+
+void* request_memory_block() {
+    return NULL;
+}
+
+int release_memory_block(void* memory_block) {
+    return 0;
+}
+
+int send_message(int process_id, void* message_envelope) {
+    return 0;
+}
+
+void* receive_message(int* sender_id) {
+    return NULL;
+}

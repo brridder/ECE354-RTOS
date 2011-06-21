@@ -4,12 +4,11 @@ include Makefile.inc
 DIRS=loader
 ASM=start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
-DEPS=dbug.h memory.h kernel.h soft_interrupts.h rtx.h system_processes.h init.h string.h process.h loader/rtx_test.h
-OBJS=dbug.o memory.o kernel.o soft_interrupts.o rtx.o system_processes.o init.o string.o main.o 
+DEPS=dbug.h kernel.h soft_interrupts.h rtx.h system_processes.h init.h string.h process.h loader/rtx_test.h
+OBJS=dbug.o kernel.o soft_interrupts.o rtx.o system_processes.o init.o string.o main.o 
 
 all: full.s19
 
-	
 
 # Note, GCC builds things in order, it's important to put the
 # ASM first, so that it is located at the beginning of our program.

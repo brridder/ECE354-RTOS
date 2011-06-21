@@ -16,9 +16,14 @@
 #include "rtx.h"
 #include "string.h"
 
+// MOVE THESE TO A GLOBAL FILE
 
 #define PROCESS_NUM_REGISTERS 15
+#define NUM_MEM_BLKS 32
+#define MEM_BLK_SIZE 128
 
+void* memory_head;
+unsigned long int memory_alloc_field;
 // 
 // Test processes info. Registration function provided by test script
 // The __REGISTER_TEST_PROCS_ENTRY__ symbol is in the linker scripts
@@ -31,6 +36,17 @@ extern void __REGISTER_TEST_PROCS_ENTRY__();
  */
 
 void init(void* stack_start) {
+
+#ifdef DEBUG
+    rtx_dbug_outs("Initilizating memory...");
+#endif
+    init_memory(stack_start);
+
+    // Probably won't work this easily.
+    stack_start = stack_start + NUM_MEM_BLKS*(MEM_BLK_SIZE/sizeof(void*));
+#ifdef DEBUG
+    rtx_dbug_outs(" done");
+#endif
 #ifdef DEBUG
     rtx_dbug_outs("Initilizating processes...");
 #endif
@@ -60,21 +76,7 @@ void init_processes(VOID* stack_start) {
     // Setup null process
     // Entry point is defined in system_processes.c 
     //
-   /* 
-    processes[NUM_TEST_PROCS + 2].pid = NUM_TEST_PROCS + 2;
-    processes[NUM_TEST_PROCS + 2].priority = 3;
-    processes[NUM_TEST_PROCS + 2].stack_size = 4096; 
-    processes[NUM_TEST_PROCS + 2].entry = &process_test_get_priority;
-    processes[NUM_TEST_PROCS + 2].is_i_process = FALSE;
-    processes[NUM_TEST_PROCS + 2].next = NULL;
-
-    processes[NUM_TEST_PROCS + 1].pid = NUM_TEST_PROCS + 1;
-    processes[NUM_TEST_PROCS + 1].priority = 3;
-    processes[NUM_TEST_PROCS + 1].stack_size = 4096; 
-    processes[NUM_TEST_PROCS + 1].entry = &process_test;
-    processes[NUM_TEST_PROCS + 1].is_i_process = FALSE;
-    processes[NUM_TEST_PROCS + 1].next = &processes[2];
-   */ 
+   
     init_test_procs();
 
     processes[0].pid = 0;
@@ -187,7 +189,6 @@ void init_priority_queues() {
  */
 
 void init_test_procs() {
-//#ifdef NUM_TEST_PROCS 
     int i;
     int pid;
     __REGISTER_TEST_PROCS_ENTRY__();
@@ -203,7 +204,45 @@ void init_test_procs() {
         processes[pid].next = NULL;
         processes[pid].previous = NULL;
     }
-//#endif
+}
+
+void init_memory(void* memory_start) {
+    int i;
+    int *current_block;
+    
+    //
+    // The head pointer starts at the start of free memory plus
+    // the space required for all our memory blocks (32 blocks * 128 bytes).
+    // Since this is pointer arithmetic, adding 1 adds 4 bytes.
+    //
+
+    memory_head = &memory_start + ((NUM_MEM_BLKS-1)*NUM_MEM_BLKS);
+
+    //
+    // Iterate through the memory pool and setup the free list.
+    // The first 4 bytes of each memory block contain the address
+    // of the next free memory block.
+    //
+    // When decrementing the pointer, block_size/4 must be used (pointer math).
+    // When decrementing the valud pointed to by the iterator, block_size 
+    // can be used (integer math).
+    //
+ 
+    current_block = (int*)memory_head + MEM_BLK_SIZE/sizeof(void*);
+    for (i = 0; i < NUM_MEM_BLKS; i++) {
+        current_block -= MEM_BLK_SIZE/sizeof(void*);
+        *current_block = (int)current_block - MEM_BLK_SIZE;
+    }
+    *current_block = NULL;
+
+    //
+    // Setup the memory allocation field. Each bit in this field
+    // represents one block in the pool. A value of 0 means 
+    // the block has not been allocated, 1 means the block has been allocated.
+    //
+    
+    memory_alloc_field = 0;
+
 }
 
 /**
@@ -220,10 +259,10 @@ void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
     // TODO: Implement required OS functions
     //
      
-    //g_test_fixture.send_message = send_message;
-    //g_test_fixture.receive_message = receive_message;
-    //g_test_fixture.request_memory_block = request_memory_block;
-    //g_test_fixture.release_memory_block = release_memory_block;
+    g_test_fixture.send_message = send_message;
+    g_test_fixture.receive_message = receive_message;
+    g_test_fixture.request_memory_block = request_memory_block;
+    g_test_fixture.release_memory_block = release_memory_block;
     //g_test_fixture.delayed_send = delayed_send;
 
     rtx_dbug_outs((CHAR *)"rtx: leaving register_rtx()\r\n");
