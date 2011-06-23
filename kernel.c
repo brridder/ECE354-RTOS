@@ -31,7 +31,8 @@ int k_release_processor() {
     rtx_dbug_outs("k_release_processor()\r\n");
 #endif
 
-    k_priority_enqueue_process(running_process, QUEUE_DONE);
+    // QUEUE_DONE if doing priority like normally would.
+    k_priority_enqueue_process(running_process, QUEUE_READY); 
  
     process = k_get_next_process();
    
