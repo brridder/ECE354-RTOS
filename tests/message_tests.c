@@ -18,22 +18,23 @@
 /* third party dummy test process 1 */ 
 void test1()
 {
-    message_envelope message;
+    message_envelope* message;
 
-    rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");
+    rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");      
 
-    message.data[0] = 50;
-    message.data[1] = 51;
-    message.data[2] = 52;
-    message.data[3] = 53;
-
-    send_message(2, &message);
-      
     while (1) 
     {
-        g_test_fixture.release_processor();
+       message = (message_envelope*)request_memory_block();
+       if (message != NULL) {
+           message->data[0] = 50;
+           message->data[1] = 51;
+           message->data[2] = 52;
+           message->data[3] = 53;
 
-        send_message(2, &message);
+          send_message(2, message);
+        }
+
+        g_test_fixture.release_processor();
     }
 }
 
@@ -43,9 +44,6 @@ void test2()
     message_envelope* message_ptr;
 
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
-
-    message_ptr = (message_envelope*)receive_message(1);
-    printf_1("Message received!, %x\r\n", message_ptr->data[0]);
     
     while (1) 
     {
@@ -53,6 +51,7 @@ void test2()
 
         message_ptr = (message_envelope*)receive_message(1);
         printf_1("Message received!, %x\r\n", message_ptr->data[0]);
+        release_memory_block(message_ptr);
     }
 }
 /* third party dummy test process 3 */ 
