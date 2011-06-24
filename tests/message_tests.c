@@ -13,29 +13,46 @@
 #include "rtx_test.h"
 #include "../dbug.h"
 #include "../string.h"
+#include "../rtx.h"
 
 /* third party dummy test process 1 */ 
 void test1()
 {
+    message_envelope message;
+
     rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");
-    
+
+    message.data[0] = 50;
+    message.data[1] = 51;
+    message.data[2] = 52;
+    message.data[3] = 53;
+
+    send_message(2, &message);
+      
     while (1) 
     {
-        /* execute a rtx primitive to test */
-        printf_0("1\r\n");
         g_test_fixture.release_processor();
+
+        send_message(2, &message);
     }
 }
 
 /* third party dummy test process 2 */ 
 void test2()
 {
+    message_envelope* message_ptr;
+
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
+
+    message_ptr = (message_envelope*)receive_message(1);
+    printf_1("Message received!, %x\r\n", message_ptr->data[0]);
+    
     while (1) 
     {
-        printf_0("2\r\n");
-        /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
+
+        message_ptr = (message_envelope*)receive_message(1);
+        printf_1("Message received!, %x\r\n", message_ptr->data[0]);
     }
 }
 /* third party dummy test process 3 */ 
@@ -44,8 +61,6 @@ void test3()
     rtx_dbug_outs((CHAR *)"rtx_test: test3\r\n");
     while (1) 
     {
-        /* execute a rtx primitive to test */
-        printf_0("3\r\n");
         g_test_fixture.release_processor();
     }
 }
@@ -56,8 +71,6 @@ void test4()
     rtx_dbug_outs((CHAR *)"rtx_test: test4\r\n");
     while (1) 
     {
-        printf_0("4\r\n");
-        /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
 }
@@ -67,8 +80,6 @@ void test5()
     rtx_dbug_outs((CHAR *)"rtx_test: test5\r\n");
     while (1) 
     {
-        printf_0("5\r\n");
-        /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
 }
@@ -78,8 +89,6 @@ void test6()
     rtx_dbug_outs((CHAR *)"rtx_test: test6\r\n");
     while (1) 
     {
-        printf_0("6\r\n");
-        /* execute a rtx primitive to test */
         g_test_fixture.release_processor();
     }
 }

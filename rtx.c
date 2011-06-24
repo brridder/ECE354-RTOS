@@ -47,9 +47,9 @@ int send_message(int process_id, void* message_envelope) {
     return do_system_call(CALL_SEND_MESSAGE, args, 2);
 }
 
-void* receive_message(int* sender_id) {
+void* receive_message(int sender_id) {
     int args[1];
-    args[0] = (int*)sender_id;
+    args[0] = sender_id;
 
     return (void*)do_system_call(CALL_RECEIVE_MESSAGE, args, 1);
 }
