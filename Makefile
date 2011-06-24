@@ -6,7 +6,7 @@ ASM=start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 DEPS=dbug.h kernel.h soft_interrupts.h rtx.h system_processes.h init.h string.h process.h loader/rtx_test.h
 OBJS=dbug.o kernel.o soft_interrupts.o rtx.o system_processes.o init.o string.o main.o
-TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19
+TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19
 
 all: tests 
 
@@ -22,8 +22,8 @@ rtx_loader.s19:
 #rtx_test_dummy.s19:
 #	cd tests; $(MAKE) rtx_test_dummy.s19;
 
-priority_tests.s19:
-	cd tests: $(MAKE) priority_tests.s19;
+#priority_tests.s19:
+	#cd tests: $(MAKE) priority_tests.s19;
 
 main.s19: rtx.s19 rtx_loader.s19
 	$(ECHO) Merging rtx with loader...

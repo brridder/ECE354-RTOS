@@ -3,7 +3,7 @@
 
 #include "process.h"
 #include "globals.h"
-
+#include "rtx.h"
 /**
  * Queue
  */
@@ -22,7 +22,7 @@ int k_set_process_priority(int pid, int priority);
 void* k_request_memory_block();
 int k_release_memory_block(void* memory_block);
 
-int k_send_message(int process_id, void* message_envelope);
+int k_send_message(int process_id, message_envelope* message);
 void* k_receive_message(int* sender_id);
 
 /**

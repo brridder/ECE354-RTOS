@@ -9,6 +9,20 @@
 #define _RTX_H_
 
 /*
+ * Message Envelope
+ */
+
+typedef struct _message_envelope {
+    int sender_pid;
+    int receiver_pid;
+    int message_type;
+    struct _message_envelope* next;
+    struct _message_envelope* prev;
+    unsigned char padding[44];
+    unsigned char data[64];
+} message_envelope;
+
+/*
  * Processor Management
  */
 

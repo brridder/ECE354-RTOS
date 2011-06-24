@@ -5,12 +5,13 @@
 #include "process.h"
 #include "soft_interrupts.h"
 #include "string.h"
-
+#include "rtx.h"
 //#define DEBUG_MEM
 
 void* memory_head;
 unsigned long int memory_alloc_field;
 void* mem_end;
+
 /**
  * Priority Queues
  */
@@ -24,6 +25,8 @@ process_control_block* p_q_done_t[NUM_PRIORITIES];
 process_control_block** queues_h[] = {p_q_ready_h, p_q_done_h};
 process_control_block** queues_t[] = {p_q_ready_t, p_q_done_t};
 
+message_envelope* message_queues_h[NUM_PROCESSES];
+message_envelope* message_queues_t[NUM_PROCESSES];
 /**
  * @brief: System call used by a running process to release the processor.
  */
@@ -242,12 +245,54 @@ int k_get_block_index(void* addr) {
     return ((int)addr - (int)mem_end) / MEM_BLK_SIZE;
 }
 
-int k_send_message(int process_id, void* message_envelope) {    
-    return 0;
+int k_send_message(int process_id, message_envelope* message) {
+    
+    message->sender_pid = running_process->pid;
+    message->receiver_pid = process_id;
+    
+    if (message_queues_h[process_id] == NULL) {
+        // 
+        // Empty message queue.
+        //
+        message_queues_h[process_id] = message;
+        message_queues_t[process_id] = message;
+        message->prev = NULL;
+        message->next = NULL;
+    } else {
+        //
+        // Message queue is not empty. Append to tail.
+        //
+        
+        message->prev = message_queues_t[process_id];
+        message->next = NULL;
+        message_queues_t[process_id]->next = message;
+        message_queues_t[process_id] = message;
+    }
+    return RTX_SUCCESS; // QUEUE IS NEVER FULL
 }
 
 void* k_receive_message(int* sender_id) {
-    return NULL;
+    message_envelope* message;
+
+    message = message_queues_h[running_process->pid];
+    
+    if (message->next == NULL) {
+        //
+        // Only thing on queue
+        //
+        message_queues_t[running_process->pid] = NULL;
+        message_queues_h[running_process->pid] = NULL;
+    } else {
+        //
+        // Pop head
+        //
+        message_queues_h[running_process->pid] = message->next;
+        message_queues_h[running_process->pid]->prev = NULL;
+        message->next = NULL;
+        message->prev = NULL;
+    }
+
+    return message;
 }
 
 
