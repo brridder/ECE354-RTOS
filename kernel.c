@@ -6,6 +6,11 @@
 #include "soft_interrupts.h"
 #include "string.h"
 
+//#define DEBUG_MEM
+
+void* memory_head;
+unsigned long int memory_alloc_field;
+void* mem_end;
 /**
  * Priority Queues
  */
@@ -163,7 +168,10 @@ void* k_request_memory_block() {
     //
     // Check if we have any free memory left. If not, return NULL
     //
-
+    
+#ifdef DEBUG_MEM
+    printf_1("MEMORY HEAD: %x\n\r", memory_head);
+#endif
     if (memory_head != NULL) {
         //
         // Allocate the block on the top of the free list, moving
@@ -179,7 +187,9 @@ void* k_request_memory_block() {
 
         block_index = k_get_block_index(block);
         memory_alloc_field |= (0x01 << block_index);
-
+#ifdef DEBUG_MEM
+    printf_1("MEMORY ALLOC FIELD: %x\r\n", memory_alloc_field);
+#endif
         return block;
     }
     
@@ -193,8 +203,12 @@ int k_release_memory_block(void* memory_block) {
     // Check the memory allocation field to see if this block has already
     // been deallocated.
     //
-    
+    //
+#ifdef DEBUG_MEM
+    printf_1("Release_memory: MEMORY BLOCK = %x\r\n", memory_block);
+#endif
     block_index = k_get_block_index(memory_block);
+    
     if (memory_alloc_field & (0x01 << block_index)) {
       *(int*)memory_block = (int)memory_head;
       memory_head = memory_block;
@@ -225,7 +239,7 @@ int k_get_block_index(void* addr) {
     // divided by the block size.
     //
  
-    return ((int)addr - (int)&mem_end) / MEM_BLK_SIZE;
+    return ((int)addr - (int)mem_end) / MEM_BLK_SIZE;
 }
 
 int k_send_message(int process_id, void* message_envelope) {    

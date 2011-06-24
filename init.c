@@ -17,7 +17,9 @@
 #include "rtx.h"
 #include "string.h"
 
-
+extern void* memory_head;
+extern unsigned long int memory_alloc_field;
+extern void* mem_end;
 // 
 // Test processes info. Registration function provided by test script
 // The __REGISTER_TEST_PROCS_ENTRY__ symbol is in the linker scripts
@@ -37,8 +39,7 @@ void init(void* stack_start) {
     init_memory(stack_start);
 
     // Probably won't work this easily.
-    stack_start = stack_start + NUM_MEM_BLKS*(MEM_BLK_SIZE/sizeof(void*));
-    mem_end = stack_start;
+    stack_start = memory_head;
 #ifdef DEBUG
     rtx_dbug_outs(" done");
 #endif
@@ -207,36 +208,53 @@ void init_memory(void* memory_start) {
     
     //
     // The head pointer starts at the start of free memory plus
-    // the space required for all our memory blocks (32 blocks * 128 bytes).
+    // the space required for all our memory blocks
     // Since this is pointer arithmetic, adding 1 adds 4 bytes.
     //
+    
+    mem_end = memory_start;
+    memory_head = (int)memory_start + ((NUM_MEM_BLKS-1)*MEM_BLK_SIZE);
 
-    memory_head = &memory_start + ((NUM_MEM_BLKS-1)*NUM_MEM_BLKS);
-
+#ifdef DEBUG_MEM
+    printf_1("MEMORY HEAD: %x\n\r", memory_head);
+#endif
     //
     // Iterate through the memory pool and setup the free list.
     // The first 4 bytes of each memory block contain the address
     // of the next free memory block.
     //
     // When decrementing the pointer, block_size/4 must be used (pointer math).
-    // When decrementing the valud pointed to by the iterator, block_size 
+    // When decrementing the value pointed to by the iterator, block_size 
     // can be used (integer math).
     //
- 
-    current_block = (int*)memory_head + MEM_BLK_SIZE/sizeof(void*);
+   
+    current_block = (int*)memory_head;
+    for (i = 0; i < NUM_MEM_BLKS; i++) {
+        *current_block = (int)current_block - MEM_BLK_SIZE;
+        if (i == NUM_MEM_BLKS - 1) {
+            *current_block = NULL;
+            break;
+        }
+        current_block = *current_block;
+    }
+
+
+
+/* 
+    current_block = (int)memory_head + MEM_BLK_SIZE/sizeof(void*);
     for (i = 0; i < NUM_MEM_BLKS; i++) {
         current_block -= MEM_BLK_SIZE/sizeof(void*);
         *current_block = (int)current_block - MEM_BLK_SIZE;
     }
     *current_block = NULL;
-
+*/
     //
     // Setup the memory allocation field. Each bit in this field
     // represents one block in the pool. A value of 0 means 
     // the block has not been allocated, 1 means the block has been allocated.
     //
     
-    memory_alloc_field = 0;
+    memory_alloc_field = 0x0000;
 
 }
 

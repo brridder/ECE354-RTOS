@@ -22,13 +22,17 @@ void test1() {
     rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");
 
     set_process_priority(1, 0);
+    printf_1("Getting priority for PID 1: %i\n\r", get_process_priority(1));
     set_process_priority(2, 0);
+    printf_1("Getting priority for PID 2: %i\n\r", get_process_priority(2));
     while (1) {
         i++;
         if (i >= 5) {
-            set_process_priority(1,4);
-            set_process_priority(1,4);
-            printf_0("Process starvation complete");
+            set_process_priority(1,3);
+            printf_1("Getting priority for PID 1: %i\n\r", get_process_priority(1));
+            set_process_priority(2,3);
+            printf_1("Getting priority for PID 2: %i\n\r", get_process_priority(2));
+            printf_0("Process starvation complete\r\n");
         }
         g_test_fixture.release_processor();
     }
@@ -95,7 +99,7 @@ void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
 
     for (i = 0; i < NUM_TEST_PROCS; i++ ) {
         g_test_proc[i].pid = i + 1;
-        g_test_proc[i].priority = 3;
+        g_test_proc[i].priority = 2;
         g_test_proc[i].sz_stack = 2048;
     }
     g_test_proc[0].entry = test1;

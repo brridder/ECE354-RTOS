@@ -51,6 +51,5 @@ build_tests:
 
 tests: main.s19 build_tests
 	$(ECHO) Making tests
-	@for test in $(TESTS); do ( $(ECHO) Making full_$$test; \
-	$(MERGE) full_$$test tests/$$test main.s19; \
+	@for test in $(TESTS); do ( $(MERGE) full_$$test tests/$$test main.s19; \
 	chmod u+x full_$$test); done

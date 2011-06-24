@@ -15,8 +15,5 @@
 #define NUM_MEM_BLKS 32
 #define MEM_BLK_SIZE 128
 
-void* memory_head;
-unsigned long int memory_alloc_field;
-void* mem_end;
 
 #endif

@@ -22,11 +22,12 @@ int do_system_call(int call_id, int* args, int num_args) {
     //
 
     asm("move.l %d0, -(%sp)");
+    asm("move.l %d4, -(%sp)");
     asm("move.l %d1, -(%sp)");
     asm("move.l %d2, -(%sp)");
     asm("move.l %d3, -(%sp)");
     
-    asm("move.l %0, %%d0" : : "r" (call_id) : "%%d0");
+    asm("move.l %0, %%d4" : : "m" (call_id) : "%%d0");
 
     // 
     // Nested if since we can't change the strings at run time in a for loop
@@ -50,6 +51,7 @@ int do_system_call(int call_id, int* args, int num_args) {
     asm("move.l (%sp)+, %d3");
     asm("move.l (%sp)+, %d2");
     asm("move.l (%sp)+, %d1");
+    asm("move.l (%sp)+, %d4");
     asm("move.l (%sp)+, %d0");
 
     return return_value;
@@ -81,7 +83,7 @@ void system_call() {
     // Get call ID and arguments.
     // 
 
-    asm("move.l %%d0, %0" : "=r" (call_id));
+    asm("move.l %%d4, %0" : "=r" (call_id));
     asm("move.l %%d1, %0" : "=r" (args[0]));
     asm("move.l %%d2, %0" : "=r" (args[1]));
     asm("move.l %%d3, %0" : "=r" (args[2]));
@@ -103,6 +105,7 @@ void system_call() {
     asm("move.l %d7, -(%sp)"); // D7
 
     return_value = -1;
+
     switch(call_id) {
 
         //
