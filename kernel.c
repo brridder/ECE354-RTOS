@@ -155,7 +155,6 @@ int k_set_process_priority(int pid, int priority) {
     printf_1("  priority is %i, enqueing...\r\n", process->priority);
 #endif
 
-
 k_set_process_priority_done:
     return RTX_SUCCESS;
 }
@@ -237,6 +236,7 @@ int k_release_memory_block(void* memory_block) {
 }
 
 int k_get_block_index(void* addr) {
+
     //
     // The block index is its offset into the free memory region (in bytes)
     // divided by the block size.
