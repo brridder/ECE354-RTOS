@@ -50,4 +50,4 @@ message_tests.s19: $(MESSAGE_TESTS_OBJ) message_tests.o
 
 .PHONY: clean
 clean:
-	rm -f *.bin *.s19 *.o *.map *.lst 
+	rm -f *.bin *.o *.map *.lst `find *.s19 -type f | grep -v '^provided_'`
