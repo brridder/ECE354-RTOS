@@ -12,7 +12,7 @@ process_control_block* running_process;
 process_control_block processes[NUM_PROCESSES];
 
 /**
- * System calls :: primatives
+ * System call primitives
  */
 
 int k_release_processor();
