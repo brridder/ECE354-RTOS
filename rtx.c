@@ -6,8 +6,8 @@
  */
  
 #include "rtx.h"
-#include "dbug.h"
-#include "kernel.h"
+#include "./lib/dbug.h"
+#include "./core/kernel.h"
 #include "soft_interrupts.h"
 
 int release_processor() {

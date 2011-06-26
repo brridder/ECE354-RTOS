@@ -11,7 +11,7 @@
  */
 
 #include "rtx_test.h"
-#include "../dbug.h"
+#include "../lib/dbug.h"
 
 /* the RTX entry point, see rtx_loader.ld */
 extern void __RTX_ENTRY__();    

@@ -4,8 +4,8 @@ include Makefile.inc
 DIRS=loader tests
 ASM=start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
-DEPS=dbug.h kernel.h soft_interrupts.h rtx.h system_processes.h init.h string.h process.h loader/rtx_test.h
-OBJS=dbug.o kernel.o soft_interrupts.o rtx.o system_processes.o init.o string.o main.o
+DEPS=./lib/dbug.h core/kernel.h soft_interrupts.h rtx.h ./processes/system_processes.h init.h ./lib/string.h process.h loader/rtx_test.h
+OBJS=./lib/dbug.o core/kernel.o soft_interrupts.o rtx.o ./processes/system_processes.o init.o ./lib/string.o main.o
 TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19
 
 all: tests 

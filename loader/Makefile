@@ -5,7 +5,7 @@ ASM=./start.s
 LDFLAGS_RTX_LOADER = -Trtx_loader.ld -Wl,-Map=rtx_loader.map
 LDFLAGS_RTX_TEST = -Trtx_test.ld -Wl,-Map=rtx_test.map
 
-RTX_LOADER_OBJS = ../dbug.o rtx_loader.o 
+RTX_LOADER_OBJS = ../lib/dbug.o rtx_loader.o 
 
 all: rtx_loader.s19
 
