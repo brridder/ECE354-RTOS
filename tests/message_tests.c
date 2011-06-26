@@ -18,22 +18,21 @@
 /* third party dummy test process 1 */ 
 void test1()
 {
+    int sender_id;
     void * message;
 
     rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");      
+    //
+    // First: receive message from PID 2. Should block until process 2 is ran
+    // Second: send message to PID 2.
+    //
+    while (1) {
+        message = g_test_fixture.receive_message(&sender_id);
+        g_test_fixture.release_memory_block(message);
 
-    while (1) 
-    {
-       message = g_test_fixture.request_memory_block();
-       if (message != NULL) {
-           //message->data[0] = 50;
-           //message->data[1] = 51;
-           //message->data[2] = 52;
-           //message->data[3] = 53;
-
-          send_message(2, message);
-        }
-
+        message = g_test_fixture.request_memory_block();
+        send_message(2, message);
+        printf_0("Process 1 done");
         g_test_fixture.release_processor();
     }
 }
@@ -42,15 +41,19 @@ void test1()
 void test2()
 {
     int sender_id;
-    void* message_ptr;
+    void* message;
 
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
     
     while (1) 
     {
-        message_ptr = g_test_fixture.receive_message(&sender_id);
-        printf_1("Message received!, %i\r\n", sender_id);
-        g_test_fixture.release_memory_block(message_ptr);
+        message = g_test_fixture.request_memory_block();
+        send_message(1, message);
+
+        message = g_test_fixture.receive_message(&sender_id);
+        g_test_fixture.release_memory_block(message);
+        printf_0("Process 2 done");
+
         g_test_fixture.release_processor();
     }
 }
