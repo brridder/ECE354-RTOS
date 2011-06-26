@@ -1,10 +1,8 @@
 #include "rtx_inc.h"
 #include "dbug.h"
-#include "memory.h"
 #include "init.h"
 #include "kernel.h"
 #include "rtx.h"
-//#include "loader/rtx_test.h"
 
 extern void* __end;
 extern void __REGISTER_TEST_PROCS_ENTRY__();
