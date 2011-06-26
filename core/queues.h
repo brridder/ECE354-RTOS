@@ -1,7 +1,7 @@
 #ifndef _QUEUES_H_
 #define _QUEUES_H_
 
-#include "rtx.h"
+#include "../rtx.h"
 #include "process.h"
 
 void queue_enqueue_p(process_queue* queue, process_control_block* process);

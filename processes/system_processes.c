@@ -6,10 +6,10 @@
  */
 
 #include "system_processes.h"
-#include "rtx.h"
-#include "kernel.h"
-#include "dbug.h"
-#include "string.h"
+#include "../rtx.h"
+#include "../core/kernel.h"
+#include "../lib/dbug.h"
+#include "../lib/string.h"
 
 /**
  * @brief: null_process that does nothing

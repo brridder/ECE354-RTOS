@@ -1,12 +1,11 @@
 #include "kernel.h"
-
-#include "globals.h"
-#include "dbug.h"
 #include "process.h"
 #include "soft_interrupts.h"
-#include "string.h"
-#include "rtx.h"
 #include "queues.h"
+#include "../globals.h"
+#include "../lib/dbug.h"
+#include "../lib/string.h"
+#include "../rtx.h"
 
 void* memory_head;
 unsigned long int memory_alloc_field;

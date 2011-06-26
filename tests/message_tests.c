@@ -11,8 +11,8 @@
  */
 
 #include "rtx_test.h"
-#include "../dbug.h"
-#include "../string.h"
+#include "../lib/dbug.h"
+#include "../lib/string.h"
 #include "../rtx.h"
 
 /* third party dummy test process 1 */ 
@@ -32,7 +32,7 @@ void test1()
 
         message = g_test_fixture.request_memory_block();
         send_message(2, message);
-        printf_0("Process 1 done");
+        printf_0("Process 1 done\r\n");
         g_test_fixture.release_processor();
     }
 }
@@ -52,7 +52,7 @@ void test2()
 
         message = g_test_fixture.receive_message(&sender_id);
         g_test_fixture.release_memory_block(message);
-        printf_0("Process 2 done");
+        printf_0("Process 2 done\r\n");
 
         g_test_fixture.release_processor();
     }
@@ -102,7 +102,7 @@ void test5()
                 printf_0("      FAIL: Received messages in order!\r\n");
             }
         } else {
-            printf_1("      FAIL: Received wrong first message. Sender id %x\r\n", &sender_id);
+          printf_1("      FAIL: Received wrong first message. Sender id %x\r\n", (int)&sender_id);
         }
         
         g_test_fixture.release_processor();

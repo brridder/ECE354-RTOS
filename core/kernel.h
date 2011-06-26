@@ -2,8 +2,8 @@
 #define _KERNEL_H_
 
 #include "process.h"
-#include "globals.h"
-#include "rtx.h"
+#include "../globals.h"
+#include "../rtx.h"
 /**
  * Queue
  */

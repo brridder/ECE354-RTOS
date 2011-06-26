@@ -1,7 +1,7 @@
 #include "rtx_inc.h"
-#include "dbug.h"
-#include "init.h"
-#include "kernel.h"
+#include "./lib/dbug.h"
+#include "./core/init.h"
+#include "./core/kernel.h"
 #include "rtx.h"
 
 extern void* __end;

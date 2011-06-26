@@ -7,15 +7,15 @@
  */
 
 #include "init.h"
-#include "globals.h"
-#include "dbug.h"
-#include "kernel.h"
-#include "system_processes.h"
 #include "process.h"
-#include "soft_interrupts.h"
-#include "loader/rtx_test.h"
-#include "rtx.h"
-#include "string.h"
+#include "kernel.h"
+#include "../globals.h"
+#include "../lib/dbug.h"
+#include "../processes/system_processes.h"
+//#include "./soft_interrupts.h"
+#include "../tests/rtx_test.h"
+#include "../rtx.h"
+#include "../lib/string.h"
 
 extern void* memory_head;
 extern unsigned long int memory_alloc_field;

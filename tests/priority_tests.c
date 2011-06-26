@@ -11,8 +11,8 @@
  */
 
 #include "rtx_test.h"
-#include "../dbug.h"
-#include "../string.h"
+#include "../lib/dbug.h"
+#include "../lib/string.h"
 #include "../rtx.h"
 
 /* third party dummy test process 1 */ 

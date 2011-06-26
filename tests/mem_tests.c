@@ -11,8 +11,8 @@
  */
 
 #include "rtx_test.h"
-#include "../dbug.h"
-#include "../string.h"
+#include "../lib/dbug.h"
+#include "../lib/string.h"
 #include "../rtx.h"
 #include "../globals.h"
 extern void* __end; 

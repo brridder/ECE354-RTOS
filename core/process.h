@@ -1,8 +1,8 @@
 #ifndef _SCHEDULER_H_
 #define _SCHEDULER_H_
 
-#include "rtx_inc.h"
-#include "rtx.h"
+#include "../rtx_inc.h"
+#include "../rtx.h"
 
 typedef struct _message_queue {
     message_envelope* head;
