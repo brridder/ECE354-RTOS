@@ -18,18 +18,18 @@
 /* third party dummy test process 1 */ 
 void test1()
 {
-    message_envelope* message;
+    void * message;
 
     rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");      
 
     while (1) 
     {
-       message = (message_envelope*)request_memory_block();
+       message = g_test_fixture.request_memory_block();
        if (message != NULL) {
-           message->data[0] = 50;
-           message->data[1] = 51;
-           message->data[2] = 52;
-           message->data[3] = 53;
+           //message->data[0] = 50;
+           //message->data[1] = 51;
+           //message->data[2] = 52;
+           //message->data[3] = 53;
 
           send_message(2, message);
         }
@@ -41,25 +41,29 @@ void test1()
 /* third party dummy test process 2 */ 
 void test2()
 {
-    message_envelope* message_ptr;
+    int* sender_id;
+    void* message_ptr;
 
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
     
     while (1) 
     {
+        message_ptr = g_test_fixture.receive_message(sender_id);
+        printf_1("Message received!, %i\r\n", sender_id);
+        g_test_fixture.release_memory_block(message_ptr);
         g_test_fixture.release_processor();
-
-        message_ptr = (message_envelope*)receive_message(1);
-        printf_1("Message received!, %x\r\n", message_ptr->data[0]);
-        release_memory_block(message_ptr);
     }
 }
+
 /* third party dummy test process 3 */ 
 void test3()
 {
+    void* message;
     rtx_dbug_outs((CHAR *)"rtx_test: test3\r\n");
     while (1) 
-    {
+    {   
+        message = g_test_fixture.request_memory_block();
+        g_test_fixture.send_message(5, message);
         g_test_fixture.release_processor();
     }
 }
@@ -67,18 +71,37 @@ void test3()
 /* third party dummy test process 4 */ 
 void test4()
 {
+    void* message;
     rtx_dbug_outs((CHAR *)"rtx_test: test4\r\n");
     while (1) 
     {
+        message = g_test_fixture.request_memory_block();
+        g_test_fixture.send_message(5, message);
         g_test_fixture.release_processor();
     }
 }
 /* third party dummy test process 5 */ 
 void test5()
 {
+    int* sender_id = NULL;
+    void* message = NULL;
     rtx_dbug_outs((CHAR *)"rtx_test: test5\r\n");
     while (1) 
     {
+        message = g_test_fixture.receive_message(sender_id);
+        if (sender_id == 3) {
+            g_test_fixture.release_memory_block(message);
+            message = g_test_fixture.receive_message(sender_id);
+            g_test_fixture.release_memory_block(message);
+            if (sender_id == 4) {
+                printf_0("      SUCCESS: Received messages in order!\r\n");
+            } else {
+                printf_0("      FAIL: Received messages in order!\r\n");
+            }
+        } else {
+            printf_1("      FAIL: Received wrong first message. Sender id %x\r\n", sender_id);
+        }
+        
         g_test_fixture.release_processor();
     }
 }

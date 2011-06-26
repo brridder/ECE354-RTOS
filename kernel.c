@@ -300,7 +300,7 @@ void* k_receive_message(int* sender_id) {
     }
 
     if(sender_id) {
-      *sender_id = message->sender_pid;
+      sender_id = message->sender_pid;
     }
 
     return message;
