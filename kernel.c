@@ -27,10 +27,10 @@ process_control_block** queues_t[] = {p_q_ready_t, p_q_done_t};
 
 message_envelope* message_queues_h[NUM_PROCESSES];
 message_envelope* message_queues_t[NUM_PROCESSES];
+
 /**
  * @brief: System call used by a running process to release the processor.
  */
-
 int k_release_processor() {
     int i;
     process_control_block* process;
@@ -155,7 +155,6 @@ int k_set_process_priority(int pid, int priority) {
     printf_1("  priority is %i, enqueing...\r\n", process->priority);
 #endif
 
-
 k_set_process_priority_done:
     return RTX_SUCCESS;
 }
@@ -237,6 +236,7 @@ int k_release_memory_block(void* memory_block) {
 }
 
 int k_get_block_index(void* addr) {
+
     //
     // The block index is its offset into the free memory region (in bytes)
     // divided by the block size.
@@ -251,14 +251,17 @@ int k_send_message(int process_id, message_envelope* message) {
     message->receiver_pid = process_id;
     
     if (message_queues_h[process_id] == NULL) {
+
         // 
         // Empty message queue.
         //
+
         message_queues_h[process_id] = message;
         message_queues_t[process_id] = message;
         message->prev = NULL;
         message->next = NULL;
     } else {
+
         //
         // Message queue is not empty. Append to tail.
         //
@@ -277,19 +280,27 @@ void* k_receive_message(int* sender_id) {
     message = message_queues_h[running_process->pid];
     
     if (message->next == NULL) {
+
         //
         // Only thing on queue
         //
+
         message_queues_t[running_process->pid] = NULL;
         message_queues_h[running_process->pid] = NULL;
     } else {
+
         //
         // Pop head
         //
+
         message_queues_h[running_process->pid] = message->next;
         message_queues_h[running_process->pid]->prev = NULL;
         message->next = NULL;
         message->prev = NULL;
+    }
+
+    if(sender_id) {
+      *sender_id = message->sender_pid;
     }
 
     return message;

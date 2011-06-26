@@ -15,7 +15,6 @@ enum queue_type {
     QUEUE_NONE = 2
 };
 
-
 typedef struct _process_control_block {
     int pid;
     int priority;

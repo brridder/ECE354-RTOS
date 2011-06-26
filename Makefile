@@ -19,12 +19,6 @@ rtx.s19: $(OBJS)
 rtx_loader.s19:
 	cd loader; $(MAKE) rtx_loader.s19;
 
-#rtx_test_dummy.s19:
-#	cd tests; $(MAKE) rtx_test_dummy.s19;
-
-#priority_tests.s19:
-	#cd tests: $(MAKE) priority_tests.s19;
-
 main.s19: rtx.s19 rtx_loader.s19
 	$(ECHO) Merging rtx with loader...
 	$(MERGE) main.s19 rtx.s19 loader/rtx_loader.s19

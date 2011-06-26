@@ -20,44 +20,48 @@
 extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
+
 // 
 // Test processes info. Registration function provided by test script
 // The __REGISTER_TEST_PROCS_ENTRY__ symbol is in the linker scripts
 //
 
 extern void __REGISTER_TEST_PROCS_ENTRY__();
+
 /**
  * @brief: Handles all the initilization of the OS
- * @param: stack_start the starting memory location for process stacks
+ * @param: stack_start the start of free memory
  */
-
-void init(void* stack_start) {
+void init(void* memory_start) {
 
 #ifdef DEBUG
     rtx_dbug_outs("Initilizating memory...");
 #endif
-    init_memory(stack_start);
 
-    // Probably won't work this easily.
-    stack_start = memory_head;
+    init_memory(memory_start);
+
 #ifdef DEBUG
-    rtx_dbug_outs(" done");
+    rtx_dbug_outs("done\r\nInitilizating processes...");
 #endif
-#ifdef DEBUG
-    rtx_dbug_outs("Initilizating processes...");
-#endif
-    init_processes(stack_start);
+
+    init_processes(memory_head);
+
 #ifdef DEBUG
     rtx_dbug_outs(" done\r\nInitializing priority queues...");
 #endif
+
     init_priority_queues();
+
 #ifdef DEBUG
     rtx_dbug_outs(" done\r\nInitilizating interrupts...");
 #endif
+
     init_interrupts();
+
 #ifdef DEBUG
     rtx_dbug_outs(" done\r\n");
 #endif
+
 }
 
 /**
@@ -213,19 +217,16 @@ void init_memory(void* memory_start) {
     //
     
     mem_end = memory_start;
-    memory_head = (int)memory_start + ((NUM_MEM_BLKS-1)*MEM_BLK_SIZE);
+    memory_head = (void*)((int)memory_start + ((NUM_MEM_BLKS-1)*MEM_BLK_SIZE));
 
 #ifdef DEBUG_MEM
     printf_1("MEMORY HEAD: %x\n\r", memory_head);
 #endif
+
     //
     // Iterate through the memory pool and setup the free list.
     // The first 4 bytes of each memory block contain the address
     // of the next free memory block.
-    //
-    // When decrementing the pointer, block_size/4 must be used (pointer math).
-    // When decrementing the value pointed to by the iterator, block_size 
-    // can be used (integer math).
     //
    
     current_block = (int*)memory_head;
@@ -235,27 +236,16 @@ void init_memory(void* memory_start) {
             *current_block = NULL;
             break;
         }
-        current_block = *current_block;
+        current_block = (void*)(*current_block);
     }
 
-
-
-/* 
-    current_block = (int)memory_head + MEM_BLK_SIZE/sizeof(void*);
-    for (i = 0; i < NUM_MEM_BLKS; i++) {
-        current_block -= MEM_BLK_SIZE/sizeof(void*);
-        *current_block = (int)current_block - MEM_BLK_SIZE;
-    }
-    *current_block = NULL;
-*/
     //
     // Setup the memory allocation field. Each bit in this field
     // represents one block in the pool. A value of 0 means 
     // the block has not been allocated, 1 means the block has been allocated.
     //
     
-    memory_alloc_field = 0x0000;
-
+    memory_alloc_field = 0x00000000;
 }
 
 /**
@@ -268,6 +258,7 @@ void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
     g_test_fixture.release_processor = release_processor;
     g_test_fixture.set_process_priority = set_process_priority;
     g_test_fixture.get_process_priority = get_process_priority;
+
     //
     // TODO: Implement required OS functions
     //
