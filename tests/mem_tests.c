@@ -173,8 +173,7 @@ void test2()
     int i;
     void* p_mem_array[NUM_MEM_BLKS];
 
-    rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
-    printf_0("Beginning memory blocked queue test...\r\n");
+    printf_0("rtx_test: test2\r\nBeginning memory blocked queue test...\r\n");
 
     //
     // Allocate every block

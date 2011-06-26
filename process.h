@@ -2,6 +2,12 @@
 #define _SCHEDULER_H
 
 #include "rtx_inc.h"
+#include "rtx.h"
+
+typedef struct _message_queue {
+  message_envelope* head;
+  message_envelope* tail;
+} message_queue;
 
 enum process_state {
     STATE_RUNNING,
@@ -32,8 +38,15 @@ typedef struct _process_control_block {
 
     enum queue_type queue;
 
+    message_queue messages;
+
     struct _process_control_block* next;
     struct _process_control_block* previous;
 } process_control_block;
+
+typedef struct _process_queue {
+  process_control_block* head;
+  process_control_block* tail;
+} process_queue;
 
 #endif
