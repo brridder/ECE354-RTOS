@@ -6,12 +6,13 @@
 enum process_state {
     STATE_RUNNING,
     STATE_READY,
-    STATE_STOPPED
+    STATE_STOPPED,
+    STATE_BLOCKED_MESSAGE
 };
 
 enum queue_type {
     QUEUE_READY = 0,
-    QUEUE_DONE = 1,
+    QUEUE_BLOCKED = 1,
     QUEUE_NONE = 2
 };
 

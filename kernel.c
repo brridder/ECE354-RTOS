@@ -6,7 +6,6 @@
 #include "soft_interrupts.h"
 #include "string.h"
 #include "rtx.h"
-//#define DEBUG_MEM
 
 void* memory_head;
 unsigned long int memory_alloc_field;
@@ -19,11 +18,11 @@ void* mem_end;
 process_control_block* p_q_ready_h[NUM_PRIORITIES];
 process_control_block* p_q_ready_t[NUM_PRIORITIES];
 
-process_control_block* p_q_done_h[NUM_PRIORITIES];
-process_control_block* p_q_done_t[NUM_PRIORITIES];
+process_control_block* p_q_blocked_h[NUM_PRIORITIES];
+process_control_block* p_q_blocked_t[NUM_PRIORITIES];
 
-process_control_block** queues_h[] = {p_q_ready_h, p_q_done_h};
-process_control_block** queues_t[] = {p_q_ready_t, p_q_done_t};
+process_control_block** queues_h[] = {p_q_ready_h, p_q_blocked_h};
+process_control_block** queues_t[] = {p_q_ready_t, p_q_blocked_t};
 
 message_envelope* message_queues_h[NUM_PROCESSES];
 message_envelope* message_queues_t[NUM_PROCESSES];
@@ -32,34 +31,19 @@ message_envelope* message_queues_t[NUM_PROCESSES];
  * @brief: System call used by a running process to release the processor.
  */
 int k_release_processor() {
-    int i;
     process_control_block* process;
     
 #ifdef DEBUG
     rtx_dbug_outs("k_release_processor()\r\n");
 #endif
 
-    // QUEUE_DONE if doing priority like normally would.
-    k_priority_enqueue_process(running_process, QUEUE_READY); 
+    if (running_process->state == STATE_BLOCKED_MESSAGE) {
+        k_priority_enqueue_process(running_process, QUEUE_BLOCKED);
+    } else {
+        k_priority_enqueue_process(running_process, QUEUE_READY);
+    }
  
     process = k_get_next_process();
-   
-    //
-    // If we still don't have a null process, copy done queues to ready queues
-    //
-    
-    if (process == NULL) {
-        for (i = 0; i < NUM_PRIORITIES; i++) {
-            queues_h[QUEUE_READY][i] = queues_h[QUEUE_DONE][i];
-            queues_t[QUEUE_READY][i] = queues_t[QUEUE_DONE][i];
-            queues_h[QUEUE_DONE][i] = NULL;
-            queues_t[QUEUE_DONE][i] = NULL;
-        }
-        for (i = 0; i < NUM_PROCESSES; i++) {
-            processes[i].queue = QUEUE_READY;
-        }
-        process = k_get_next_process();
-    }
 
     return k_context_switch(process);
 }
@@ -76,6 +60,7 @@ process_control_block* k_get_next_process() {
             break;
         }
     }
+
     return process;
 } 
 
@@ -246,6 +231,7 @@ int k_get_block_index(void* addr) {
 }
 
 int k_send_message(int process_id, message_envelope* message) {
+    process_control_block* receiving_process = NULL;
     
     message->sender_pid = running_process->pid;
     message->receiver_pid = process_id;
@@ -271,14 +257,46 @@ int k_send_message(int process_id, message_envelope* message) {
         message_queues_t[process_id]->next = message;
         message_queues_t[process_id] = message;
     }
-    return RTX_SUCCESS; // QUEUE IS NEVER FULL
+
+    //
+    // Update the state of the receiving process to be unblocked and move
+    // it to the ready queue for its priority level.
+    //
+
+    if (processes[process_id].state == STATE_BLOCKED_MESSAGE) {
+        processes[process_id].state = STATE_READY;        
+        receiving_process = k_priority_dequeue_process(process_id, QUEUE_BLOCKED);
+        k_priority_enqueue_process(receiving_process, QUEUE_READY);
+    }
+
+    //
+    // The queue has no size limit, always return sucess
+    //
+
+    return RTX_SUCCESS;
 }
 
 void* k_receive_message(int* sender_id) {
     message_envelope* message;
-
     message = message_queues_h[running_process->pid];
-    
+
+    while (message == NULL) {
+
+        //
+        // The queue is empty, switch out of this process and set our state
+        // to blocked
+        //
+
+        #ifdef DEBUG
+        printf_1("Message queue is empty: process %i is now blocked\r\n",
+            running_process->pid);
+        #endif
+
+        running_process->state = STATE_BLOCKED_MESSAGE;
+        k_release_processor();
+        message = message_queues_h[running_process->pid];
+    }
+
     if (message->next == NULL) {
 
         //
@@ -306,7 +324,6 @@ void* k_receive_message(int* sender_id) {
     return message;
 }
 
-
 /**
  * @brief: Performs a context switch. After the context switch, the 
  *         process begins executing in user mode.
@@ -332,36 +349,32 @@ int k_context_switch(process_control_block* process) {
     if (previous_process) {
 
         //
-        // If the process has not saved it's state, do it now.
+        // Save register contents. The exception frame is already on the 
+        // stack.
         //
 
-        if (previous_process->state == STATE_RUNNING) {
-            //
-            // Save register contents. The exception frame is already on the 
-            // stack.
-            //
-
-            asm("move.l %a0, -(%sp)"); // A0
-            asm("move.l %a1, -(%sp)"); // A1
-            asm("move.l %a2, -(%sp)"); // A2
-            asm("move.l %a3, -(%sp)"); // A3
-            asm("move.l %a4, -(%sp)"); // A4
-            asm("move.l %a5, -(%sp)"); // A5
-            asm("move.l %a6, -(%sp)"); // A6
-            asm("move.l %d0, -(%sp)"); // D0
-            asm("move.l %d1, -(%sp)"); // D1
-            asm("move.l %d2, -(%sp)"); // D2
-            asm("move.l %d3, -(%sp)"); // D3
-            asm("move.l %d4, -(%sp)"); // D4
-            asm("move.l %d5, -(%sp)"); // D5
-            asm("move.l %d6, -(%sp)"); // D6
-            asm("move.l %d7, -(%sp)"); // D7
+        asm("move.l %a0, -(%sp)"); // A0
+        asm("move.l %a1, -(%sp)"); // A1
+        asm("move.l %a2, -(%sp)"); // A2
+        asm("move.l %a3, -(%sp)"); // A3
+        asm("move.l %a4, -(%sp)"); // A4
+        asm("move.l %a5, -(%sp)"); // A5
+        asm("move.l %a6, -(%sp)"); // A6
+        asm("move.l %d0, -(%sp)"); // D0
+        asm("move.l %d1, -(%sp)"); // D1
+        asm("move.l %d2, -(%sp)"); // D2
+        asm("move.l %d3, -(%sp)"); // D3
+        asm("move.l %d4, -(%sp)"); // D4
+        asm("move.l %d5, -(%sp)"); // D5
+        asm("move.l %d6, -(%sp)"); // D6
+        asm("move.l %d7, -(%sp)"); // D7
             
-            asm("move.l %%sp, %0": "=r" (previous_process->stack));
-
+        asm("move.l %%sp, %0": "=r" (previous_process->stack));
+        
+        if (previous_process->state == STATE_RUNNING) {
             previous_process->state = STATE_READY;
-        }
-    }    
+        } 
+    }
 
     //
     // Switch to the process
@@ -646,7 +659,7 @@ void k_init_priority_queues() {
     for (i = 0; i < NUM_PRIORITIES; i++) {
         queues_h[QUEUE_READY][i] = NULL;
         queues_t[QUEUE_READY][i] = NULL;
-        queues_h[QUEUE_DONE][i] = NULL;
-        queues_t[QUEUE_DONE][i] = NULL;
+        queues_h[QUEUE_BLOCKED][i] = NULL;
+        queues_t[QUEUE_BLOCKED][i] = NULL;
     }
 }
