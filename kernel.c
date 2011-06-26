@@ -18,11 +18,18 @@ void* mem_end;
 process_control_block* p_q_ready_h[NUM_PRIORITIES];
 process_control_block* p_q_ready_t[NUM_PRIORITIES];
 
-process_control_block* p_q_blocked_h[NUM_PRIORITIES];
-process_control_block* p_q_blocked_t[NUM_PRIORITIES];
+process_control_block* p_q_blocked_message_h[NUM_PRIORITIES];
+process_control_block* p_q_blocked_message_t[NUM_PRIORITIES];
 
-process_control_block** queues_h[] = {p_q_ready_h, p_q_blocked_h};
-process_control_block** queues_t[] = {p_q_ready_t, p_q_blocked_t};
+process_control_block* p_q_blocked_memory_h[NUM_PRIORITIES];
+process_control_block* p_q_blocked_memory_t[NUM_PRIORITIES];
+
+process_control_block** queues_h[] = {p_q_ready_h,
+                                      p_q_blocked_message_h,
+                                      p_q_blocked_memory_h};
+process_control_block** queues_t[] = {p_q_ready_t,
+                                      p_q_blocked_message_t,
+                                      p_q_blocked_memory_t};
 
 message_envelope* message_queues_h[NUM_PROCESSES];
 message_envelope* message_queues_t[NUM_PROCESSES];
@@ -38,22 +45,24 @@ int k_release_processor() {
 #endif
 
     if (running_process->state == STATE_BLOCKED_MESSAGE) {
-        k_priority_enqueue_process(running_process, QUEUE_BLOCKED);
+        k_priority_enqueue_process(running_process, QUEUE_BLOCKED_MESSAGE);
+    } else if (running_process->state == STATE_BLOCKED_MEMORY){
+        k_priority_enqueue_process(running_process, QUEUE_BLOCKED_MEMORY);
     } else {
         k_priority_enqueue_process(running_process, QUEUE_READY);
     }
  
-    process = k_get_next_process();
+    process = k_get_next_process(QUEUE_READY);
 
     return k_context_switch(process);
 }
 
-process_control_block* k_get_next_process() {
+process_control_block* k_get_next_process(int queue) {
     int i = 0;
     process_control_block* process = NULL;
 
     while(i < NUM_PRIORITIES) {
-        process = k_priority_dequeue_process(i, QUEUE_READY);
+        process = k_priority_dequeue_process(i, queue);
         if (process == NULL) {
             i++;
         } else {
@@ -145,7 +154,7 @@ k_set_process_priority_done:
 }
 
 //
-// MEMORY
+// Memory
 //
 
 void* k_request_memory_block() {
@@ -155,36 +164,44 @@ void* k_request_memory_block() {
     //
     // Check if we have any free memory left. If not, return NULL
     //
-    
-#ifdef DEBUG_MEM
-    printf_1("MEMORY HEAD: %x\n\r", memory_head);
-#endif
-    if (memory_head != NULL) {
-        //
-        // Allocate the block on the top of the free list, moving
-        // the head of the free list to the next available block
-        //
 
-        block = memory_head;
-        memory_head = (void*)*(UINT32*)block;
+    while (memory_head == NULL) {
 
         //
-        // Set the bit in the memory field corresponding to this block
-        // 
+        // There is no memory available, switch out of this process
+        // and set our state to blocked
+        //
 
-        block_index = k_get_block_index(block);
-        memory_alloc_field |= (0x01 << block_index);
-#ifdef DEBUG_MEM
-    printf_1("MEMORY ALLOC FIELD: %x\r\n", memory_alloc_field);
-#endif
-        return block;
+        #ifdef DEBUG
+        printf_1("No free memory: process %i is now blocked\r\n",
+            running_process->pid);
+        #endif
+
+        running_process->state = STATE_BLOCKED_MEMORY;
+        k_release_processor();
     }
+
+    //
+    // Allocate the block on the top of the free list, moving
+    // the head of the free list to the next available block
+    //
     
-    return NULL;
+    block = memory_head;
+    memory_head = (void*)*(UINT32*)block;
+
+    //
+    // Set the bit in the memory field corresponding to this block
+    // 
+
+    block_index = k_get_block_index(block);
+    memory_alloc_field |= (0x01 << block_index);
+
+    return block;    
 }
 
 int k_release_memory_block(void* memory_block) {
     int block_index;
+    process_control_block* unblocked_process;
 
     //
     // Check the memory allocation field to see if this block has already
@@ -207,8 +224,15 @@ int k_release_memory_block(void* memory_block) {
       memory_alloc_field &= ((0x01 << block_index) ^ 0xFFFFFFFF);
 
       //
-      // Success
+      // Success. Unblock the first process that is blocked on memory and move
+      // it to the ready queue for its priority level
       //
+
+      unblocked_process = k_get_next_process(QUEUE_BLOCKED_MEMORY);
+      if (unblocked_process) {
+          unblocked_process->state = STATE_READY;
+          k_priority_enqueue_process(unblocked_process, QUEUE_READY);
+      }
 
       return RTX_SUCCESS;
     }
@@ -264,8 +288,9 @@ int k_send_message(int process_id, message_envelope* message) {
     //
 
     if (processes[process_id].state == STATE_BLOCKED_MESSAGE) {
-        processes[process_id].state = STATE_READY;        
-        receiving_process = k_priority_dequeue_process(process_id, QUEUE_BLOCKED);
+        processes[process_id].state = STATE_READY;      
+        receiving_process = k_priority_queue_remove(process_id,
+                                                    QUEUE_BLOCKED_MESSAGE);
         k_priority_enqueue_process(receiving_process, QUEUE_READY);
     }
 
@@ -318,7 +343,7 @@ void* k_receive_message(int* sender_id) {
     }
 
     if(sender_id) {
-      sender_id = message->sender_pid;
+        *sender_id = message->sender_pid;
     }
 
     return message;
@@ -659,7 +684,9 @@ void k_init_priority_queues() {
     for (i = 0; i < NUM_PRIORITIES; i++) {
         queues_h[QUEUE_READY][i] = NULL;
         queues_t[QUEUE_READY][i] = NULL;
-        queues_h[QUEUE_BLOCKED][i] = NULL;
-        queues_t[QUEUE_BLOCKED][i] = NULL;
+        queues_h[QUEUE_BLOCKED_MESSAGE][i] = NULL;
+        queues_t[QUEUE_BLOCKED_MESSAGE][i] = NULL;
+        queues_h[QUEUE_BLOCKED_MEMORY][i] = NULL;
+        queues_t[QUEUE_BLOCKED_MEMORY][i] = NULL;
     }
 }

@@ -7,13 +7,15 @@ enum process_state {
     STATE_RUNNING,
     STATE_READY,
     STATE_STOPPED,
-    STATE_BLOCKED_MESSAGE
+    STATE_BLOCKED_MESSAGE,
+    STATE_BLOCKED_MEMORY
 };
 
 enum queue_type {
     QUEUE_READY = 0,
-    QUEUE_BLOCKED = 1,
-    QUEUE_NONE = 2
+    QUEUE_BLOCKED_MESSAGE = 1,
+    QUEUE_BLOCKED_MEMORY = 2,
+    QUEUE_NONE = 3
 };
 
 typedef struct _process_control_block {
