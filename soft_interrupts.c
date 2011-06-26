@@ -161,7 +161,7 @@ void system_call() {
         //
         
         case CALL_RECEIVE_MESSAGE:
-            return_value = (void*)k_receive_message((int*)args[0]);
+            return_value = (int)k_receive_message((int*)args[0]);
             break;
 
         //
