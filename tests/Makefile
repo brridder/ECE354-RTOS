@@ -5,7 +5,7 @@ ASM=../start.s
 LDFLAGS_RTX_LOADER = -Trtx_loader.ld -Wl,-Map=rtx_loader.map
 LDFLAGS_RTX_TEST = -Trtx_test.ld -Wl,-Map=rtx_test.map
 
-OBJS = ../lib/dbug.o ../lib/string.o ../core/kernel.o ../rtx.o ../soft_interrupts.o
+OBJS = ../lib/dbug.o ../lib/string.o ../core/kernel.o ../rtx.o ../core/soft_interrupts.o
 RTX_TEST_DUMMY_OBJS = rtx_test_dummy.o $(OBJS)
 MEM_TESTS_OBJS= mem_tests.o $(OBJS)
 PRIORITY_TESTS_OBJS= priority_tests.o $(OBJS)

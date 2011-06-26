@@ -1,7 +1,7 @@
 #ifndef _INIT_H_
 #define _INIT_H_
 
-#include "rtx_inc.h"
+#include "../rtx_inc.h"
 
 /**
  * Wrapper for all the initilization calls

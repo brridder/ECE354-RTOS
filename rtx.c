@@ -8,7 +8,7 @@
 #include "rtx.h"
 #include "./lib/dbug.h"
 #include "./core/kernel.h"
-#include "soft_interrupts.h"
+#include "./core/soft_interrupts.h"
 
 int release_processor() {
     return do_system_call(CALL_RELEASE_PROCESSOR, (void*)0, 0);

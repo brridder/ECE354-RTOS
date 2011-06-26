@@ -1,9 +1,9 @@
 #include "kernel.h"
 
 #include "process.h"
+#include "soft_interrupts.h"
 #include "../globals.h"
 #include "../lib/dbug.h"
-#include "../soft_interrupts.h"
 #include "../lib/string.h"
 #include "../rtx.h"
 

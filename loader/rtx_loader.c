@@ -10,7 +10,7 @@
  * @brief:  To register third party test processes with rtx and load rtx 
  */
 
-#include "rtx_test.h"
+#include "../tests/rtx_test.h"
 #include "../lib/dbug.h"
 
 /* the RTX entry point, see rtx_loader.ld */

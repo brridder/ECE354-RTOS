@@ -1,6 +1,6 @@
 #include "rtx_inc.h"
 #include "./lib/dbug.h"
-#include "init.h"
+#include "./core/init.h"
 #include "./core/kernel.h"
 #include "rtx.h"
 

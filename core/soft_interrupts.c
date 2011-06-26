@@ -1,6 +1,6 @@
 #include "soft_interrupts.h"
-#include "core/kernel.h"
-#include "lib/dbug.h"
+#include "kernel.h"
+#include "../lib/dbug.h"
 
 /**
  * @brief: Performs a system call by calling interrupt vector 0
