@@ -251,14 +251,17 @@ int k_send_message(int process_id, message_envelope* message) {
     message->receiver_pid = process_id;
     
     if (message_queues_h[process_id] == NULL) {
+
         // 
         // Empty message queue.
         //
+
         message_queues_h[process_id] = message;
         message_queues_t[process_id] = message;
         message->prev = NULL;
         message->next = NULL;
     } else {
+
         //
         // Message queue is not empty. Append to tail.
         //
@@ -277,15 +280,19 @@ void* k_receive_message(int* sender_id) {
     message = message_queues_h[running_process->pid];
     
     if (message->next == NULL) {
+
         //
         // Only thing on queue
         //
+
         message_queues_t[running_process->pid] = NULL;
         message_queues_h[running_process->pid] = NULL;
     } else {
+
         //
         // Pop head
         //
+
         message_queues_h[running_process->pid] = message->next;
         message_queues_h[running_process->pid]->prev = NULL;
         message->next = NULL;
