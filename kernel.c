@@ -27,10 +27,10 @@ process_control_block** queues_t[] = {p_q_ready_t, p_q_done_t};
 
 message_envelope* message_queues_h[NUM_PROCESSES];
 message_envelope* message_queues_t[NUM_PROCESSES];
+
 /**
  * @brief: System call used by a running process to release the processor.
  */
-
 int k_release_processor() {
     int i;
     process_control_block* process;
@@ -290,6 +290,10 @@ void* k_receive_message(int* sender_id) {
         message_queues_h[running_process->pid]->prev = NULL;
         message->next = NULL;
         message->prev = NULL;
+    }
+
+    if(sender_id) {
+      *sender_id = message->sender_pid;
     }
 
     return message;
