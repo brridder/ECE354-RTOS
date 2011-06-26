@@ -6,6 +6,7 @@
 #include "soft_interrupts.h"
 #include "string.h"
 #include "rtx.h"
+#include "queues.h"
 
 void* memory_head;
 unsigned long int memory_alloc_field;
@@ -30,9 +31,6 @@ process_control_block** queues_h[] = {p_q_ready_h,
 process_control_block** queues_t[] = {p_q_ready_t,
                                       p_q_blocked_message_t,
                                       p_q_blocked_memory_t};
-
-message_envelope* message_queues_h[NUM_PROCESSES];
-message_envelope* message_queues_t[NUM_PROCESSES];
 
 /**
  * @brief: System call used by a running process to release the processor.
@@ -255,47 +253,30 @@ int k_get_block_index(void* addr) {
 }
 
 int k_send_message(int process_id, message_envelope* message) {
-    process_control_block* receiving_process = NULL;
+    process_control_block* receiving_process = &processes[process_id];
     
+    //
+    // Set the sender and receiver fields of the message
+    //
+
     message->sender_pid = running_process->pid;
     message->receiver_pid = process_id;
-    
-    if (message_queues_h[process_id] == NULL) {
-
-        // 
-        // Empty message queue.
-        //
-
-        message_queues_h[process_id] = message;
-        message_queues_t[process_id] = message;
-        message->prev = NULL;
-        message->next = NULL;
-    } else {
-
-        //
-        // Message queue is not empty. Append to tail.
-        //
-        
-        message->prev = message_queues_t[process_id];
-        message->next = NULL;
-        message_queues_t[process_id]->next = message;
-        message_queues_t[process_id] = message;
-    }
+    queue_enqueue_m(&receiving_process->messages, message);
 
     //
     // Update the state of the receiving process to be unblocked and move
     // it to the ready queue for its priority level.
     //
 
-    if (processes[process_id].state == STATE_BLOCKED_MESSAGE) {
-        processes[process_id].state = STATE_READY;      
+    if (receiving_process->state == STATE_BLOCKED_MESSAGE) {
+        receiving_process->state = STATE_READY;      
         receiving_process = k_priority_queue_remove(process_id,
                                                     QUEUE_BLOCKED_MESSAGE);
         k_priority_enqueue_process(receiving_process, QUEUE_READY);
     }
 
     //
-    // The queue has no size limit, always return sucess
+    // The queue has no size limit, always return success
     //
 
     return RTX_SUCCESS;
@@ -303,8 +284,8 @@ int k_send_message(int process_id, message_envelope* message) {
 
 void* k_receive_message(int* sender_id) {
     message_envelope* message;
-    message = message_queues_h[running_process->pid];
 
+    message = queue_dequeue_m(&running_process->messages);
     while (message == NULL) {
 
         //
@@ -319,28 +300,9 @@ void* k_receive_message(int* sender_id) {
 
         running_process->state = STATE_BLOCKED_MESSAGE;
         k_release_processor();
-        message = message_queues_h[running_process->pid];
+        message = queue_dequeue_m(&running_process->messages);
     }
 
-    if (message->next == NULL) {
-
-        //
-        // Only thing on queue
-        //
-
-        message_queues_t[running_process->pid] = NULL;
-        message_queues_h[running_process->pid] = NULL;
-    } else {
-
-        //
-        // Pop head
-        //
-
-        message_queues_h[running_process->pid] = message->next;
-        message_queues_h[running_process->pid]->prev = NULL;
-        message->next = NULL;
-        message->prev = NULL;
-    }
 
     if(sender_id) {
         *sender_id = message->sender_pid;
