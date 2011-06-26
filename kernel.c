@@ -16,21 +16,13 @@ void* mem_end;
  * Priority Queues
  */
 
-process_control_block* p_q_ready_h[NUM_PRIORITIES];
-process_control_block* p_q_ready_t[NUM_PRIORITIES];
+process_queue ready_queue[NUM_PRIORITIES];
+process_queue blocked_message_queue[NUM_PRIORITIES];
+process_queue blocked_memory_queue[NUM_PRIORITIES];
 
-process_control_block* p_q_blocked_message_h[NUM_PRIORITIES];
-process_control_block* p_q_blocked_message_t[NUM_PRIORITIES];
-
-process_control_block* p_q_blocked_memory_h[NUM_PRIORITIES];
-process_control_block* p_q_blocked_memory_t[NUM_PRIORITIES];
-
-process_control_block** queues_h[] = {p_q_ready_h,
-                                      p_q_blocked_message_h,
-                                      p_q_blocked_memory_h};
-process_control_block** queues_t[] = {p_q_ready_t,
-                                      p_q_blocked_message_t,
-                                      p_q_blocked_memory_t};
+process_queue* process_queues[] = {ready_queue,
+                                   blocked_message_queue,
+                                   blocked_memory_queue};
 
 /**
  * @brief: System call used by a running process to release the processor.
@@ -130,7 +122,7 @@ int k_set_process_priority(int pid, int priority) {
     // change the priority and enqueue it back onto the appropriate queue.
     //
 
-    process = k_priority_queue_remove(pid, processes[pid].queue);
+    process = k_priority_queue_remove(pid);
 
 #ifdef DEBUG
     printf_1("  process is: %x\r\n", process);
@@ -270,8 +262,7 @@ int k_send_message(int process_id, message_envelope* message) {
 
     if (receiving_process->state == STATE_BLOCKED_MESSAGE) {
         receiving_process->state = STATE_READY;      
-        receiving_process = k_priority_queue_remove(process_id,
-                                                    QUEUE_BLOCKED_MESSAGE);
+        receiving_process = k_priority_queue_remove(process_id);
         k_priority_enqueue_process(receiving_process, QUEUE_READY);
     }
 
@@ -420,62 +411,12 @@ int k_context_switch(process_control_block* process) {
  * @param: queue the queue type to use
  */
 
-void k_priority_enqueue_process(process_control_block* process, enum queue_type queue) {
-#ifdef DEBUG
-    rtx_dbug_outs("k_priority_enqueue_process()\r\n");    
-    printf_0("  before enqueu\r\n");
-    printf_1("  queu: %i\r\n", queue);
-
+void k_priority_enqueue_process(process_control_block* process,
+                                enum queue_type queue) {
     if (process != NULL) {
-      printf_1("  prio: %i\r\n", process->priority);
-      printf_1("  queues_h[queue][process->priority]: %x\r\n", queues_h[queue][process->priority]);
-      printf_1("  queues_t[queue][process->priority]: %x\r\n", queues_t[queue][process->priority]);
+        queue_enqueue_p(&process_queues[queue][process->priority], process);
+        process->queue = queue;
     }
-#endif 
-
-    //
-    // The process is null, so break early.
-    //
-    
-    if (process == NULL) {
-        goto k_priority_enqueue_process_done;
-    }
-    
-    if (queues_h[queue][process->priority] == NULL) {
-
-        //
-        // The queue is empty. Assign the head and tail pointers of the queue to
-        // the process. 
-        //
-        
-        queues_h[queue][process->priority] = process;
-        queues_t[queue][process->priority] = process;
-        process->previous = NULL;
-        process->next = NULL;
-    } else {
-
-        // 
-        // The queue is not empty. Attach the passed-in process to the current 
-        // tail and update the tail pointer.
-        //
-
-        process->previous = queues_t[queue][process->priority];
-        process->next = NULL;
-        queues_t[queue][process->priority]->next = process;
-        queues_t[queue][process->priority] = process;
-    }
-
-    process->queue = queue;
-
-k_priority_enqueue_process_done:
-#ifdef DEBUG
-    printf_1("Enqueued process: %i\r\n", process->pid);
-    printf_0("  after enqueu\r\n");
-    if (process != NULL) {
-      printf_1("  queues_h[queue][process->priority]: %x\r\n", queues_h[queue][process->priority]);
-      printf_1("  queues_t[queue][process->priority]: %x\r\n", queues_t[queue][process->priority]);
-    }
-#endif
 
     return; 
 }
@@ -488,14 +429,6 @@ k_priority_enqueue_process_done:
 
 process_control_block* k_priority_dequeue_process(int priority, enum queue_type queue) {
     process_control_block* process = NULL;
-#ifdef DEBUG
-    rtx_dbug_outs("k_priority_dequeue_process()\r\n");
-    printf_0("  before deenqueu\r\n");
-    printf_1("  queu: %i\r\n", queue);
-    printf_1("  prio: %i\r\n", priority);
-    printf_1("  queues_h[queue][priority]: %x\r\n", queues_h[queue][priority]);
-    printf_1("  queues_t[queue][priority]: %x\r\n", queues_h[queue][priority]);
-#endif
     
     //
     // End early if the priority queue is empty or the priority level is
@@ -503,44 +436,14 @@ process_control_block* k_priority_dequeue_process(int priority, enum queue_type 
     // is short-circuited.
     //
 
-    if (priority >= 4 || priority < 0
-        || queues_h[queue][priority] == NULL
-        || queue == QUEUE_NONE) {
+    if (priority >= 4 || priority < 0 || queue == QUEUE_NONE) {
         return NULL;
     }
     
-    if (queues_h[queue][priority]->next == NULL) {
-        // 
-        // Only one item on the queue
-        //
-        
-        queues_t[queue][priority] = NULL;
-        process = queues_h[queue][priority];
-        queues_h[queue][priority] = NULL;
-    } else {
-        // 
-        // Pop the head
-        //
-        
-        process = queues_h[queue][priority];
-        queues_h[queue][priority] = process->next;
-        queues_h[queue][priority]->previous = NULL;
-        process->next = NULL;
-        process->previous = NULL;
-    }   
-    
-    process->queue = QUEUE_NONE;
-
-#ifdef DEBUG
-    printf_1("Dequeued process: %i\r\n", process->pid);
-    printf_0("  after deenqueu\r\n");
-    printf_1("  queu: %i\r\n", queue);
-    if (process != NULL) {
-      printf_1("  prio: %i\r\n", process->priority);
-      printf_1("  queues_h[queue][process->priority]: %x\r\n", queues_h[queue][process->priority]);
-      printf_1("  queues_t[queue][process->priority]: %x\r\n", queues_t[queue][process->priority]);
+    process = queue_dequeue_p(&process_queues[queue][priority]);
+    if (process) {
+        process->queue = QUEUE_NONE;
     }
-#endif
 
     return process;
 }
@@ -552,91 +455,19 @@ process_control_block* k_priority_dequeue_process(int priority, enum queue_type 
  * @param: queue the queue type to use
  */
 
-process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
+process_control_block* k_priority_queue_remove(int pid) {
     process_control_block* process;
-
-#ifdef DEBUG
-    rtx_dbug_outs("k_priority_queue_remove()\r\n");
-    printf_0("  before remove\r\n");
-#endif
 
     //
     //  PID is out of range so break early.
     //
     
-    if (pid < 0 || pid >= NUM_PROCESSES || queue == QUEUE_NONE) {
+    if (pid < 0 || pid >= NUM_PROCESSES) {
         return NULL;     
     }
 
     process = &processes[pid];
-
-#ifdef DEBUG
-    printf_1("  queues_h[queue][process->priority]: %x\r\n", queues_h[queue][process->priority]);
-    printf_1("  queues_t[queue][process->priority]: %x\r\n", queues_t[queue][process->priority]);
-    printf_1("  process is: %x\r\n", process);
-    printf_1("  queue is: %i\r\n", process->queue);
-    printf_1("  process->next is: %x\r\n", process->next);
-    printf_1("  process->previous is: %x\r\n", process->previous);
-    printf_1("  process->priority is: %i\r\n", process->priority);
-#endif
-
-    if (process->next == NULL && process->previous == NULL) { 
-        // 
-        // Process is the only item in the queue.  
-        //
-        
-#ifdef DEBUG
-      rtx_dbug_outs("  removing only queue item\r\n");
-      printf_1("  priority: %i\r\n", process->priority);
-      printf_1("  queues_h[queue][process->priority]: %x\r\n", queues_h[queue][process->priority]);
-      printf_1("  queues_t[queue][process->priority]: %x\r\n", queues_t[queue][process->priority]);
-#endif
-
-        queues_h[queue][process->priority] = NULL;
-        queues_t[queue][process->priority] = NULL;
-    } else if (process->next == NULL) { 
-        // 
-        // Process is the tail
-        //
-
-#ifdef DEBUG
-      rtx_dbug_outs("  removing queue tail\r\n");
-#endif
-
-        process->previous->next = NULL;
-        queues_t[queue][process->priority] = process->previous;
-    } else if (process->previous == NULL) { 
-        // 
-        // Process is the head
-        //
-      
-#ifdef DEBUG
-      rtx_dbug_outs("  removing queue head\r\n");
-#endif
-
-        process->next->previous = NULL;
-        queues_h[queue][process->priority] = process->next;
-    } else {
-        // 
-        // Process is in the middle somewhere.
-        // 
-
-#ifdef DEBUG
-      rtx_dbug_outs("  removing item from middle of queue\r\n");
-#endif
-
-        process->next->previous = process->previous;
-        process->previous->next = process->next;
-    }
-
-    process->next = NULL;
-    process->previous = NULL;
-
-#ifdef DEBUG
-    printf_0("  after remove\r\n");
-    printf_1("  queues_h[queue][process->priority]: %x\r\n", queues_h[queue][process->priority]);
-    printf_1("  queues_t[queue][process->priority]: %x\r\n", queues_t[queue][process->priority]);
-#endif
+    queue_remove_p(&process_queues[process->queue][process->priority], process);
 
     return process;
 }
@@ -644,11 +475,11 @@ process_control_block* k_priority_queue_remove(int pid, enum queue_type queue) {
 void k_init_priority_queues() {
     int i;
     for (i = 0; i < NUM_PRIORITIES; i++) {
-        queues_h[QUEUE_READY][i] = NULL;
-        queues_t[QUEUE_READY][i] = NULL;
-        queues_h[QUEUE_BLOCKED_MESSAGE][i] = NULL;
-        queues_t[QUEUE_BLOCKED_MESSAGE][i] = NULL;
-        queues_h[QUEUE_BLOCKED_MEMORY][i] = NULL;
-        queues_t[QUEUE_BLOCKED_MEMORY][i] = NULL;
+        process_queues[QUEUE_READY][i].head = NULL;
+        process_queues[QUEUE_READY][i].tail = NULL;
+        process_queues[QUEUE_BLOCKED_MESSAGE][i].head = NULL;
+        process_queues[QUEUE_BLOCKED_MESSAGE][i].tail = NULL;
+        process_queues[QUEUE_BLOCKED_MEMORY][i].head = NULL;
+        process_queues[QUEUE_BLOCKED_MEMORY][i].tail = NULL;
     }
 }

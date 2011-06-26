@@ -1,12 +1,12 @@
-#ifndef _SCHEDULER_H
-#define _SCHEDULER_H
+#ifndef _SCHEDULER_H_
+#define _SCHEDULER_H_
 
 #include "rtx_inc.h"
 #include "rtx.h"
 
 typedef struct _message_queue {
-  message_envelope* head;
-  message_envelope* tail;
+    message_envelope* head;
+    message_envelope* tail;
 } message_queue;
 
 enum process_state {
@@ -45,8 +45,8 @@ typedef struct _process_control_block {
 } process_control_block;
 
 typedef struct _process_queue {
-  process_control_block* head;
-  process_control_block* tail;
+    process_control_block* head;
+    process_control_block* tail;
 } process_queue;
 
 #endif

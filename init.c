@@ -129,8 +129,15 @@ void init_processes(VOID* stack_start) {
         processes[i].state = STATE_STOPPED;
 
         //
-        // Update the location of the next stack and move to the next process
+        // Setup message queue
         // 
+        
+        processes[i].messages.head = NULL;
+        processes[i].messages.tail = NULL;
+
+        //
+        // Update the location of the next stack and move to the next process
+        //
 
         processes[i].queue = QUEUE_NONE;
         stack_start = stack_start + processes[i].stack_size;
