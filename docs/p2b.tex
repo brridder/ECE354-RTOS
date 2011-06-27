@@ -1,7 +1,14 @@
 \documentclass[oneside]{article}
 \usepackage{listings}
+\usepackage[hmargin=1.5in,vmargin=1.0in]{geometry}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
 \begin{document}
-\lstset{language=C, frame=single, breaklines=true}
+\lstset{language=C, 
+        frame=single, 
+        breaklines=true,
+        basicstyle=\small\ttfamily,
+        columns=fullflexible}
 \section*{ECE 354: Project 2 Part B}
 Group: ECE.354.S11-G031 \\
 Members: Ben Ridder (brridder), Casey Banner (cccbanne), 
@@ -12,48 +19,45 @@ simplicity. Any kernel structures required to understand the primitive are
 described when the primitive is discussed.
 
 \subsection*{RTX Initialization of Memory Management} 
-The RTX initialization of memory management is called by \texttt{init()}.
-This function then uses the beginning of free memory to call \texttt{init\_memory(void* memory\_start)}.
-The pseudo code for this initialization can be see in Listing~\ref{meminit}. 
-The data structure that is used to implement our memory management is known as a 
-free list. A free list is singly linked list that stores the address of the next 
-free memory in the first four bytes of the current memory block. The only pointer 
-pointer required is to the head of the free list. This allows the list to be 
-traversed in $O(1)$ time. In order to prevent against allocating the same block 
-multiple times and also double deallocation a bit field with a bit for each memory 
-block was created. This bit field stores a value of 0 if the memory is free and a 
-value 1 if it is currently allocated, this check can also be made in $O(1)$. 
+The final phase of the RTX initialization is the memory management phase.
+Memory blocks are allocated beginning at the start of free memory. The function
+call \texttt{init\_memory(void* memory\_start)}, as seen in
+Listing~\ref{meminit}. A free list is used to implement linking and management
+of the memory blocks. A free list is a singly linked list that stores the
+address of the next free memory in the first four bytes of the current memory
+block. The only pointer required is to the head of this list which allows the
+list to be traversed in $O(1)$ time.  Over-allocation and double deallocation
+prevention is handled by a bit field containing a bit for each memory block.
+When the memory is allocation the associated bit is set to 1 and for when it is
+released it is set back to 0. 
 
-\lstset{caption={Pseudo code for RTX initialization of memory management},label=meminit}
+\lstset{caption={Pseudo code for RTX initialization of memory
+        management},label=meminit}
 \begin{lstlisting}
-void init(){
-    init_memory(void* memory_start)
-}
-
 void init_memory(void* memory_start){
-    declare local variables
     
     head of memory = start of free memory + (number of memory blocks - 1)*(size of memory block)
-
-    iterate over all blocks in free list{
+    
+    for each block in free list:
         store address of next free memory block in current block
-    }
 
     initialize the memory allocation bit field to 0
 }
 \end{lstlisting}
 
 \subsection*{Request and Release Memory Block}
-The \texttt{request\_memory\_block()} and \texttt{release\_memory\_block()} primitives 
-are used by the operating system to allocate and deallocate memory blocks for processes.
+The \texttt{request\_memory\_block()} and \texttt{release\_memory\_block()}
+primitives are used by the operating system to allocate and deallocate memory
+blocks for processes.
 
-Requesting a memory block is shown as pseudo code in Listing~\ref{requestmemory}. First a 
-mode switch to kernel mode is made. After the mode switch a check is made to see if any 
-memory blocks are available. If there are no available memory blocks the process is moved 
-to a blocked state and releases the processor. If there are available memory blocks the 
-block is popped off of the free list and a check is made to see what the index of the next 
-available block is. That bit in the memory allocation field is then set to 1 and then the 
-address of that block is returned.
+Requesting a memory block is shown in pseudo code in
+Listing~\ref{requestmemory}. First a mode switch to kernel mode is made. After
+the mode switch, a check is made to see if any memory blocks are available. If
+there are no available memory blocks, the process is moved to a blocked state
+and the processor is released. If there are, the memory block is popped off of
+the free list. The block index is retrieved and the appropriate memory
+allocation bit is set high. Finally, the memory block is returned.
+
 
 \lstset{caption={Pseudo code for requesting memory blocks}, label=requestmemory}
 \begin{lstlisting}
@@ -72,16 +76,17 @@ void* request_memory_block(){
 }
 \end{lstlisting}
 
-Releasing a memory block is shown in the pseudo code in Listing~\ref{releasememory}. First a 
-system call is made using the address of the memory block as a parameter in order to switch
-kernel mode. After the mode switch a check is made to determine the index in the allocation 
-field of the block. This index is then used to see if this block is currently allocated. If 
-it is not currently allocated then the system returns \texttt{RTX\_ERROR}. If the block has 
-been allocated then the block is pushed back on to the free list and that bit in the memory 
-allocation field is set back to 0. A check is then made to see if there are any processes 
-currently blocked on memory. If there are then the first blocked process has its state set 
-to ready and \texttt{RTX\_SUCCESS} is returned. If there are no processes blocked on memory 
-then \texttt{RTX\_SUCCESS} is returned right away.
+Releasing a memory block is shown in the pseudo code in
+Listing~\ref{releasememory}. First a system call is made using the address of
+the memory block as a parameter.  After the mode switch is performed, a check
+is made to determine the index in the allocation field of the block. This index
+is used to see if this block is currently allocated. If it is not then the
+system returns \texttt{RTX\_ERROR}. If the block has been allocated then the
+block is pushed back on to the free list and that bit in the memory allocation
+field is set back to 0. Next, a check is made to see if there are any processes
+currently blocked on memory. If any are found, the first blocked process has
+its state set to ready and \texttt{RTX\_SUCCESS} is returned. If there are no
+processes blocked on memory then \texttt{RTX\_SUCCESS} is returned right away.
 
 \lstset{caption={Pseudo code for releasing memory blocks}, label=releasememory}
 \begin{lstlisting}
@@ -103,17 +108,22 @@ int release_memory_block(void* memory_block){
 
 \subsection*{Send and Receive Messages}
 
-The primitives \texttt{send\_message(...)} and \texttt{receive\_message(...)} are used by processes 
-to send and receive messages between them. Each process has its own message queue which is set to NULL 
-when the process is initialized. Whereas, when a process sends a message it is enqueued to the message queue of 
-the receiving process. When a process attempts to receive a message it polls its own message queue.
+The primitives \texttt{send\_message(...)} and \texttt{receive\_message(...)}
+are used by processes to send and receive messages between them. Each process
+has its own message queue which is set to NULL upon process initialization.
+When a process sends a message it is enqueued to the message queue of the
+receiving process. When a process attempts to receive a message it polls its
+own message queue.
 
-The pseudo code for \texttt{send\_message(...)} can be seen in Listing~\ref{sendmsg}. First a system call 
-is made using the process id of the process intended to receive the message and the message itself as 
-arguments. The system call then switches into kernel mode. Once the mode switch is complete the message is 
-then pushed on the end of the message queue. There is no size limit on the message queue so this will never 
-cause an error. A check is then made to see if the process being sent a message is currently blocked on 
-messages. If it is the state of this process is set to ready. Then \texttt{RTX\_SUCCESS} is returned.
+Listing~\ref{sendmsg} describes the functionality of
+\texttt{send\_message(...)}.  First a system call is made using the process id
+of the process intended to receive the message and the message itself as
+arguments. The system call then switches into kernel mode. Once the mode
+switch is complete the message is then pushed on the end of the message queue.
+There is no size limit on the message queue so this will never cause an
+error. A check is then made to see if the process being sent a message is
+currently blocked on messages. If it is the state of this process is set to
+ready. Then \texttt{RTX\_SUCCESS} is returned.
 
 
 \lstset{caption={Pseudo code for sending messages}, label=sendmsg}
@@ -131,12 +141,15 @@ int send_message(int process_id, void* message_envelope){
 \end{lstlisting}
 
 
-Pseudo code for \texttt{receive\_message(...)} is shown in Listing~\ref{receivemsg}. A system call is made 
-to switch the system into kernel mode. In this system call a pointer for storing the process id of the sender 
-is passed in as a paramater. Upon switching to kernel mode the running process checks to see if its message 
-queue is empty. If the message queue is empty the process is now blocked on messages, its state is changed 
-to reflect this and release processor is called. If the queue is not empty the message is popped off the 
-queue, the process id of the sender is written to the passed in pointer, and the message is returned. 
+Pseudo code for \texttt{receive\_message(...)} is shown in
+Listing~\ref{receivemsg}. A system call is made to switch the system into
+kernel mode. In this system call a pointer for storing the process id of the
+sender is passed in as a paramater. Upon switching to kernel mode the running
+process checks to see if its message queue is empty. If the message queue is
+empty the process is now blocked on messages, its state is changed to reflect
+this and release processor is called. If the queue is not empty the message is
+popped off the queue, the process id of the sender is written to the passed in
+pointer, and the message is returned. 
 
 
 \lstset{caption={Pseudo code for receiving messages}, label=receivemsg}
