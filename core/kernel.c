@@ -244,12 +244,17 @@ int k_get_block_index(void* addr) {
 }
 
 int k_send_message(int process_id, message_envelope* message) {
-    process_control_block* receiving_process = &processes[process_id];
+    process_control_block* receiving_process;
+	
+    if (process_id < 0 || process_id > NUM_PROCESSES - 1) {
+	return RTX_ERROR;
+    }
+
+    receiving_process = &processes[process_id];
     
     //
     // Set the sender and receiver fields of the message
     //
-
     message->sender_pid = running_process->pid;
     message->receiver_pid = process_id;
     queue_enqueue_m(&receiving_process->messages, message);
