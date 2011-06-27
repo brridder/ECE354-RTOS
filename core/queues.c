@@ -87,8 +87,6 @@ void queue_remove_p(process_queue* queue, process_control_block* process) {
 
     process->next = NULL;
     process->previous = NULL;
-
-    return process;
 }
 
 void queue_enqueue_m(message_queue* queue, message_envelope* message) {
