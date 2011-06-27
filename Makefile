@@ -11,13 +11,11 @@ OBJS=./lib/dbug.o ./core/kernel.o ./core/soft_interrupts.o rtx.o \
 	./processes/system_processes.o ./core/init.o ./lib/string.o \
 	main.o ./core/queues.o
 PWD_OBJS=./main.o ./rtx.o
-TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 provided_mlight.s19
+TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 \
+	provided_mlight.s19
 
 all: tests 
 
-# Note, GCC builds things in order, it's important to put the
-# ASM first, so that it is located at the beginning of our program.
-#rtx.s19:  $(OBJS)
 rtx.s19: build_core build_lib build_processes $(PWD_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o rtx.bin $(ASM) $(OBJS) 
 	$(OBJCPY) --output-format=srec rtx.bin rtx.s19

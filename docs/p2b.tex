@@ -25,11 +25,11 @@ call \texttt{init\_memory(void* memory\_start)}, as seen in
 Listing~\ref{meminit}. A free list is used to implement linking and management
 of the memory blocks. A free list is a singly linked list that stores the
 address of the next free memory in the first four bytes of the current memory
-block. The only pointer required is to the head of this list which allows the
-list to be traversed in $O(1)$ time.  Over-allocation and double deallocation
+block. The only pointer required is to the head of this list. Push and pop
+operations can be done in $O(1)$ time. Over-allocation and double deallocation
 prevention is handled by a bit field containing a bit for each memory block.
 When the memory is allocation the associated bit is set to 1 and for when it is
-released it is set back to 0. 
+released it is set back to 0.
 
 \lstset{caption={Pseudo code for RTX initialization of memory
         management},label=meminit}
@@ -54,10 +54,9 @@ Requesting a memory block is shown in pseudo code in
 Listing~\ref{requestmemory}. First a mode switch to kernel mode is made. After
 the mode switch, a check is made to see if any memory blocks are available. If
 there are no available memory blocks, the process is moved to a blocked state
-and the processor is released. If there are, the memory block is popped off of
-the free list. The block index is retrieved and the appropriate memory
-allocation bit is set high. Finally, the memory block is returned.
-
+and the processor is released. If memory is available, the memory block is
+popped off of the free list. The block index is retrieved and the appropriate memory
+allocation bit is set high. Finally, the memory block address is returned.
 
 \lstset{caption={Pseudo code for requesting memory blocks}, label=requestmemory}
 \begin{lstlisting}
@@ -110,21 +109,21 @@ int release_memory_block(void* memory_block){
 
 The primitives \texttt{send\_message(...)} and \texttt{receive\_message(...)}
 are used by processes to send and receive messages between them. Each process
-has its own message queue which is set to NULL upon process initialization.
+has its own message queue which is setup upon process initialization.
 When a process sends a message it is enqueued to the message queue of the
 receiving process. When a process attempts to receive a message it polls its
 own message queue.
 
 Listing~\ref{sendmsg} describes the functionality of
-\texttt{send\_message(...)}.  First a system call is made using the process id
-of the process intended to receive the message and the message itself as
-arguments. The system call then switches into kernel mode. Once the mode
-switch is complete the message is then pushed on the end of the message queue.
-There is no size limit on the message queue so this will never cause an
-error. A check is then made to see if the process being sent a message is
-currently blocked on messages. If it is the state of this process is set to
-ready. Then \texttt{RTX\_SUCCESS} is returned.
-
+\texttt{send\_message(...)}.  First, a system call is made with the
+process id of the receiver and a pointer to the message envelope. The
+system call then switches into kernel mode. Once the mode switch is
+complete the message is then pushed on the end of the recipient's
+message queue. There is no size limit on the message queue so this
+will never cause an error. A check is then made to see if the
+recipient process is currently blocked on receiving messages. If this
+is the case the state of this process is set to ready. Then
+\texttt{RTX\_SUCCESS} is returned.
 
 \lstset{caption={Pseudo code for sending messages}, label=sendmsg}
 \begin{lstlisting}
@@ -142,15 +141,15 @@ int send_message(int process_id, void* message_envelope){
 
 
 Pseudo code for \texttt{receive\_message(...)} is shown in
-Listing~\ref{receivemsg}. A system call is made to switch the system into
-kernel mode. In this system call a pointer for storing the process id of the
-sender is passed in as a paramater. Upon switching to kernel mode the running
-process checks to see if its message queue is empty. If the message queue is
-empty the process is now blocked on messages, its state is changed to reflect
-this and release processor is called. If the queue is not empty the message is
-popped off the queue, the process id of the sender is written to the passed in
-pointer, and the message is returned. 
-
+Listing~\ref{receivemsg}. A system call is made to switch the system
+into kernel mode. In this system call a pointer for storing the
+process id of the sender is passed in as a parameter. Upon switching
+to kernel mode the running process checks to see if its message queue
+is empty. If the message queue is empty the process is now blocked on
+messages. The processes' state is changed to reflect this and release
+processor is called. If the queue is not empty the message is popped
+off the queue, the process id of the sender is written to the
+\texttt{sender\_id} pointer, and the message is returned.
 
 \lstset{caption={Pseudo code for receiving messages}, label=receivemsg}
 \begin{lstlisting}
