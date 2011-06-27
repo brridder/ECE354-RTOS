@@ -1,6 +1,9 @@
 
 ECE354 RTX Group 031
 
+This version contains the fix made during the lab demo to add PID checking to 
+message sending.
+
 Documentation:
 
 Part 2B documentation is located in docs/p2b.pdf.
