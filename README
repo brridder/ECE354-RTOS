@@ -1,4 +1,29 @@
 
-Part 2A documentation is located in docs/p2.pdf
+ECE354 RTX Group 031
 
-The Makefile generates a combined loader + rtx image located in full.s19.
+Documentation:
+
+Part 2B documentation is located in docs/p2b.pdf.
+
+Files:
+
+  main.c - main rtx entry point
+  rtx.c and rtx.h - system calls
+  README - this file
+  core/ - all core kernel logic 
+  docs/ - documenattion
+  lib/ - debug and string libraries
+  loader/ - supplied rtx loader
+  tests/ - sets of test case programs
+
+Building:
+
+The Makefile generates a combined loader + rtx image located in main.s19.
+
+For every c file in tests/, a s19 is generated and merged with main.s19, into a
+file name full_testname.s19.
+
+Building for demos:
+
+`make demo` generates s19 files from each s19 file inside demo/. Each file is
+merged in turn with rtx.s19, and a demo_filename.s19 file is generated.

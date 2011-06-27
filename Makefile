@@ -14,7 +14,7 @@ PWD_OBJS=./main.o ./rtx.o
 TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 \
 	provided_mlight.s19
 
-all: tests 
+all: tests
 
 rtx.s19: build_core build_lib build_processes $(PWD_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o rtx.bin $(ASM) $(OBJS) 
@@ -61,3 +61,7 @@ tests: main.s19 build_tests
 	@for test in $(TESTS); do ( $(MERGE) full_$$test tests/$$test main.s19; \
 	chmod u+x full_$$test); done
 
+demo: rtx.s19
+	$(ECHO) Making demos
+	@for demo in `ls demo | grep 's19'`; do ( $(MERGE) demo_$$demo demo/$$demo \
+	rtx.s19; chmod u+x demo_$$demo); done
