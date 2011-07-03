@@ -7,7 +7,7 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
-#define NUM_PROCESSES 13
+#define NUM_PROCESSES 14
 #define NUM_PRIORITIES 4
 
 #define PROCESS_NUM_REGISTERS 15
