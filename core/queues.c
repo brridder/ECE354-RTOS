@@ -3,7 +3,7 @@
 //#define QUEUE_DEBUG
 
 void queue_enqueue_p(process_queue* queue, process_control_block* process) {
-    if (queue->head == NULL || queue->tail == NULL) {
+    if (queue->head == NULL && queue->tail == NULL) {
 
         //
         // The queue is empty. Assign the head and tail pointers of the queue to

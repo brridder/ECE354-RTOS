@@ -52,6 +52,7 @@ int k_release_processor() {
 }
 
 int k_preempt_processor(process_control_block* process) {
+    printf_1("PREEEMPTED WITH: %i\r\n", process->pid);
     k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
     return k_context_switch(process);
 }
