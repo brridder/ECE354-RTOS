@@ -98,7 +98,7 @@ void queue_enqueue_m(message_queue* queue, message_envelope* message) {
 
         queue->head = message;
         queue->tail = message;
-        message->prev = NULL;
+        message->previous = NULL;
         message->next = NULL;
     } else {
 
@@ -106,7 +106,7 @@ void queue_enqueue_m(message_queue* queue, message_envelope* message) {
         // Message queue is not empty, enqueue message
         //
         
-        message->prev = queue->tail;
+        message->previous = queue->tail;
         message->next = NULL;
         queue->tail->next = message;
         queue->tail = message;
@@ -128,9 +128,9 @@ message_envelope* queue_dequeue_m(message_queue* queue) {
             queue->tail = NULL;
         } else {
             queue->head = message->next;
-            queue->head->prev = NULL;
+            queue->head->previous = NULL;
             message->next = NULL;
-            message->prev = NULL;
+            message->previous = NULL;
         }
 
         return message;
@@ -142,4 +142,41 @@ message_envelope* queue_dequeue_m(message_queue* queue) {
 
         return NULL;
     }
+}
+
+void queue_remove_m(message_queue* queue, message_envelope* message) {
+    if (message->next == NULL && message->previous == NULL) { 
+
+        // 
+        // Message is the only item in the queue.  
+        //        
+
+        queue->head = NULL;
+        queue->tail = NULL;
+    } else if (message->next == NULL) { 
+
+        // 
+        // Message is the tail
+        //
+
+        message->previous->next = NULL;
+        queue->tail = message->previous;
+    } else if (message->previous == NULL) { 
+        // 
+        // Message is the head
+        //
+      
+        message->next->previous = NULL;
+        queue->head = message->next;
+    } else {
+        // 
+        // Message is in the middle somewhere.
+        //
+
+        message->next->previous = message->previous;
+        message->previous->next = message->next;
+    }
+
+    message->next = NULL;
+    message->previous = NULL;
 }

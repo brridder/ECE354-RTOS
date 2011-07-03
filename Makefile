@@ -15,6 +15,7 @@ OBJS=./lib/dbug.o ./core/kernel.o ./core/soft_interrupts.o rtx.o \
 
 PWD_OBJS=./main.o ./rtx.o
 TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 \
+	delay_tests.s19
 
 all: tests
 

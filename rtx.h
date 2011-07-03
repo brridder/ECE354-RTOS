@@ -17,9 +17,11 @@ typedef struct _message_envelope {
     int receiver_pid;
     int message_type;
     struct _message_envelope* next;
-    struct _message_envelope* prev;
-    unsigned char padding[44];
-    unsigned char data[64];
+    struct _message_envelope* previous;
+    int delay;
+    int delay_start;
+    unsigned char padding[36];
+    unsigned char data[64];  
 } message_envelope;
 
 /*
