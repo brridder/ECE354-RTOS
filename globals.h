@@ -24,4 +24,6 @@
 #define CRT_DISPLAY_PID 12
 #define KCD_PID 13
 
+#define GID "S11-G031"
+
 #endif

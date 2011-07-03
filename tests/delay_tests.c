@@ -14,8 +14,8 @@
 #include "../lib/dbug.h"
 #include "../lib/string.h"
 #include "../rtx.h"
+#include "../globals.h"
 
-/* third party dummy test process 1 */ 
 void test1()
 {
     void* message_1;
@@ -25,7 +25,7 @@ void test1()
     void* message_5;
     void* message_6;
 
-    printf_0("rtx_test: test1\r\n");      
+    printf_0(GID"_test: START\r\n"GID"_test: total 6 tests\r\n");
 
     message_1 = g_test_fixture.request_memory_block();
     delayed_send(2, message_1, 2);
@@ -45,8 +45,6 @@ void test1()
     message_6 = g_test_fixture.request_memory_block();
     delayed_send(2, message_6, 1);
 
-    printf_0("Process 1 done\r\n");
-
     while (1) {
         g_test_fixture.release_processor();
     }
@@ -60,32 +58,27 @@ void test2()
     int sender_id;
     void* message;
     
-    printf_0("rtx_test: test2\r\n");
-
     message_num = 0;
-    sender_id = -1;
     while (1) 
     {
         message = g_test_fixture.receive_message(&sender_id);
-        if (sender_id != -1) {
-            printf_1("Process 2 expected message with delay %i...",
-                     delays[message_num]);
-            if (((message_envelope*)message)->delay == delays[message_num]) {
-                printf_0("success.\r\n");
-            } else { 
-                printf_0("fail.\r\n");
-            }
-
-            message_num++;
-            sender_id = -1;
+        printf_1("Process 2 expected message with delay %i...",
+                 delays[message_num]);            
+        if (((message_envelope*)message)->delay == delays[message_num]) {
+            printf_0("success.\r\n");
+        } else { 
+            printf_0("fail.\r\n");
         }
-
+        
+        message_num++;
+        
         if (message_num == num_messages) {
             printf_1("Process 2 received %i messages total...success.\r\n",
-                num_messages);
+                     num_messages);
+            printf_0(GID"_test: END\r\n");
         } else if (message_num > num_messages) {
             printf_1("Process 2 received over %i messages total...fail.\r\n",
-                num_messages);
+                     num_messages);
         }
 
         g_test_fixture.release_memory_block(message);        
@@ -93,49 +86,42 @@ void test2()
     }
 }
 
-/* third party dummy test process 3 */ 
 void test3()
 {
-    printf_0("rtx_test: test3\r\n");
-
     while (1) 
     {   
         g_test_fixture.release_processor();
     }
 }
 
-/* third party dummy test process 4 */ 
 void test4()
 {
-    printf_0("rtx_test: test4\r\n");
-
     while (1) 
     {
         g_test_fixture.release_processor();
     }
 }
-/* third party dummy test process 5 */ 
+
 void test5()
 {
-    printf_0("rtx_test: test5\r\n");
-
     while (1) 
     {
         g_test_fixture.release_processor();
     }
 }
-/* third party dummy test process 6 */ 
+
 void test6()
 {
-    printf_0("rtx_test: test6\r\n");
-
     while (1) 
     {
         g_test_fixture.release_processor();
     }
 }
 
-/* register the third party test processes with RTX */
+//
+// Register the third party test processes with RTX
+//
+
 void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
 {
     int i;
