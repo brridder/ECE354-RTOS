@@ -180,3 +180,53 @@ void queue_remove_m(message_queue* queue, message_envelope* message) {
     message->next = NULL;
     message->previous = NULL;
 }
+
+
+/**
+ * @brief inserts a message into a queue, sorted ascending by
+ *        message->delay+message->delay_start
+ */
+void queue_insert_m(message_queue* queue, message_envelope* message) {
+    message_envelope* message_iter;
+
+    if (queue->head == NULL && queue->tail == NULL) {
+        queue_enqueue_m(queue, message);
+    } else {        
+        message_iter = queue->head;
+        while (message_iter) {
+            if ((message->delay + message->delay_start) <=
+                (message_iter->delay + message_iter->delay_start)) {
+
+                //
+                // Insert message before message_iter
+                //
+            
+                message->next = message_iter;
+                message->previous = message_iter->previous;
+                message_iter->previous = message;
+                
+                if (message->previous) {
+                    message->previous->next = message;
+                }
+
+                if (message_iter == queue->head) {
+                    queue->head = message;
+                }
+
+                goto queue_insert_m_done;
+            }
+
+            message_iter = message_iter->next;
+        }
+
+        //
+        // Largest value, put on tail
+        //
+
+        queue_enqueue_m(queue, message);
+    }
+
+queue_insert_m_done:
+    return;
+}
+

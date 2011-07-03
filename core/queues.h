@@ -11,5 +11,6 @@ void queue_remove_p(process_queue* queue, process_control_block* process);
 void queue_enqueue_m(message_queue* queue, message_envelope* message);
 message_envelope* queue_dequeue_m(message_queue* queue);
 void queue_remove_m(message_queue* queue, message_envelope* message);
+void queue_insert_m(message_queue* queue, message_envelope* message);
 
 #endif
