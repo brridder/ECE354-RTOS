@@ -11,11 +11,16 @@
 /*
  * Message Envelope
  */
+enum message_type {
+    MESSAGE_CMD_REG = 0,
+    MESSAGE_KEY_INPUT,
+    MESSAGE_OUTPUT
+};
 
 typedef struct _message_envelope {
     int sender_pid;
     int receiver_pid;
-    int message_type;
+    enum message_type type;
     struct _message_envelope* next;
     struct _message_envelope* previous;
     int delay;
@@ -23,6 +28,8 @@ typedef struct _message_envelope {
     unsigned char padding[36];
     unsigned char data[64];  
 } message_envelope;
+
+
 
 /*
  * Processor Management

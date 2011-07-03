@@ -59,6 +59,7 @@ void i_process_uart() {
                 in_string[i++] = '\0';
                 if (in_string[0] == '%') {
                     message = (message_envelope*)request_memory_block();
+                    message->type = MESSAGE_KEY_INPUT;
                     i = 0;
                     while (in_string[i] != '\0') {
                         message->data[i] = in_string[i];
@@ -145,22 +146,23 @@ void process_crt_display() {
     message = NULL;
     i = 0;
     char_handled = 0;
-    printf_0("CRT DISPLAY_PROCESS Started\r\n");
 
     while(1) {
         message = receive_message(&sender_id);
-        i = 0;
-        while (message->data[i] != '\0') { 
-            if (!char_handled) {
-                char_handled = 1;
-                char_out = message->data[i++];        
-                uart1_set_interrupts(&int_config);
+        if (message->type == MESSAGE_OUTPUT || message->type == MESSAGE_KEY_INPUT) {
+            i = 0;
+            while (message->data[i] != '\0') { 
+                if (!char_handled) {
+                    char_handled = 1;
+                    char_out = message->data[i++];        
+                    uart1_set_interrupts(&int_config);
+                }
             }
         }
         release_memory_block(message);
         message = NULL;
-         
-        release_processor();
+        
+       release_processor();
     }
 }
 
@@ -169,14 +171,51 @@ void process_crt_display() {
 //
 void process_kcd() {
     int sender_id;
-    message_envelope *message; 
-
-    printf_0("KCD PROCESS STARTED\r\n");
-
+    int num_cmds;
+    int i;
+    int j;
+    int found_cmd;
+    message_envelope *message_receive; 
+    message_envelope *message_send; 
+    command cmds[32]; 
+    
+    num_cmds = 0;
+    //
+    // TODO :: FINISH THIS;
+    //
     while(1) {
-        message = (message_envelope*)receive_message(&sender_id);
-        send_message(CRT_DISPLAY_PID, message);
-        message = NULL;
+        message_receive = (message_envelope*)receive_message(&sender_id);
+        if (message_receive->type == MESSAGE_KEY_INPUT) {
+            for(i = 0; i < num_cmds; i++) {
+                j = 0;
+                found_cmd = 0;
+                while(message_receive->data[j] != ' ') {
+                    if (message_receive->data[j] != cmds[i].cmd_str[j]) {
+                        break;
+                    }
+                    j++;
+                } 
+            }
+            message_send = (message_envelope*)request_memory_block();
+            i = 0;
+            while(message_receive->data[i] != '\0') {
+                message_send->data[i] = message_receive->data[i];
+                i++;
+            }
+            send_message(CRT_DISPLAY_PID, message_receive);
+        } else if (message_receive->type == MESSAGE_CMD_REG) {
+            i = 0;
+            while(message_receive->data[i] != '\0') {
+                cmds[num_cmds].cmd_str[i] = message_receive->data[i];
+                i++;
+            }
+            cmds[num_cmds].reg_pid = sender_id;
+            num_cmds++;
+            release_memory_block(message_receive);
+        } else {
+            release_memory_block(message_receive);
+        }
+        message_receive = NULL;
         release_processor();
     }
 }

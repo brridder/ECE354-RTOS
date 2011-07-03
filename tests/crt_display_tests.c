@@ -3,11 +3,6 @@
  *--------------------------------------------------------------------------
  */
 /**
- * @file:   rtx_test_dummy.c   
- * @author: Thomas Reidemeister
- * @author: Irene Huang
- * @date:   2010.02.11
- * @brief:  rtx test suite 
  */
 
 #include "rtx_test.h"
