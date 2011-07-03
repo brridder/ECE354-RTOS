@@ -35,12 +35,14 @@ int k_release_processor() {
     rtx_dbug_outs("k_release_processor()\r\n");
 #endif
 
-    if (running_process->state == STATE_BLOCKED_MESSAGE) {
-        k_priority_enqueue_process(running_process, QUEUE_BLOCKED_MESSAGE);
-    } else if (running_process->state == STATE_BLOCKED_MEMORY){
-        k_priority_enqueue_process(running_process, QUEUE_BLOCKED_MEMORY);
-    } else {
-        k_priority_enqueue_process(running_process, QUEUE_READY);
+    if (!running_process->is_i_process) {
+        if (running_process->state == STATE_BLOCKED_MESSAGE) {
+            k_priority_enqueue_process(running_process, QUEUE_BLOCKED_MESSAGE);
+        } else if (running_process->state == STATE_BLOCKED_MEMORY){
+            k_priority_enqueue_process(running_process, QUEUE_BLOCKED_MEMORY);
+        } else {
+            k_priority_enqueue_process(running_process, QUEUE_READY);
+        }
     }
  
     process = k_get_next_process(QUEUE_PREEMPTED);
@@ -56,6 +58,7 @@ int k_preempt_processor(process_control_block* process) {
     printf_1("k_preempt_processor(%x)\r\n", process);
 #endif
     k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
+    
     return k_context_switch(process);
 }
 
