@@ -33,6 +33,6 @@ void uart1_set_interrupts(uart_interrupt_config* config);
  * Setup UART1. Baud rate is detected based on _CFSERVER_.
  * @param[in] config UART configuration.
  */
-void uart1_setup(uart_config* config);
+void init_uart1(uart_config* config);
 
 #endif

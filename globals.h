@@ -15,5 +15,6 @@
 #define NUM_MEM_BLKS 32
 #define MEM_BLK_SIZE 128
 
+#define UART_PID 10
 
 #endif

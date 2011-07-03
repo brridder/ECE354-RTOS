@@ -75,3 +75,7 @@ void process_test_get_priority() {
         release_processor();
     }
 }
+
+void i_process_uart() {
+
+}

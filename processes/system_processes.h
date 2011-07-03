@@ -5,4 +5,5 @@ void process_null();
 void process_test();
 void process_test_get_priority();
 
+void i_process_uart();
 #endif 

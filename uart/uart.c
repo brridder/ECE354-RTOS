@@ -13,7 +13,7 @@ void uart1_set_interrupts(uart_interrupt_config* config) {
     SERIAL1_IMR = mask;
 }
 
-void uart1_setup(uart_config* config) {
+void init_uart1(uart_config* config) {
     uart_interrupt_config interrupt_config;
 
     // Reset UART1
