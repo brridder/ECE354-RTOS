@@ -6,8 +6,10 @@
  */
 
 #include "system_processes.h"
+#include "../core/process.h"
 #include "../rtx.h"
 #include "../core/kernel.h"
+#include "../core/queues.h"
 #include "../lib/dbug.h"
 #include "../lib/string.h"
 #include "../globals.h"
@@ -15,6 +17,9 @@
 
 char char_out;
 int char_handled;
+
+message_queue delayed_messages;
+int timer;
 
 /**
  * @brief: null_process that does nothing
@@ -81,18 +86,51 @@ void i_process_uart() {
     }
 }
 
-void i_process_timer() {
-    int timer = 0;
+void i_process_timer() {    
+    message_envelope* message_iter;
+    message_envelope* current_message;
     
-    printf_0("Timer process started\r\n");
+    timer = 0;
+    delayed_messages.head = NULL;
+    delayed_messages.tail = NULL;
 
     while(1) {
         release_processor();
 
+        //
+        // Increment timer
+        //
+        
         timer++;
-
         if (timer % 1000 == 0) {
-            printf_1("Timer: %i\r\n", timer);
+            printf_1("Timer: %ims\r\n", timer);
+        }
+
+        //
+        // Check for delayed messages that need to be sent
+        //
+
+        if (delayed_messages.head != NULL) {
+            message_iter = delayed_messages.head;            
+
+            while (message_iter) {
+                current_message = message_iter;
+                message_iter = message_iter->next;
+
+                if ((timer - current_message->delay_start)
+                    >= current_message->delay) {
+
+                    printf_1("Message with delay: %i ready, forwarding\r\n", 
+                             current_message->delay);
+
+                    //
+                    // Remove from queue and deliver
+                    //
+
+                    queue_remove_m(&delayed_messages, current_message);
+                    k_forward_message(current_message);
+                }
+            }
         }
     }
 }

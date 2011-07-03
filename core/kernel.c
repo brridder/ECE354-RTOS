@@ -7,6 +7,9 @@
 #include "../lib/string.h"
 #include "../rtx.h"
 
+extern message_queue delayed_messages;
+extern int timer;
+
 void* memory_head;
 unsigned long int memory_alloc_field;
 void* mem_end;
@@ -272,6 +275,7 @@ int k_send_message(int process_id, message_envelope* message) {
     //
     // Set the sender and receiver fields of the message
     //
+
     message->sender_pid = running_process->pid;
     message->receiver_pid = process_id;
     queue_enqueue_m(&receiving_process->messages, message);
@@ -284,6 +288,30 @@ int k_send_message(int process_id, message_envelope* message) {
     if (receiving_process->state == STATE_BLOCKED_MESSAGE) {
         receiving_process->state = STATE_READY;      
         receiving_process = k_priority_queue_remove(process_id);
+        k_priority_enqueue_process(receiving_process, QUEUE_READY);
+    }
+
+    //
+    // The queue has no size limit, always return success
+    //
+
+    return RTX_SUCCESS;
+}
+
+int k_forward_message(message_envelope* message) {
+    process_control_block* receiving_process;
+
+    receiving_process = &processes[message->receiver_pid];
+    queue_enqueue_m(&receiving_process->messages, message);
+
+    //
+    // Update the state of the receiving process to be unblocked and move
+    // it to the ready queue for its priority level.
+    //
+
+    if (receiving_process->state == STATE_BLOCKED_MESSAGE) {
+        receiving_process->state = STATE_READY;      
+        receiving_process = k_priority_queue_remove(message->receiver_pid);
         k_priority_enqueue_process(receiving_process, QUEUE_READY);
     }
 
@@ -323,7 +351,12 @@ void* k_receive_message(int* sender_id) {
     return message;
 }
 
-int k_delayed_send(int process_id, message_envelope* message_envelope, int delay) {
+int k_delayed_send(int process_id, message_envelope* message, int delay) {
+    message->sender_pid = running_process->pid;
+    message->receiver_pid = process_id;
+    message->delay = delay;
+    message->delay_start = timer;
+    queue_enqueue_m(&delayed_messages, message);
     
     return 0;
 }
