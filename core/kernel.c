@@ -58,7 +58,6 @@ int k_preempt_processor(process_control_block* process) {
     printf_1("k_preempt_processor(%x)\r\n", process);
 #endif
     k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
-    
     return k_context_switch(process);
 }
 
@@ -336,7 +335,7 @@ int k_context_switch(process_control_block* process) {
     process_control_block* previous_process;
 
 #ifdef DEBUG
-    printf_0("k_context_switch()\r\n");
+    printf_1("k_context_switch(%x)\r\n", process);
 #endif
 
     if (!process) {
