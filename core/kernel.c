@@ -264,7 +264,7 @@ int k_send_message(int process_id, message_envelope* message) {
     process_control_block* receiving_process;
 	
     if (process_id < 0 || process_id > NUM_PROCESSES - 1) {
-	return RTX_ERROR;
+        return RTX_ERROR;
     }
 
     receiving_process = &processes[process_id];

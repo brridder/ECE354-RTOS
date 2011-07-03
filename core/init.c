@@ -225,7 +225,8 @@ void init_priority_queues() {
     for (i = 0; i < NUM_TEST_PROCS; i++) {
         k_priority_enqueue_process(&processes[i+1], QUEUE_READY);
     }
-    k_priority_enqueue_process(&processes[12], QUEUE_READY);
+    k_priority_enqueue_process(&processes[CRT_DISPLAY_PID], QUEUE_READY);
+    k_priority_enqueue_process(&processes[KCD_PID], QUEUE_READY);
 }
 
 /**

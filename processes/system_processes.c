@@ -32,6 +32,7 @@ void process_null() {
 void i_process_uart() {
     message_envelope *message;
     unsigned char uart_state;
+    char in_string[64];
     char char_in;
     int i;
 
@@ -40,24 +41,29 @@ void i_process_uart() {
     while(1) {
         uart_state = SERIAL1_USR;
 
-        if (message == NULL) {
-            message = (message_envelope*)request_memory_block(); 
-        }
         // 
         // Read in waiting data
         //
        
        if (uart_state & 0x01) {
             char_in = SERIAL1_RD;
-            message->data[i++] = char_in;
+            in_string[i++] = char_in;
+
             if (char_in == CR) {
-                message->data[i++] = '\0';
-                i = 0; 
-                if (message->data[0] == '%') {
-                    send_message(KCD_PID, &message);
-                    printf_0("Switch to keyboard command PROC\r\n");
+                in_string[i++] = '\n';
+                in_string[i++] = '\0';
+                if (in_string[0] == '%') {
+                    message = (message_envelope*)request_memory_block();
+                    i = 0;
+                    while (in_string[i] != '\0') {
+                        message->data[i] = in_string[i];
+                        i++;
+                    }
+                    send_message(KCD_PID, message);
                     message = NULL;
                 } 
+
+                i = 0; 
             }
 #ifdef UART_DEBUG
             printf_1("uart1 char in : %i\r\n", char_in);
@@ -102,14 +108,11 @@ void process_crt_display() {
     i = 0;
     char_handled = 0;
     printf_0("CRT DISPLAY_PROCESS Started\r\n");
+
     while(1) {
-        //
-        // Only get the next message if the current one is null 
-        //
         message = receive_message(&sender_id);
         i = 0;
         while (message->data[i] != '\0') { 
-
             if (!char_handled) {
                 char_handled = 1;
                 char_out = message->data[i++];        
@@ -119,6 +122,7 @@ void process_crt_display() {
         release_memory_block(message);
         message = NULL;
          
+        release_processor();
     }
 }
 
@@ -129,7 +133,12 @@ void process_kcd() {
     int sender_id;
     message_envelope *message; 
 
+    printf_0("KCD PROCESS STARTED\r\n");
+
     while(1) {
-        message = receive_message(&sender_id);
+        message = (message_envelope*)receive_message(&sender_id);
+        send_message(CRT_DISPLAY_PID, message);
+        message = NULL;
+        release_processor();
     }
 }
