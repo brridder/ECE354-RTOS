@@ -286,7 +286,8 @@ void init_user_procs() {
 #ifdef _INIT_DEBUG_
     printf_0("done\r\n");
 #endif
-   
+  
+
     processes[TIMER_PID].pid = TIMER_PID;
     processes[TIMER_PID].priority = 4;
     processes[TIMER_PID].stack_size = 4096;

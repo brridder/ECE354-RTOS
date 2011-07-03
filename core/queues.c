@@ -1,8 +1,8 @@
 #include "queues.h"
 #include "../lib/string.h"
-#define QUEUE_DEBUG
+//#define QUEUE_DEBUG
 void queue_enqueue_p(process_queue* queue, process_control_block* process) {
-    if (queue->head == NULL) {
+    if (queue->head == NULL || queue->tail == NULL) {
 
         //
         // The queue is empty. Assign the head and tail pointers of the queue to
@@ -19,7 +19,7 @@ void queue_enqueue_p(process_queue* queue, process_control_block* process) {
         // The queue is not empty. Attach the process to the current 
         // tail and update the tail pointer.
         //
-
+        
         process->previous = queue->tail;
         process->next = NULL;
         queue->tail->next = process;
