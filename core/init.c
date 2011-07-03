@@ -108,7 +108,7 @@ void init_processes(VOID* stack_start) {
     processes[TIMER_PID].pid = TIMER_PID;
     processes[TIMER_PID].priority = 4;
     processes[TIMER_PID].stack_size = 4096;
-    processes[TIMER_PID].entry = &i_process_uart;
+    processes[TIMER_PID].entry = &i_process_timer;
     processes[TIMER_PID].is_i_process = TRUE;
     processes[TIMER_PID].next = NULL;
     processes[TIMER_PID].previous = NULL;

@@ -3,4 +3,6 @@
 
 void process_null();
 void i_process_uart();
+void i_process_timer();
+
 #endif 
