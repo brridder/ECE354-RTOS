@@ -187,8 +187,8 @@ void init_interrupts() {
     //
 
     TIMER0_ICR = 0x9B;    
-    TIMER0_TRR = 25;
-    TIMER0_TMR = 0xC71B;
+    TIMER0_TRR = 180;
+    TIMER0_TMR = 0xF93B;
 
     asm("move.l #timer_isr, %d0");
     asm("move.l %d0, 0x10000078");
