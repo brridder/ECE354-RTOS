@@ -24,7 +24,7 @@ int k_release_memory_block(void* memory_block);
 
 int k_send_message(int process_id, message_envelope* message);
 void* k_receive_message(int* sender_id);
-
+int k_delayed_send(int process_id, message_envelope* message, int delay);
 /**
  * Internal kernel calls
  */

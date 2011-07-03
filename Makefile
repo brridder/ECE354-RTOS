@@ -1,21 +1,24 @@
 # Makefile
 include Makefile.inc
 
-DIRS=loader tests core lib 
+DIRS=loader tests core lib uart processes
 ASM=start.s
 LDFLAGS = -Trtx.ld -Wl,-Map=main.map
 DEPS=./lib/dbug.h ./core/kernel.h ./core/soft_interrupts.h rtx.h \
 	./processes/system_processes.h ./core/init.h ./lib/string.h \
-	process.h loader/rtx_test.h ./core/queues.h
+	./uart/uart.h process.h loader/rtx_test.h ./core/queues.h \
+	./core/hard_interrupts.h
+
 OBJS=./lib/dbug.o ./core/kernel.o ./core/soft_interrupts.o rtx.o \
 	./processes/system_processes.o ./core/init.o ./lib/string.o \
-	main.o ./core/queues.o
+	./uart/uart.o main.o ./core/queues.o ./core/hard_interrupts.o
+
 PWD_OBJS=./main.o ./rtx.o
 TESTS=rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 \
 
 all: tests
 
-rtx.s19: build_core build_lib build_processes $(PWD_OBJS)
+rtx.s19: build_core build_lib build_processes build_uart $(PWD_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o rtx.bin $(ASM) $(OBJS) 
 	$(OBJCPY) --output-format=srec rtx.bin rtx.s19
 
@@ -54,6 +57,9 @@ build_processes:
 
 build_tests: 
 	cd tests; $(MAKE);
+
+build_uart:
+	cd uart; $(MAKE);
 
 tests: main.s19 build_tests
 	$(ECHO) Making tests

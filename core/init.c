@@ -16,7 +16,8 @@
 #include "../tests/rtx_test.h"
 #include "../rtx.h"
 #include "../lib/string.h"
-
+#include "../uart/uart.h"
+#include "./hard_interrupts.h"
 extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
@@ -154,6 +155,7 @@ void init_processes(VOID* stack_start) {
  */
 
 void init_interrupts() {
+    uart_config uart1_config;
     asm("move.l %a0, -(%a7)");
     asm("move.l %d0, -(%a7)");
     
@@ -170,10 +172,12 @@ void init_interrupts() {
     
     asm("move.l #system_call, %d0");
     asm("move.l %d0, 0x10000080");
+    
+    asm("move.l #uart_isr, %d0");
+    asm("move.l %d0, 0x10000100");
 
-    //
-    // TODO: Setup UART and Timer interrupts
-    //
+    uart1_config.vector = 64;
+    init_uart1(&uart1_config); 
 
     asm("move.l (%a7)+, %d0");
     asm("move.l (%a7)+, %a0");    
