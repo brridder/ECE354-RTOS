@@ -13,7 +13,6 @@
 #include "../globals.h"
 #include "../uart/uart.h"
 
-char in_string[1024];
 char char_out;
 int char_handled;
 
@@ -31,28 +30,34 @@ void process_null() {
 }
 
 void i_process_uart() {
+    message_envelope *message;
     unsigned char uart_state;
     char char_in;
     int i;
 
     i = 0;
-
+    message = NULL;
     while(1) {
         uart_state = SERIAL1_USR;
-        
+
+        if (message == NULL) {
+            message = (message_envelope*)request_memory_block(); 
+        }
         // 
         // Read in waiting data
         //
        
        if (uart_state & 0x01) {
             char_in = SERIAL1_RD;
-            in_string[i++] = char_in;
+            message->data[i++] = char_in;
             if (char_in == CR) {
-                in_string[i++] = '\0';
+                message->data[i++] = '\0';
                 i = 0; 
-                if (in_string[0] == '%') {
+                if (message->data[0] == '%') {
+                    send_message(KCD_PID, &message);
                     printf_0("Switch to keyboard command PROC\r\n");
-                }
+                    message = NULL;
+                } 
             }
 #ifdef UART_DEBUG
             printf_1("uart1 char in : %i\r\n", char_in);
@@ -114,5 +119,17 @@ void process_crt_display() {
         release_memory_block(message);
         message = NULL;
          
+    }
+}
+
+// 
+// Keyboard command decoder
+//
+void process_kcd() {
+    int sender_id;
+    message_envelope *message; 
+
+    while(1) {
+        message = receive_message(&sender_id);
     }
 }

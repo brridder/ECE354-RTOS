@@ -22,4 +22,6 @@
 #define UART_PID 10
 #define TIMER_PID 11
 #define CRT_DISPLAY_PID 12
+#define KCD_PID 13
+
 #endif

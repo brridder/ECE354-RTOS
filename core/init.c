@@ -308,6 +308,14 @@ void init_user_procs() {
     processes[CRT_DISPLAY_PID].next = NULL;
     processes[CRT_DISPLAY_PID].previous = NULL;
 
+    processes[KCD_PID].pid = KCD_PID;
+    processes[KCD_PID].priority = 0;
+    processes[KCD_PID].stack_size = 4096;
+    processes[KCD_PID].entry = &process_kcd;
+    processes[KCD_PID].is_i_process = FALSE;
+    processes[KCD_PID].next = NULL;
+    processes[KCD_PID].previous = NULL;
+
     return;
 }
 
