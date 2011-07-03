@@ -22,11 +22,13 @@ void test1()
     void* message_2;
     void* message_3;
     void* message_4;
+    void* message_5;
+    void* message_6;
 
     printf_0("rtx_test: test1\r\n");      
 
     message_1 = g_test_fixture.request_memory_block();
-    delayed_send(2, message_1, 1);
+    delayed_send(2, message_1, 2);
 
     message_2 = g_test_fixture.request_memory_block();
     delayed_send(2, message_2, 100);
@@ -36,6 +38,13 @@ void test1()
 
     message_4 = g_test_fixture.request_memory_block();
     delayed_send(2, message_4, 2000);
+
+    message_5 = g_test_fixture.request_memory_block();
+    delayed_send(2, message_5, 500);
+
+    message_6 = g_test_fixture.request_memory_block();
+    delayed_send(2, message_6, 1);
+
     printf_0("Process 1 done\r\n");
 
     while (1) {
@@ -53,12 +62,13 @@ void test2()
     while (1) 
     {
         message = g_test_fixture.receive_message(&sender_id);
-        g_test_fixture.release_memory_block(message);
         if (sender_id != -1) {
-            printf_1("Process 2 received message from PID %i\r\n", sender_id);
+            printf_1("Process 2 received message with delay %i\r\n", 
+                     ((message_envelope*)message)->delay);
             sender_id = -1;
         }
-        
+
+        g_test_fixture.release_memory_block(message);        
         g_test_fixture.release_processor();
     }
 }

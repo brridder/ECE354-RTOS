@@ -356,7 +356,7 @@ int k_delayed_send(int process_id, message_envelope* message, int delay) {
     message->receiver_pid = process_id;
     message->delay = delay;
     message->delay_start = timer;
-    queue_enqueue_m(&delayed_messages, message);
+    queue_insert_m(&delayed_messages, message);
     
     return 0;
 }

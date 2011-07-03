@@ -81,7 +81,6 @@ void i_process_uart() {
 }
 
 void i_process_timer() {    
-    message_envelope* message_iter;
     message_envelope* current_message;
     
     timer = 0;
@@ -96,34 +95,33 @@ void i_process_timer() {
         //
         
         timer++;
+        
+        #ifdef DEBUG
         if (timer % 1000 == 0) {
             printf_1("Timer: %ims\r\n", timer);
         }
+        #endif
 
         //
         // Check for delayed messages that need to be sent
         //
 
         if (delayed_messages.head != NULL) {
-            message_iter = delayed_messages.head;            
+            while ((timer - delayed_messages.head->delay_start) >=
+                   delayed_messages.head->delay) {
+                current_message = delayed_messages.head;
 
-            while (message_iter) {
-                current_message = message_iter;
-                message_iter = message_iter->next;
+                #ifdef DEBUG
+                printf_1("Message with delay: %i ready, forwarding\r\n", 
+                         current_message->delay);
+                #endif
+                
+                //
+                // Remove from queue and deliver
+                //
 
-                if ((timer - current_message->delay_start)
-                    >= current_message->delay) {
-
-                    printf_1("Message with delay: %i ready, forwarding\r\n", 
-                             current_message->delay);
-
-                    //
-                    // Remove from queue and deliver
-                    //
-
-                    queue_remove_m(&delayed_messages, current_message);
-                    k_forward_message(current_message);
-                }
+                queue_remove_m(&delayed_messages, current_message);
+                k_forward_message(current_message);
             }
         }
     }
@@ -141,9 +139,11 @@ void process_crt_display() {
     char_handled = 0;
     printf_0("CRT DISPLAY_PROCESS Started\r\n");
     while(1) {
+
         //
         // Only get the next message if the current one is null 
         //
+
         message = receive_message(&sender_id);
         i = 0;
         while (message->data[i] != '\0') { 
