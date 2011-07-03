@@ -23,10 +23,6 @@ rtx_test_dummy.s19: $(RTX_TEST_DUMMY_OBJS)
 	$(OBJCPY) --output-format=srec rtx_test_dummy.bin rtx_test_dummy.s19
 	$(OBJDUMP) -xdC rtx_test_dummy.bin > rtx_test_dummy.lst
 
-#%.s19: $(RTX_TEST_DUMMY_OBJS) %.o
-#	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o $*.bin $(ASM) $(RTX_TEST_DUMMY_OBJS) $*.o 
-#	$(OBJCPY) --output-format=srec $*.bin $*.s19
-
 mem_tests.s19: $(MEM_TESTS_OBJS) mem_tests.o
 	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o mem_tests.bin $(ASM) $(MEM_TESTS_OBJS)
 	$(OBJCPY) --output-format=srec mem_tests.bin mem_tests.s19
