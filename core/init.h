@@ -17,5 +17,6 @@ void init_processes(VOID* stack_start);
 void init_interrupts();
 void init_priority_queues();
 void init_test_procs();
+void init_user_procs();
 void init_memory(void* memory_start);
 #endif 

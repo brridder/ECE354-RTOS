@@ -15,6 +15,10 @@
 #define NUM_MEM_BLKS 32
 #define MEM_BLK_SIZE 128
 
+#define PROC_A 7
+#define PROC_B 8
+#define PROC_C 9
+
 #define UART_PID 10
 #define TIMER_PID 11
 
