@@ -172,7 +172,18 @@ void init_interrupts() {
     asm("move.l %d0, 0x10000080");
 
     //
-    // TODO: Setup UART and Timer interrupts
+    // Setup the timer to use auto-vectored interrupt level 6, priority 3, at 1ms
+    //
+
+    TIMER0_ICR = 0x9B;
+    TIMER0_TRR = 25;
+    TIMER0_TMR = 0xC71B;
+
+    asm("move.l #timer_isr, %d0");
+    asm("move.l %d0, 0x10000078");
+
+    //
+    // TODO: Setup UART
     //
 
     asm("move.l (%a7)+, %d0");
