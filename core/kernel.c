@@ -500,5 +500,7 @@ void k_init_priority_queues() {
         process_queues[QUEUE_BLOCKED_MESSAGE][i].tail = NULL;
         process_queues[QUEUE_BLOCKED_MEMORY][i].head = NULL;
         process_queues[QUEUE_BLOCKED_MEMORY][i].tail = NULL;
+        process_queues[QUEUE_PREEMPTED][i].head = NULL;
+        process_queues[QUEUE_PREEMPTED][i].tail = NULL;
     }
 }
