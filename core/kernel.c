@@ -18,12 +18,12 @@ void* mem_end;
 process_queue ready_queue[NUM_PRIORITIES];
 process_queue blocked_message_queue[NUM_PRIORITIES];
 process_queue blocked_memory_queue[NUM_PRIORITIES];
-process_queue preempted_queue;
+process_queue preempted_queue[NUM_PRIORITIES];
 
 process_queue* process_queues[] = {ready_queue,
                                    blocked_message_queue,
                                    blocked_memory_queue,
-                                   &preempted_queue};
+                                   preempted_queue};
 
 /**
  * @brief: System call used by a running process to release the processor.
