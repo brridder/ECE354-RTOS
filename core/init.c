@@ -1,4 +1,5 @@
 /**
+ *
  * @file: init.c
  * @brief: initilization functions for RTX
  * @author: Ben Ridder
@@ -113,7 +114,11 @@ void init_processes(VOID* stack_start) {
 #endif
  
         *(--stack_iter) = (int)processes[i].entry; // PC 
-        *(--stack_iter) = 0x40000000; // SR
+        if (processes[i].is_i_process) {
+            *(--stack_iter) = 0x40002700; // SR
+        } else {
+            *(--stack_iter) = 0x40002000; // SR
+        }
 
 #ifdef INIT_DEBUG
         printf_0("  done\r\n");
@@ -157,6 +162,7 @@ void init_processes(VOID* stack_start) {
 
 void init_interrupts() {
     uart_config uart1_config;
+    uart_interrupt_config uart1_int_config;
     int mask;
 
     asm("move.l %a0, -(%a7)");
@@ -197,6 +203,10 @@ void init_interrupts() {
 
     uart1_config.vector = 64;
     init_uart1(&uart1_config); 
+
+    uart1_int_config.tx_rdy = true;
+    uart1_int_config.rx_rdy = true;
+    uart1_set_interrupts(&uart1_int_config); 
 
     mask = SIM_IMR;
     mask &= 0x0003ddff;
