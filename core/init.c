@@ -181,6 +181,7 @@ void init_processes(VOID* stack_start) {
 
 void init_interrupts() {
     uart_config uart1_config;
+
     asm("move.l %a0, -(%a7)");
     asm("move.l %d0, -(%a7)");
     
@@ -197,9 +198,6 @@ void init_interrupts() {
     
     asm("move.l #system_call, %d0");
     asm("move.l %d0, 0x10000080");
-    
-    asm("move.l #uart_isr, %d0");
-    asm("move.l %d0, 0x10000100");
 
     //
     // Setup the timer to use auto-vectored interrupt level 6, priority 3, at 1ms
@@ -211,6 +209,14 @@ void init_interrupts() {
 
     asm("move.l #timer_isr, %d0");
     asm("move.l %d0, 0x10000078");
+
+
+    //
+    // Setup UART
+    //
+    
+    asm("move.l #uart_isr, %d0");
+    asm("move.l %d0, 0x10000100");
 
     uart1_config.vector = 64;
     init_uart1(&uart1_config); 

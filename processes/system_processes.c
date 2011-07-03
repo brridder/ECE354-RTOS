@@ -30,3 +30,10 @@ void i_process_uart() {
         release_processor();
     }
 }
+
+void i_process_timer() {
+    while(1) {
+        printf_0("TIMER FIRED");
+        release_processor();
+    }
+}
