@@ -15,5 +15,6 @@
 #define NUM_MEM_BLKS 32
 #define MEM_BLK_SIZE 128
 
+#define TIMER_PID 11
 
 #endif
