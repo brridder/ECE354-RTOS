@@ -25,8 +25,20 @@ void process_null() {
 }
 
 void i_process_uart() {
+    unsigned char uart_state;
+    char char_in;
+    //uart_interrupt_config *config;
+
     while(1) {
-        printf_0("UART FIRED");
+        uart_state = SERIAL1_USR;
+        if (uart_state & 0x01) {
+            char_in = SERIAL_RD;
+        } else if (uart_state & 0x04) {
+    
+        }
+
+        SERIAL1_IMR = 0x02;
+        uart_in = SERIAL1_RD;
         release_processor();
     }
 }

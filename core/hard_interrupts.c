@@ -65,7 +65,7 @@ void uart_isr() {
     asm("move.l %d5, -(%sp)"); // D5
     asm("move.l %d6, -(%sp)"); // D6
     asm("move.l %d7, -(%sp)"); // D7
-    printf_0("UART ISR\r\n");
+    
     k_preempt_processor(&processes[UART_PID]);
   
     asm("move.l (%sp)+, %d7"); // D7
