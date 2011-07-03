@@ -181,6 +181,7 @@ void init_processes(VOID* stack_start) {
 
 void init_interrupts() {
     uart_config uart1_config;
+    int mask;
 
     asm("move.l %a0, -(%a7)");
     asm("move.l %d0, -(%a7)");
@@ -221,10 +222,10 @@ void init_interrupts() {
     uart1_config.vector = 64;
     init_uart1(&uart1_config); 
 
-    //
-    // TODO: Unmask interrupts
-    //
-
+    mask = SIM_IMR;
+    mask &= 0x0003ddff;
+    SIM_IMR = mask;
+    
     asm("move.l (%a7)+, %d0");
     asm("move.l (%a7)+, %a0");    
 }
