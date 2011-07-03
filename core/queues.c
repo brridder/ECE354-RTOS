@@ -1,6 +1,5 @@
 #include "queues.h"
 #include "../lib/string.h"
-//#define QUEUE_DEBUG
 
 void queue_enqueue_p(process_queue* queue, process_control_block* process) {
     if (queue->head == NULL && queue->tail == NULL) {

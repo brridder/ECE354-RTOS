@@ -107,12 +107,14 @@ void init_processes(VOID* stack_start) {
         // Exception frame used to start this process
         // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
+
 #ifdef INIT_DEBUG
     printf_1("SETTING ENTRY FOR %i...", i);
 #endif
  
         *(--stack_iter) = (int)processes[i].entry; // PC 
         *(--stack_iter) = 0x40000000; // SR
+
 #ifdef INIT_DEBUG
         printf_0("  done\r\n");
 #endif

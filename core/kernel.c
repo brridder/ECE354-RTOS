@@ -52,7 +52,9 @@ int k_release_processor() {
 }
 
 int k_preempt_processor(process_control_block* process) {
-    printf_1("PREEEMPTED WITH: %i\r\n", process->pid);
+#ifdef DEBUG
+    printf_1("k_preempt_processor(%x)\r\n", process);
+#endif
     k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
     return k_context_switch(process);
 }
@@ -331,11 +333,11 @@ int k_context_switch(process_control_block* process) {
     process_control_block* previous_process;
 
 #ifdef DEBUG
-    rtx_dbug_outs("k_context_switch()\r\n");
+    printf_0("k_context_switch()\r\n");
 #endif
 
     if (!process) {
-        rtx_dbug_outs("  Invalid process handle\r\n");
+        printf_0("  Invalid process handle\r\n");
         return RTX_ERROR;
     }
 
