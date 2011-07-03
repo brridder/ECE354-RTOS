@@ -32,13 +32,13 @@ void i_process_uart() {
     while(1) {
         uart_state = SERIAL1_USR;
         if (uart_state & 0x01) {
-            char_in = SERIAL_RD;
+            char_in = SERIAL1_RD;
+            printf_1("uart1 char in : %i\r\n", char_in);
         } else if (uart_state & 0x04) {
-    
+             
         }
 
         SERIAL1_IMR = 0x02;
-        uart_in = SERIAL1_RD;
         release_processor();
     }
 }
