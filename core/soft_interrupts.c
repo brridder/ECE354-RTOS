@@ -164,6 +164,13 @@ void system_call() {
             return_value = (int)k_receive_message((int*)args[0]);
             break;
 
+        // 
+        // 7: delayed_send(int pid, void* message_envelope, int delay)
+        //
+        
+        case CALL_DELAYED_SEND:
+            return_value = k_delayed_send(args[0], (void*)args[1], args[2]);
+            break;
         //
         // Invalid call ID
         //

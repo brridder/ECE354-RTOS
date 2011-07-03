@@ -1,6 +1,6 @@
 # Makefile
 
-include ../../Makefile.inc
+include ../Makefile.inc
 
 OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 

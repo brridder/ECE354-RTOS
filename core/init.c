@@ -16,7 +16,8 @@
 #include "../tests/rtx_test.h"
 #include "../rtx.h"
 #include "../lib/string.h"
-
+#include "../uart/uart.h"
+#include "./hard_interrupts.h"
 extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
@@ -154,6 +155,7 @@ void init_processes(VOID* stack_start) {
  */
 
 void init_interrupts() {
+    uart_config uart1_config;
     asm("move.l %a0, -(%a7)");
     asm("move.l %d0, -(%a7)");
     
@@ -170,6 +172,9 @@ void init_interrupts() {
     
     asm("move.l #system_call, %d0");
     asm("move.l %d0, 0x10000080");
+    
+    asm("move.l #uart_isr, %d0");
+    asm("move.l %d0, 0x10000100");
 
     //
     // Setup the timer to use auto-vectored interrupt level 6, priority 3, at 1ms
@@ -182,8 +187,11 @@ void init_interrupts() {
     asm("move.l #timer_isr, %d0");
     asm("move.l %d0, 0x10000078");
 
+    uart1_config.vector = 64;
+    init_uart1(&uart1_config); 
+
     //
-    // TODO: Setup UART
+    // TODO: Unmask interrupts
     //
 
     asm("move.l (%a7)+, %d0");
@@ -276,16 +284,11 @@ void  __attribute__ ((section ("__REGISTER_RTX__"))) register_rtx() {
     g_test_fixture.release_processor = release_processor;
     g_test_fixture.set_process_priority = set_process_priority;
     g_test_fixture.get_process_priority = get_process_priority;
-
-    //
-    // TODO: Implement required OS functions
-    //
-     
     g_test_fixture.send_message = send_message;
     g_test_fixture.receive_message = receive_message;
     g_test_fixture.request_memory_block = request_memory_block;
     g_test_fixture.release_memory_block = release_memory_block;
-    //g_test_fixture.delayed_send = delayed_send;
+    g_test_fixture.delayed_send = delayed_send;
 
     rtx_dbug_outs((CHAR *)"rtx: leaving register_rtx()\r\n");
 }

@@ -316,6 +316,11 @@ void* k_receive_message(int* sender_id) {
     return message;
 }
 
+int k_delayed_send(int process_id, message_envelope* message_envelope, int delay) {
+    
+    return 0;
+}
+
 /**
  * @brief: Performs a context switch. After the context switch, the 
  *         process begins executing in user mode.

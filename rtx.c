@@ -53,3 +53,12 @@ void* receive_message(int* sender_id) {
 
     return (void*)do_system_call(CALL_RECEIVE_MESSAGE, args, 1);
 }
+
+int delayed_send(int process_id, void* message_envelope, int delay) {
+    int args[3];
+    args[0] = process_id;
+    args[1] = (int)message_envelope;
+    args[2] = delay;
+
+    return do_system_call(CALL_DELAYED_SEND, args, 3);
+}
