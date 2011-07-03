@@ -22,7 +22,7 @@ extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
 
-#define _INIT_DEBUG_
+//#define INIT_DEBUG
 
 // 
 // Test processes info. Registration function provided by test script
@@ -37,31 +37,31 @@ extern void __REGISTER_TEST_PROCS_ENTRY__();
  */
 void init(void* memory_start) {
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs("Initilizating memory...");
 #endif
 
     init_memory(memory_start);
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs("done\r\nInitilizating processes...");
 #endif
 
     init_processes(memory_head);
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\nInitializing priority queues...");
 #endif
 
     init_priority_queues();
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\nInitilizating interrupts...");
 #endif
 
     init_interrupts();
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\n");
 #endif
 
@@ -81,38 +81,7 @@ void init_processes(VOID* stack_start) {
     //
    
     init_test_procs();
-
-    processes[0].pid = 0;
-    processes[0].priority = 4;
-    processes[0].stack_size = 4096; 
-    processes[0].entry = &process_null;
-    processes[0].is_i_process = FALSE;
-    processes[0].next = NULL;
-    processes[0].previous = NULL;
-    
-#ifdef _INIT_DEBUG_
-    printf_0("Loading up UART... ");
-#endif
-    processes[UART_PID].pid = UART_PID;
-    processes[UART_PID].priority = 4;
-    processes[UART_PID].stack_size = 4096;
-    processes[UART_PID].entry = &i_process_uart;
-    processes[UART_PID].is_i_process = TRUE;
-    processes[UART_PID].next = NULL;
-    processes[UART_PID].previous = NULL;
-
-#ifdef _INIT_DEBUG_
-    printf_0("done\r\n");
-#endif
-   
-    processes[TIMER_PID].pid = TIMER_PID;
-    processes[TIMER_PID].priority = 4;
-    processes[TIMER_PID].stack_size = 4096;
-    processes[TIMER_PID].entry = &i_process_timer;
-    processes[TIMER_PID].is_i_process = TRUE;
-    processes[TIMER_PID].next = NULL;
-    processes[TIMER_PID].previous = NULL;
-
+    init_user_procs();
     //
     // Iterate through all processes and setup their stack and state
     //
@@ -138,10 +107,15 @@ void init_processes(VOID* stack_start) {
         // Exception frame used to start this process
         // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
-
+#ifdef INIT_DEBUG
+    printf_1("SETTING ENTRY FOR %i...", i);
+#endif
+ 
         *(--stack_iter) = (int)processes[i].entry; // PC 
         *(--stack_iter) = 0x40000000; // SR
-
+#ifdef INIT_DEBUG
+        printf_0("  done\r\n");
+#endif
         //
         // Save the stack pointer
         // 
@@ -262,6 +236,66 @@ void init_test_procs() {
         processes[pid].next = NULL;
         processes[pid].previous = NULL;
     }
+}
+
+void init_user_procs() {
+    
+    processes[0].pid = 0;
+    processes[0].priority = 4;
+    processes[0].stack_size = 4096; 
+    processes[0].entry = &process_null;
+    processes[0].is_i_process = FALSE;
+    processes[0].next = NULL;
+    processes[0].previous = NULL;
+
+    processes[PROC_A].pid = 0;
+    processes[PROC_A].priority = 4;
+    processes[PROC_A].stack_size = 4096; 
+    processes[PROC_A].entry = &process_null;
+    processes[PROC_A].is_i_process = FALSE;
+    processes[PROC_A].next = NULL;
+    processes[PROC_A].previous = NULL;
+    
+    processes[PROC_B].pid = 0;
+    processes[PROC_B].priority = 4;
+    processes[PROC_B].stack_size = 4096; 
+    processes[PROC_B].entry = &process_null;
+    processes[PROC_B].is_i_process = FALSE;
+    processes[PROC_B].next = NULL;
+    processes[PROC_B].previous = NULL;
+
+    processes[PROC_C].pid = 0;
+    processes[PROC_C].priority = 4;
+    processes[PROC_C].stack_size = 4096; 
+    processes[PROC_C].entry = &process_null;
+    processes[PROC_C].is_i_process = FALSE;
+    processes[PROC_C].next = NULL;
+    processes[PROC_C].previous = NULL;
+
+#ifdef _INIT_DEBUG_
+    printf_0("Loading up UART... ");
+#endif
+    processes[UART_PID].pid = UART_PID;
+    processes[UART_PID].priority = 4;
+    processes[UART_PID].stack_size = 4096;
+    processes[UART_PID].entry = &i_process_uart;
+    processes[UART_PID].is_i_process = TRUE;
+    processes[UART_PID].next = NULL;
+    processes[UART_PID].previous = NULL;
+
+#ifdef _INIT_DEBUG_
+    printf_0("done\r\n");
+#endif
+   
+    processes[TIMER_PID].pid = TIMER_PID;
+    processes[TIMER_PID].priority = 4;
+    processes[TIMER_PID].stack_size = 4096;
+    processes[TIMER_PID].entry = &i_process_timer;
+    processes[TIMER_PID].is_i_process = TRUE;
+    processes[TIMER_PID].next = NULL;
+    processes[TIMER_PID].previous = NULL;
+
+    return;
 }
 
 void init_memory(void* memory_start) {
