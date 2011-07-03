@@ -18,10 +18,12 @@ void* mem_end;
 process_queue ready_queue[NUM_PRIORITIES];
 process_queue blocked_message_queue[NUM_PRIORITIES];
 process_queue blocked_memory_queue[NUM_PRIORITIES];
+process_queue preempted_queue;
 
 process_queue* process_queues[] = {ready_queue,
                                    blocked_message_queue,
-                                   blocked_memory_queue};
+                                   blocked_memory_queue,
+                                   &preempted_queue};
 
 /**
  * @brief: System call used by a running process to release the processor.
@@ -41,8 +43,16 @@ int k_release_processor() {
         k_priority_enqueue_process(running_process, QUEUE_READY);
     }
  
-    process = k_get_next_process(QUEUE_READY);
+    process = k_get_next_process(QUEUE_PREEMPTED);
+    if (!process) {
+        process = k_get_next_process(QUEUE_READY);
+    }
 
+    return k_context_switch(process);
+}
+
+int k_preempt_processor(process_control_block* process) {
+    k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
     return k_context_switch(process);
 }
 
