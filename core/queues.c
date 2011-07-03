@@ -1,5 +1,6 @@
 #include "queues.h"
-
+#include "../lib/string.h"
+#define QUEUE_DEBUG
 void queue_enqueue_p(process_queue* queue, process_control_block* process) {
     if (queue->head == NULL) {
 
@@ -28,8 +29,10 @@ void queue_enqueue_p(process_queue* queue, process_control_block* process) {
 
 process_control_block* queue_dequeue_p(process_queue* queue) {
     process_control_block* process;
-
     process = queue->head;
+#ifdef QUEUE_DEBUG
+    printf_1("QUEUE = %x\r\n", &queue);
+#endif
     if (process) {
         if (process->next == NULL) {
 

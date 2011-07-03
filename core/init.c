@@ -22,7 +22,7 @@ extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
 
-#define _INIT_DEBUG_
+//#define INIT_DEBUG
 
 // 
 // Test processes info. Registration function provided by test script
@@ -37,31 +37,31 @@ extern void __REGISTER_TEST_PROCS_ENTRY__();
  */
 void init(void* memory_start) {
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs("Initilizating memory...");
 #endif
 
     init_memory(memory_start);
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs("done\r\nInitilizating processes...");
 #endif
 
     init_processes(memory_head);
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\nInitializing priority queues...");
 #endif
 
     init_priority_queues();
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\nInitilizating interrupts...");
 #endif
 
     init_interrupts();
 
-#ifdef DEBUG
+#ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\n");
 #endif
 
@@ -138,10 +138,15 @@ void init_processes(VOID* stack_start) {
         // Exception frame used to start this process
         // See section 11.1.2 of Coldfire Family Programmer's Reference Manual
         //
-
+#ifdef INIT_DEBUG
+    printf_1("SETTING ENTRY FOR %i...", i);
+#endif
+ 
         *(--stack_iter) = (int)processes[i].entry; // PC 
         *(--stack_iter) = 0x40000000; // SR
-
+#ifdef INIT_DEBUG
+        printf_0("  done\r\n");
+#endif
         //
         // Save the stack pointer
         // 
