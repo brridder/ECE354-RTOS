@@ -2,8 +2,5 @@
 #define _SYSTEM_PROCESSES_H_
 
 void process_null();
-void process_test();
-void process_test_get_priority();
-
 void i_process_uart();
 #endif 
