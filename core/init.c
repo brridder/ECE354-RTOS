@@ -225,6 +225,7 @@ void init_priority_queues() {
     for (i = 0; i < NUM_TEST_PROCS; i++) {
         k_priority_enqueue_process(&processes[i+1], QUEUE_READY);
     }
+    k_priority_enqueue_process(&processes[12], QUEUE_READY);
 }
 
 /**
@@ -239,7 +240,7 @@ void init_test_procs() {
     for (i = 0; i < NUM_TEST_PROCS; i++) {
         pid = g_test_proc[i].pid;
         processes[pid].pid = pid;
-        processes[pid].priority = 0;
+        processes[pid].priority = 1;
         processes[pid].priority = g_test_proc[i].priority;
         processes[pid].stack_size = g_test_proc[i].sz_stack; 
         processes[pid].entry = g_test_proc[i].entry;
@@ -283,9 +284,6 @@ void init_user_procs() {
     processes[PROC_C].next = NULL;
     processes[PROC_C].previous = NULL;
 
-#ifdef _INIT_DEBUG_
-    printf_0("Loading up UART... ");
-#endif
     processes[UART_PID].pid = UART_PID;
     processes[UART_PID].priority = 4;
     processes[UART_PID].stack_size = 4096;
@@ -294,11 +292,6 @@ void init_user_procs() {
     processes[UART_PID].next = NULL;
     processes[UART_PID].previous = NULL;
 
-#ifdef _INIT_DEBUG_
-    printf_0("done\r\n");
-#endif
-  
-
     processes[TIMER_PID].pid = TIMER_PID;
     processes[TIMER_PID].priority = 4;
     processes[TIMER_PID].stack_size = 4096;
@@ -306,6 +299,22 @@ void init_user_procs() {
     processes[TIMER_PID].is_i_process = TRUE;
     processes[TIMER_PID].next = NULL;
     processes[TIMER_PID].previous = NULL;
+
+    processes[CRT_DISPLAY_PID].pid = CRT_DISPLAY_PID;
+    processes[CRT_DISPLAY_PID].priority = 0;
+    processes[CRT_DISPLAY_PID].stack_size = 4096;
+    processes[CRT_DISPLAY_PID].entry = &process_crt_display;
+    processes[CRT_DISPLAY_PID].is_i_process = FALSE;
+    processes[CRT_DISPLAY_PID].next = NULL;
+    processes[CRT_DISPLAY_PID].previous = NULL;
+
+    processes[KCD_PID].pid = KCD_PID;
+    processes[KCD_PID].priority = 0;
+    processes[KCD_PID].stack_size = 4096;
+    processes[KCD_PID].entry = &process_kcd;
+    processes[KCD_PID].is_i_process = FALSE;
+    processes[KCD_PID].next = NULL;
+    processes[KCD_PID].previous = NULL;
 
     return;
 }
