@@ -32,8 +32,17 @@ void i_process_uart() {
 }
 
 void i_process_timer() {
+    int timer = 0;
+    
+    printf_0("Timer process started\r\n");
+
     while(1) {
-//        printf_0("TIMER FIRED");
         release_processor();
+
+        timer++;
+
+        if (timer % 1000 == 0) {
+            printf_1("Timer: %i\r\n", timer);
+        }
     }
 }
