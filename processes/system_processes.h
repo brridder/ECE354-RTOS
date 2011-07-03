@@ -4,5 +4,5 @@
 void process_null();
 void i_process_uart();
 void i_process_timer();
-
+void process_crt_display();
 #endif 

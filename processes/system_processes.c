@@ -11,9 +11,11 @@
 #include "../lib/dbug.h"
 #include "../lib/string.h"
 #include "../globals.h"
+#include "../uart/uart.h"
 
 char in_string[1024];
 char char_out;
+int char_handled;
 
 /**
  * @brief: null_process that does nothing
@@ -49,8 +51,7 @@ void i_process_uart() {
                 in_string[i++] = '\0';
                 i = 0; 
                 if (in_string[0] == '%') {
-                    printf_0("Switch to CRT DISPLAY PROC\r\n");
-                    // CALL CRT DISPLAY PROCESS
+                    printf_0("Switch to keyboard command PROC\r\n");
                 }
             }
 #ifdef UART_DEBUG
@@ -60,6 +61,7 @@ void i_process_uart() {
         // Print out data
         //
         } else if (uart_state & 0x04) {
+            char_handled = 0;
             SERIAL1_WD = char_out;
             SERIAL1_IMR = 0x02;
         }
@@ -81,5 +83,36 @@ void i_process_timer() {
         if (timer % 1000 == 0) {
             printf_1("Timer: %i\r\n", timer);
         }
+    }
+}
+
+void process_crt_display() {
+    int i;
+    int sender_id;
+    message_envelope *message;
+    uart_interrupt_config int_config;
+    
+    int_config.tx_rdy = true;
+    message = NULL;
+    i = 0;
+    char_handled = 0;
+    printf_0("CRT DISPLAY_PROCESS Started\r\n");
+    while(1) {
+        //
+        // Only get the next message if the current one is null 
+        //
+        message = receive_message(&sender_id);
+        i = 0;
+        while (message->data[i] != '\0') { 
+
+            if (!char_handled) {
+                char_handled = 1;
+                char_out = message->data[i++];        
+                uart1_set_interrupts(&int_config);
+            }
+        }
+        release_memory_block(message);
+        message = NULL;
+         
     }
 }

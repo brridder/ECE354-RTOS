@@ -11,6 +11,8 @@ void* memory_head;
 unsigned long int memory_alloc_field;
 void* mem_end;
 
+//#define DEBUG
+
 /**
  * Priority Queues
  */
