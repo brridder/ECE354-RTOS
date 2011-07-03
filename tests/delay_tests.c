@@ -54,18 +54,38 @@ void test1()
 
 void test2()
 {
-    int sender_id = -1;
+    const int delays[] = {1, 2, 100, 500, 1000, 2000};
+    const int num_messages = 6;
+    int message_num;
+    int sender_id;
     void* message;
-
+    
     printf_0("rtx_test: test2\r\n");
 
+    message_num = 0;
+    sender_id = -1;
     while (1) 
     {
         message = g_test_fixture.receive_message(&sender_id);
         if (sender_id != -1) {
-            printf_1("Process 2 received message with delay %i\r\n", 
-                     ((message_envelope*)message)->delay);
+            printf_1("Process 2 expected message with delay %i...",
+                     delays[message_num]);
+            if (((message_envelope*)message)->delay == delays[message_num]) {
+                printf_0("success.\r\n");
+            } else { 
+                printf_0("fail.\r\n");
+            }
+
+            message_num++;
             sender_id = -1;
+        }
+
+        if (message_num == num_messages) {
+            printf_1("Process 2 received %i messages total...success.\r\n",
+                num_messages);
+        } else if (message_num > num_messages) {
+            printf_1("Process 2 received over %i messages total...fail.\r\n",
+                num_messages);
         }
 
         g_test_fixture.release_memory_block(message);        
