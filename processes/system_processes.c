@@ -15,6 +15,8 @@
 #include "../globals.h"
 #include "../uart/uart.h"
 
+//#define KCD_DEBUG
+
 char char_out;
 int char_handled;
 
@@ -61,10 +63,7 @@ void i_process_uart() {
                     message = (message_envelope*)request_memory_block();
                     message->type = MESSAGE_KEY_INPUT;
                     i = 0;
-                    while (in_string[i] != '\0') {
-                        message->data[i] = in_string[i];
-                        i++;
-                    }
+                    str_cpy(message->data, in_string);
                     send_message(KCD_PID, message);
                     message = NULL;
                 } 
@@ -147,7 +146,8 @@ void process_crt_display() {
 
     while(1) {
         message = receive_message(&sender_id);
-        if (message->type == MESSAGE_OUTPUT || message->type == MESSAGE_KEY_INPUT) {
+        if (message->type == MESSAGE_OUTPUT || 
+            message->type == MESSAGE_KEY_INPUT) { 
             i = 0;
             while (message->data[i] != '\0') { 
                 if (!char_handled) {
@@ -172,44 +172,36 @@ void process_kcd() {
     int num_cmds;
     int i;
     int j;
-    int found_cmd;
+    char str[64];
     message_envelope *message_receive; 
     message_envelope *message_send; 
     command cmds[32]; 
     
     num_cmds = 0;
-    //
-    // TODO :: FINISH THIS;
-    //
+
     while(1) {
         message_receive = (message_envelope*)receive_message(&sender_id);
         if (message_receive->type == MESSAGE_KEY_INPUT) {
             for(i = 0; i < num_cmds; i++) {
-                j = 0;
-                found_cmd = 0;
-                while(message_receive->data[j] != ' ') {
-                    if (message_receive->data[j] != cmds[i].cmd_str[j]) {
-                        break;
-                    }
-                    j++;
-                } 
-            }
-            message_send = (message_envelope*)request_memory_block();
-            i = 0;
-            while(message_receive->data[i] != '\0') {
-                message_send->data[i] = message_receive->data[i];
-                i++;
+                if (message_receive->data[1] == cmds[i].cmd_str[1]) {
+                    message_send = (message_envelope*)request_memory_block();
+                    str_cpy(message_send->data, message_receive->data);
+                    send_message(cmds[i].reg_pid, message_send);
+#ifdef KCD_DEBUG
+                    printf_1("Found it for pid: %i\r\n", cmds[i].reg_pid);
+#endif
+                    break;
+                }
             }
             send_message(CRT_DISPLAY_PID, message_receive);
         } else if (message_receive->type == MESSAGE_CMD_REG) {
-            i = 0;
-            while(message_receive->data[i] != '\0') {
-                cmds[num_cmds].cmd_str[i] = message_receive->data[i];
-                i++;
-            }
+            str_cpy(cmds[num_cmds].cmd_str, message_receive->data);
             cmds[num_cmds].reg_pid = sender_id;
             num_cmds++;
             release_memory_block(message_receive);
+#ifdef KCD_DEBUG
+            printf_1("Registered for %i\r\n",  cmds[num_cmds-1].reg_pid);
+#endif
         } else {
             release_memory_block(message_receive);
         }
