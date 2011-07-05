@@ -61,10 +61,7 @@ void i_process_uart() {
                     message = (message_envelope*)request_memory_block();
                     message->type = MESSAGE_KEY_INPUT;
                     i = 0;
-                    while (in_string[i] != '\0') {
-                        message->data[i] = in_string[i];
-                        i++;
-                    }
+                    string_copy(message->data, in_string);
                     send_message(KCD_PID, message);
                     message = NULL;
                 } 
@@ -147,7 +144,8 @@ void process_crt_display() {
 
     while(1) {
         message = receive_message(&sender_id);
-        if (message->type == MESSAGE_OUTPUT || message->type == MESSAGE_KEY_INPUT) {
+        if (message->type == MESSAGE_OUTPUT || 
+            message->type == MESSAGE_KEY_INPUT) { 
             i = 0;
             while (message->data[i] != '\0') { 
                 if (!char_handled) {
@@ -195,19 +193,14 @@ void process_kcd() {
                 } 
             }
             message_send = (message_envelope*)request_memory_block();
-            i = 0;
-            while(message_receive->data[i] != '\0') {
-                message_send->data[i] = message_receive->data[i];
-                i++;
-            }
+
+            string_copy(message_send, message_receive);
             send_message(CRT_DISPLAY_PID, message_receive);
         } else if (message_receive->type == MESSAGE_CMD_REG) {
-            i = 0;
-            while(message_receive->data[i] != '\0') {
-                cmds[num_cmds].cmd_str[i] = message_receive->data[i];
-                i++;
-            }
+
+            string_copy(cmds[num_cmds].cmd_str, message_receive);
             cmds[num_cmds].reg_pid = sender_id;
+
             num_cmds++;
             release_memory_block(message_receive);
         } else {

@@ -69,6 +69,10 @@ int strlen(const char *str) {
     return (s-str);
 }
 
+void string_copy(char* dest, char* src) {
+    while(*dest++ = *src++);
+}
+
 /**
  * @brief: Format the input into the string, replacing %i as the input as int.
  * @param: buffer buffer to write to
