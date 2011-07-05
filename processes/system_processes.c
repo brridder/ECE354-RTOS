@@ -225,3 +225,107 @@ void process_kcd() {
         release_processor();
     }
 }
+
+void process_wall_clock() {
+    const unsigned char command[] = "%W";
+    char out_string[] = "hh:mm:ss\r";
+    char digit_buffer[3];
+    int sender_id;
+    int message_out;
+    int clock;
+    int clock_display;
+    int hours;
+    int minutes;
+    int seconds;
+    message_envelope* message;
+
+    printf_0("Wall clock started\r\n");
+
+    clock = 0;
+    clock_display = FALSE;
+    message_out = FALSE;
+
+    message = (message_envelope*)request_memory_block();
+    str_cpy(message->data, command);
+    send_message(KCD_PID, message);
+
+    while (1) {
+        if (!message_out) {
+            message = request_memory_block();
+            delayed_send(WALL_CLOCK_PID, message, 1000);
+            message_out = TRUE;
+        }
+
+        //
+        // Try to receive the 1s delayed message sent by this process
+        //
+
+        message = receive_message(&sender_id);
+
+        //
+        // Update timer display, make sure that the sender of the delayed
+        // message was this process.
+        //
+
+        if (sender_id == WALL_CLOCK_PID) {
+            printf_0("Got wall clock message\r\n");
+
+            message_out = FALSE;
+            clock++;
+        
+            if (clock_display) {
+                seconds = clock % 60;
+                minutes = ((clock - seconds) % 3600) / 60;
+                hours = ((clock - seconds - (minutes*60)))/3600;
+            
+                itoa(seconds, digit_buffer);
+                if (strlen(digit_buffer) == 1) {
+                    out_string[6] = '0';
+                    out_string[7] = digit_buffer[0];                
+                } else {
+                    out_string[6] = digit_buffer[0];
+                    out_string[7] = digit_buffer[1];
+                }
+
+                itoa(minutes, digit_buffer);
+                if (strlen(digit_buffer) == 1) {
+                    out_string[3] = '0';
+                    out_string[4] = digit_buffer[0];                
+                } else {
+                    out_string[3] = digit_buffer[0];
+                    out_string[4] = digit_buffer[1];
+                }
+
+                itoa(hours, digit_buffer);
+                if (strlen(digit_buffer) == 1) {
+                    out_string[0] = '0';
+                    out_string[1] = digit_buffer[0];                
+                } else {
+                    out_string[0] = digit_buffer[0];
+                    out_string[1] = digit_buffer[1];
+                }
+
+                printf_0(out_string);
+            }
+        } else if (sender_id == KCD_PID) {
+            printf_0("Got kcd message\r\n");
+
+            if (((char*)(message->data))[2] == 'S') {
+
+                //
+                // TODO: Check time validity
+                // 
+
+                //
+                // TODO: Set the time
+                //
+
+                clock_display = TRUE;
+            } else if (((char*)(message->data))[2] == 'T') {
+                clock_display = FALSE;
+            }
+        }
+
+        release_memory_block(message);
+    }
+}
