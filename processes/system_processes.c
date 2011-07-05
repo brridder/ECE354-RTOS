@@ -59,12 +59,17 @@ void i_process_uart() {
         
         if (uart_state & 0x01) {
             char_in = SERIAL1_RD;
+            
+            if (char_in == '\0') {
+                continue;
+            }
+
             in_string[i++] = char_in;
 
             if (char_in == CR) {
                 need_new_line = 1;
                 char_handled = 1;
-                
+
                 in_string[i++] = '\n';
                 in_string[i++] = '\0';
                
@@ -84,6 +89,7 @@ void i_process_uart() {
 
                 i = 0;
             }
+
             char_out = char_in;
             uart1_set_interrupts(&inter_cfg);
 #ifdef UART_DEBUG
@@ -244,6 +250,7 @@ void process_wall_clock() {
     message_out = FALSE;
 
     message = (message_envelope*)request_memory_block();
+    message->type = MESSAGE_CMD_REG;
     str_cpy(message->data, command);
     send_message(KCD_PID, message);
 
@@ -266,8 +273,6 @@ void process_wall_clock() {
         //
 
         if (sender_id == WALL_CLOCK_PID) {
-            printf_0("Got wall clock message\r\n");
-
             message_out = FALSE;
             clock++;
         
@@ -306,8 +311,6 @@ void process_wall_clock() {
                 printf_0(out_string);
             }
         } else if (sender_id == KCD_PID) {
-            printf_0("Got kcd message\r\n");
-
             if (((char*)(message->data))[2] == 'S') {
 
                 //
