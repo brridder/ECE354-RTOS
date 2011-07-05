@@ -38,11 +38,11 @@ main.s19: rtx.s19 rtx_loader.s19
 	$(CC) -MM $(CFLAGS) $*.c > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
-	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+/	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
 
-.PHONY: clean tests build_tests
+.PHONY: clean tests build_tests cfserver
 clean:
 	rm -f *.s19 *.o *.bin *.map *.lst *.d
 	@for d in $(DIRS); do (cd $$d; $(MAKE) clean); done
@@ -71,3 +71,6 @@ demo: rtx.s19
 	$(ECHO) Making demos
 	@for demo in `ls demo | grep 's19'`; do ( $(MERGE) demo_$$demo demo/$$demo \
 	rtx.s19; chmod u+x demo_$$demo); done
+
+cfserver:
+	$(MAKE) all "CFLAGS=$(CFLAGS) -D_CFSERVER_"
