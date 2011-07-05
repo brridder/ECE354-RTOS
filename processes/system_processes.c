@@ -217,3 +217,77 @@ void process_kcd() {
         release_processor();
     }
 }
+
+void process_wall_clock() {
+    char out_string[] = "hh:mm:ss\r";
+    char digit_buffer[3];
+    int sender_id;
+    int message_out;
+    int clock;
+    int hours;
+    int minutes;
+    int seconds;
+    void* message;
+
+    printf_0("Wall clock started\r\n");
+
+    clock = 0;
+    message_out = FALSE;
+    while (1) {
+        if (!message_out) {
+            message = request_memory_block();
+            delayed_send(WALL_CLOCK_PID, (message_envelope*)message, 1000);
+            message_out = TRUE;
+        }
+
+        //
+        // Try to receive the 1s delayed message sent by this process
+        //
+
+        message = receive_message(&sender_id);
+        release_memory_block(message);
+
+        //
+        // Update timer display, make sure that the sender of the delayed
+        // message was this process.
+        //
+
+        if (sender_id == WALL_CLOCK_PID) {
+            message_out = FALSE;
+            clock++;
+            
+            seconds = clock % 60;
+            minutes = ((clock - seconds) % 3600) / 60;
+            hours = ((clock - seconds - (minutes*60)))/3600;
+            
+            itoa(seconds, digit_buffer);
+            if (strlen(digit_buffer) == 1) {
+                out_string[6] = '0';
+                out_string[7] = digit_buffer[0];                
+            } else {
+                out_string[6] = digit_buffer[0];
+                out_string[7] = digit_buffer[1];
+            }
+
+            itoa(minutes, digit_buffer);
+            if (strlen(digit_buffer) == 1) {
+                out_string[3] = '0';
+                out_string[4] = digit_buffer[0];                
+            } else {
+                out_string[3] = digit_buffer[0];
+                out_string[4] = digit_buffer[1];
+            }
+
+            itoa(hours, digit_buffer);
+            if (strlen(digit_buffer) == 1) {
+                out_string[0] = '0';
+                out_string[1] = digit_buffer[0];                
+            } else {
+                out_string[0] = digit_buffer[0];
+                out_string[1] = digit_buffer[1];
+            }
+
+            printf_0(out_string);
+       }
+    }
+}

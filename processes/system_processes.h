@@ -6,6 +6,7 @@ void i_process_uart();
 void i_process_timer();
 void process_crt_display();
 void process_kcd();
+void process_wall_clock();
 
 typedef struct _command {
     char cmd_str[64];

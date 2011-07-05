@@ -225,8 +225,10 @@ void init_priority_queues() {
     for (i = 0; i < NUM_TEST_PROCS; i++) {
         k_priority_enqueue_process(&processes[i+1], QUEUE_READY);
     }
+
     k_priority_enqueue_process(&processes[CRT_DISPLAY_PID], QUEUE_READY);
     k_priority_enqueue_process(&processes[KCD_PID], QUEUE_READY);
+    k_priority_enqueue_process(&processes[WALL_CLOCK_PID], QUEUE_READY);
 }
 
 /**
@@ -316,6 +318,14 @@ void init_user_procs() {
     processes[KCD_PID].is_i_process = FALSE;
     processes[KCD_PID].next = NULL;
     processes[KCD_PID].previous = NULL;
+
+    processes[WALL_CLOCK_PID].pid = WALL_CLOCK_PID;
+    processes[WALL_CLOCK_PID].priority = 0;
+    processes[WALL_CLOCK_PID].stack_size = 4096;
+    processes[WALL_CLOCK_PID].entry = &process_wall_clock;
+    processes[WALL_CLOCK_PID].is_i_process = FALSE;
+    processes[WALL_CLOCK_PID].next = NULL;
+    processes[WALL_CLOCK_PID].previous = NULL;
 
     return;
 }
