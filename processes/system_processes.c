@@ -337,9 +337,11 @@ void process_set_priority_command() {
     message_envelope* message; 
     char in_str[100];
     char str_buf[50];
+
     int target_pid;
     int priority;
     int i;
+    int j;
 
     // Register the fucking command
     message = (message_envelope*)request_memory_block();
@@ -347,21 +349,34 @@ void process_set_priority_command() {
     str_cpy(message->data, cmd);
     send_message(KCD_PID, message);
     message = 0; 
+    target_pid = 0;
+    priority = 0;
 
     printf_0("Process set priority started\r\n");
     while(1) {
-        while(message->type != MESSAGE_KEY_INPUT || message == 0) {
-            message = (message_envelope*)receive_message(0);
-        }
+        message = (message_envelope*)receive_message(0);
+        //while(message->type != MESSAGE_KEY_INPUT || message == 0) {
+        //}
         str_cpy(in_str, message->data);        
         
         i = 0;
+        while(in_str[i++] != ' ');
+        
+        j = 0;
         while(in_str[i] != ' ') {
-            str_buf[i] = in_str[i];
+            str_buf[j] = in_str[i];
             i++;
         }
-        target_pid = atoi(str_buf);  
-
+        
+        target_pid = atoi(str_buf);
+        
+        j = 0;
+        while(in_str[i] != '\r') {
+            str_buf[j] = in_str[i];
+            i++;
+        }
+        priority = atoi(str_buf);
+        set_process_priority(target_pid, priority);
         release_processor();
     }
 }
