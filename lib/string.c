@@ -69,10 +69,18 @@ int strlen(const char *str) {
     return (s-str);
 }
 
-void string_copy(char* dest, char* src) {
+void str_cpy(char* dest, char* src) {
     while(*dest++ = *src++);
 }
 
+int str_cmp(char* s1, char* s2) {
+    for( ; *s1 == *s2; ++s1, ++s2) {
+        if (*s1 == 0) {
+            return 0; // equal
+        }
+    }
+    return *(const unsigned char*)s1 - *(const unsigned char*)s2;
+}
 /**
  * @brief: Format the input into the string, replacing %i as the input as int.
  * @param: buffer buffer to write to
