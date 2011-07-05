@@ -329,3 +329,11 @@ void process_wall_clock() {
         release_memory_block(message);
     }
 }
+
+
+void process_set_priority_command() {
+    
+    while(1) {
+
+    }
+}

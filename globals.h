@@ -7,7 +7,7 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
-#define NUM_PROCESSES 15
+#define NUM_PROCESSES 16
 #define NUM_PRIORITIES 4
 
 #define PROCESS_NUM_REGISTERS 15
@@ -24,6 +24,7 @@
 #define CRT_DISPLAY_PID 12
 #define KCD_PID 13
 #define WALL_CLOCK_PID 14
+#define SET_PRIORITY_PID 15
 
 #define GID "S11-G031"
 
