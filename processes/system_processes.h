@@ -7,7 +7,7 @@ void i_process_timer();
 void process_crt_display();
 void process_kcd();
 void process_wall_clock();
-void process_set_priority_commd();
+void process_set_priority_command();
 
 typedef struct _command {
     char cmd_str[64];
