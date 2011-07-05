@@ -187,8 +187,6 @@ void process_kcd() {
     int sender_id;
     int num_cmds;
     int i;
-    int j;
-    char str[64];
     message_envelope *message_receive; 
     message_envelope *message_send; 
     command cmds[32]; 
@@ -332,10 +330,15 @@ void process_wall_clock() {
 
 
 void process_set_priority_command() {
+    message_envelope* message; 
+    char *cmd = "%C";
     
+    message = (message_envelope*)request_memory_block();
+    message->type = MESSAGE_CMD_REG;
+    str_cpy(message->data, cmd);
 
-    printf_0("Process set priority started");
+    printf_0("Process set priority started\r\n");
     while(1) {
-
+        release_processor();
     }
 }
