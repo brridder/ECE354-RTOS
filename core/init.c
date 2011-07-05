@@ -203,7 +203,7 @@ void init_interrupts() {
     uart1_config.vector = 64;
     init_uart1(&uart1_config); 
 
-    uart1_int_config.tx_rdy = true;
+    uart1_int_config.tx_rdy = false;
     uart1_int_config.rx_rdy = true;
     uart1_set_interrupts(&uart1_int_config); 
 
@@ -229,6 +229,7 @@ void init_priority_queues() {
     k_priority_enqueue_process(&processes[CRT_DISPLAY_PID], QUEUE_READY);
     k_priority_enqueue_process(&processes[KCD_PID], QUEUE_READY);
     k_priority_enqueue_process(&processes[WALL_CLOCK_PID], QUEUE_READY);
+    k_priority_enqueue_process(&processes[SET_PRIORITY_PID], QUEUE_READY);
 }
 
 /**
@@ -326,6 +327,14 @@ void init_user_procs() {
     processes[WALL_CLOCK_PID].is_i_process = FALSE;
     processes[WALL_CLOCK_PID].next = NULL;
     processes[WALL_CLOCK_PID].previous = NULL;
+
+    processes[SET_PRIORITY_PID].pid = SET_PRIORITY_PID;
+    processes[SET_PRIORITY_PID].priority = 0;
+    processes[SET_PRIORITY_PID].stack_size = 4096;
+    processes[SET_PRIORITY_PID].entry = &process_set_priority_command;
+    processes[SET_PRIORITY_PID].is_i_process = FALSE;
+    processes[SET_PRIORITY_PID].next = NULL;
+    processes[SET_PRIORITY_PID].previous = NULL;
 
     return;
 }

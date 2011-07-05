@@ -333,6 +333,8 @@ void process_wall_clock() {
 
 void process_set_priority_command() {
     
+
+    printf_0("Process set priority started");
     while(1) {
 
     }
