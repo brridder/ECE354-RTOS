@@ -37,39 +37,55 @@ void process_null() {
 }
 
 void i_process_uart() {
+    uart_interrupt_config inter_cfg;
     message_envelope *message;
     unsigned char uart_state;
+    int need_new_line;
     char in_string[64];
     char char_in;
     int i;
 
     i = 0;
     message = NULL;
+    inter_cfg.tx_rdy = true;
+    need_new_line = 0; 
+
     while(1) {
         uart_state = SERIAL1_USR;
 
         // 
         // Read in waiting data
         //
-       
-       if (uart_state & 0x01) {
+        
+        if (uart_state & 0x01) {
             char_in = SERIAL1_RD;
             in_string[i++] = char_in;
 
             if (char_in == CR) {
+                need_new_line = 1;
+                char_handled = 1;
+                
                 in_string[i++] = '\n';
                 in_string[i++] = '\0';
+               
                 if (in_string[0] == '%') {
                     message = (message_envelope*)request_memory_block();
                     message->type = MESSAGE_KEY_INPUT;
-                    i = 0;
                     str_cpy(message->data, in_string);
                     send_message(KCD_PID, message);
                     message = NULL;
-                } 
+                } else { // Fucking stupid hack to get shit to work properly
+                    message = (message_envelope*)request_memory_block();
+                    message->type = MESSAGE_KEY_INPUT;
+                    message->data[0] = '\n';
+                    message->data[1] = '\0';
+                    send_message(CRT_DISPLAY_PID, message);
+                }
 
-                i = 0; 
+                i = 0;
             }
+            char_out = char_in;
+            uart1_set_interrupts(&inter_cfg);
 #ifdef UART_DEBUG
             printf_1("uart1 char in : %i\r\n", char_in);
 #endif
