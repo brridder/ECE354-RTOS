@@ -23,7 +23,7 @@ void test1() {
 
     send_message(KCD_PID, message); 
     
-    rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");
+    rtx_dbug_outs((CHAR *)"rtx_test: test1 -- Register message and receive keyboard inputs\r\n");
     while (1) {
         message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
         printf_0("Received %T");
@@ -36,7 +36,9 @@ void test1() {
 void test2()
 {
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
+
     while (1) {
+        printf_1("PID2 : priority = %i\r\n", g_test_fixture.get_process_priority(2));
         g_test_fixture.release_processor();
     }
 }

@@ -1,0 +1,79 @@
+\documentclass[oneside]{article}
+\usepackage{listings}
+\usepackage[hmargin=1.5in,vmargin=1.0in]{geometry}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\begin{document}
+\lstset{language=C, 
+        frame=single, 
+        breaklines=true,
+        basicstyle=\small\ttfamily,
+        columns=fullflexible}
+\section*{ECE 354: Part 3}
+Group: ECE.354.S11-G031 \\
+Members: Ben Ridder (brridder), Casey Banner (cccbanne), 
+David Janssen (dajjanss) \\ \\
+This document is concerned with the high level implementation of the 
+specified primitives. As such, most of the low level back end is omitted for
+simplicity. Any kernel structures required to understand the primitive are
+described when the primitive is discussed.
+
+\subsection*{Design of Delayed Send} 
+We designed \\\text{delayed\_send}. The pseudo code is in Listing~\ref{delay}.
+
+\lstset{caption={Pseudo code for design of delayed send },label=delay}
+\begin{lstlisting}
+delayed_send();
+}
+\end{lstlisting}
+
+\subsection*{The KCD Process}
+The KCD process does stuff. Pseudo code at Listing~\ref{kcd}. 
+
+\lstset{caption={Pseudo code for implementing the KCD Processes}, label=kcd}
+\begin{lstlisting}
+Timer_Process();
+}
+\end{lstlisting}
+
+\subsection*{The CRT Process}
+
+The CRT process exists. Pseudo code here at Listing~\ref{crt}.
+
+\lstset{caption={Pseudo code for the CRT process}, label=crt}
+\begin{lstlisting}
+CRT_Process();
+}
+\end{lstlisting}
+
+\subsection*{The UART I-Process}
+
+We made a UART I-Process. Pseudo code here at Listing~\ref{uart}.
+
+\lstset{caption={Pseudo code for the UART I-Process}, label=uart}
+\begin{lstlisting}
+UART_Process();
+}
+\end{lstlisting}
+
+\subsection*{The Timer I-Process}
+
+We made a Timer I-Process. Pseudo code here at Listing~\ref{timer}.
+
+\lstset{caption={Pseudo code for the UART I-Process}, label=timer}
+\begin{lstlisting}
+UART_Process();
+}
+\end{lstlisting}
+
+\subsection*{The Wall Clock Process}
+
+There is a clock on the wall. Pseudo code here at Listing~\ref{wallclock}.
+
+\lstset{caption={Pseudo code for the wall clock process}, label=wallclock}
+\begin{lstlisting}
+wall_clock_Process();
+}
+\end{lstlisting}
+
+\end{document}
