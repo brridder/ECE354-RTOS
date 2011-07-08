@@ -5,6 +5,9 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
+int power(int base, int exponent);
+int consume(char** str, const char c);
+int atoi(char str[], int length);
 void itoa(int n, char* s);
 void itox(unsigned int n, char* s);
 void reverse(char* s);

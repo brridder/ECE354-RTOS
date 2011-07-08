@@ -16,6 +16,67 @@ char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 char format_int_buffer[FORMAT_INT_BUFFER_SIZE];
 
 /**
+ * @brief: Consume a character, return 0 on success, -1 on failure
+ * @param: str string to consume from
+ * @param: c character to consume
+ */
+
+int consume(char** str, const char c) {
+  if (**str == c) {
+    (*str)++;
+
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+/**
+ * @brief: power function: base^exponent
+ * @param: base 
+ * @param: exponent
+ */
+
+int power(int base, int exponent) {
+  int i;
+  int total;
+
+  if (exponent == 0) {
+    return 1;
+  } else { 
+    total = base;
+    for (i = 0; i < exponent - 1; i++) {
+      total *= base;
+    }
+
+    return total;
+  }
+}
+
+/**
+ * @brief: converts a string into integer, returns -1 if non-digit encountered
+ * @param: str input string
+ * @param: length number of characters of str to parse
+ */ 
+
+int atoi(char str[], int length) {
+  int i;
+  int total;
+
+  total = 0;
+  for (i = 0; i < length; i++) {
+    if (str[i] < 0x30 || str[i] > 0x39) {
+      return -1;
+    } else {
+      total += (str[i] - 0x30) * power(10, length - i - 1);
+    }
+  }
+
+  return total;
+}
+
+
+/**
  * @brief: converts integer into c string
  * @param: n input integer
  * @param: s character buffer to write into

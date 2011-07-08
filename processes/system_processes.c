@@ -47,6 +47,7 @@ void i_process_uart() {
 
     i = 0;
     message = NULL;
+    inter_cfg.rx_rdy = false;
     inter_cfg.tx_rdy = true;
     need_new_line = 0; 
 
@@ -98,6 +99,7 @@ void i_process_uart() {
         //
         // Print out data
         //
+
         } else if (uart_state & 0x04) {
             char_handled = 0;
             SERIAL1_WD = char_out;
@@ -232,8 +234,9 @@ void process_kcd() {
 
 void process_wall_clock() {
     const unsigned char command[] = "%W";
-    char out_string[] = "hh:mm:ss\r";
+    char out_string[] = "hh:mm:ss\r\r";
     char digit_buffer[3];
+    char* str_iter;
     int sender_id;
     int message_out;
     int clock;
@@ -275,6 +278,10 @@ void process_wall_clock() {
         if (sender_id == WALL_CLOCK_PID) {
             message_out = FALSE;
             clock++;
+
+            if (clock == 86400) {
+                clock = 0;
+            }
         
             if (clock_display) {
                 seconds = clock % 60;
@@ -312,21 +319,96 @@ void process_wall_clock() {
             }
         } else if (sender_id == KCD_PID) {
             if (((char*)(message->data))[2] == 'S') {
+                
+                //
+                // Parse time string from %WS HH:mm:ss command
+                //
+                
+                hours = 0;
+                minutes = 0;
+                seconds = 0;
+                str_iter = (char*)(message->data) + 3;
+                
+                if (consume(&str_iter, ' ') == -1) {
+                    printf_0("Parse error: a space must follow command\r\n");
+                    goto wall_clock_done;
+                } 
 
                 //
-                // TODO: Check time validity
-                // 
-
-                //
-                // TODO: Set the time
+                // Skip additional spaces
                 //
 
+                while(consume(&str_iter, ' ') == 0) {}
+
+                if (str_iter == '\r') {
+                    printf_0("Parse error: enter a time");
+                    goto wall_clock_done;
+                }
+
+                hours = atoi(str_iter, 2);
+                if (hours > 23) {
+                    printf_1("Bad value for hours: %i\r\n", hours);
+                    goto wall_clock_done;
+                } else if (hours == -1) {
+                    printf_0("Invalid time string\r\n");
+                    goto wall_clock_done;                    
+                }
+                
+                str_iter += 2;
+                if (consume(&str_iter, ':') == -1) {
+                    printf_0("Invalid time string\r\n");
+                    goto wall_clock_done;                    
+                };
+
+                minutes = atoi(str_iter, 2);
+                if (minutes > 59) {
+                    printf_1("Bad value for minutes: %i\r\n", minutes);
+                    goto wall_clock_done;
+                } else if (minutes == -1) {
+                    printf_0("Invalid time string\r\n");
+                    goto wall_clock_done;                    
+                }
+
+                str_iter += 2;
+                if (consume(&str_iter, ':') == -1) {
+                    printf_0("Invalid time string\r\n");
+                    goto wall_clock_done;                    
+                };
+
+                seconds = atoi(str_iter, 2);
+                if (seconds > 59) {
+                    printf_1("Bad value for seconds: %i\r\n", seconds);
+                    goto wall_clock_done;
+                } else if (seconds == -1) {
+                    printf_0("Invalid time string\r\n");
+                    goto wall_clock_done;                    
+                }
+
+                str_iter += 2;
+                if (consume(&str_iter, '\r') == -1) {
+                    printf_0("Invalid time string\r\n");
+                    goto wall_clock_done;                    
+                }
+                
+                clock = hours * 3600 + minutes * 60 + seconds;
                 clock_display = TRUE;
             } else if (((char*)(message->data))[2] == 'T') {
+                out_string[0] = '\r';
+                out_string[1] = ' ';
+                out_string[2] = ' ';
+                out_string[3] = ' ';
+                out_string[4] = ' ';
+                out_string[5] = ' ';
+                out_string[6] = ' ';
+                out_string[7] = ' ';
+                out_string[8] = ' ';
+                out_string[9] = '\r';
+                printf_0(out_string);
                 clock_display = FALSE;
             }
         }
-
+        
+    wall_clock_done:
         release_memory_block(message);
     }
 }
