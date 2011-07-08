@@ -13,7 +13,7 @@
 #include "../globals.h"
 #include "../lib/dbug.h"
 #include "../processes/system_processes.h"
-//#include "./soft_interrupts.h"
+#include "../processes/i_processes.h"
 #include "../tests/rtx_test.h"
 #include "../rtx.h"
 #include "../lib/string.h"
