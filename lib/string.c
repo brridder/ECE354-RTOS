@@ -59,7 +59,7 @@ int power(int base, int exponent) {
  * @param: length number of characters of str to parse
  */ 
 
-int atoi(char str[], int length) {
+int atoi_e(char str[], int length) {
   int i;
   int total;
 

@@ -80,7 +80,7 @@ void i_process_uart() {
                     str_cpy(message->data, in_string);
                     send_message(KCD_PID, message);
                     message = NULL;
-                } else { // Fucking stupid hack to get shit to work properly
+                } else {
                     message = (message_envelope*)request_memory_block();
                     message->type = MESSAGE_KEY_INPUT;
                     message->data[0] = '\n';
@@ -345,7 +345,7 @@ void process_wall_clock() {
                     goto wall_clock_done;
                 }
 
-                hours = atoi(str_iter, 2);
+                hours = atoi_e(str_iter, 2);
                 if (hours > 23) {
                     printf_1("Bad value for hours: %i\r\n", hours);
                     goto wall_clock_done;
@@ -360,7 +360,7 @@ void process_wall_clock() {
                     goto wall_clock_done;                    
                 };
 
-                minutes = atoi(str_iter, 2);
+                minutes = atoi_e(str_iter, 2);
                 if (minutes > 59) {
                     printf_1("Bad value for minutes: %i\r\n", minutes);
                     goto wall_clock_done;
@@ -375,7 +375,7 @@ void process_wall_clock() {
                     goto wall_clock_done;                    
                 };
 
-                seconds = atoi(str_iter, 2);
+                seconds = atoi_e(str_iter, 2);
                 if (seconds > 59) {
                     printf_1("Bad value for seconds: %i\r\n", seconds);
                     goto wall_clock_done;
@@ -425,7 +425,6 @@ void process_set_priority_command() {
     int i;
     int j;
 
-    // Register the fucking command
     message = (message_envelope*)request_memory_block();
     message->type = MESSAGE_CMD_REG;
     str_cpy(message->data, cmd);

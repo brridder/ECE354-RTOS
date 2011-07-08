@@ -7,7 +7,7 @@
 
 int power(int base, int exponent);
 int consume(char** str, const char c);
-int atoi(char str[], int length);
+int atoi_e(char str[], int length);
 void itoa(int n, char* s);
 void itox(unsigned int n, char* s);
 int atoi(const char *s);
