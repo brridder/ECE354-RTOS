@@ -70,7 +70,7 @@ void i_process_uart() {
                 need_new_line = 1;
                 char_handled = 1;
 
-                in_string[i++] = '\n';
+                //in_string[i++] = '\n';
                 in_string[i++] = '\0';
 
                 message = (message_envelope*)request_memory_block();
@@ -81,11 +81,11 @@ void i_process_uart() {
                     send_message(KCD_PID, message);
 #ifdef _DEBUG_HOTKEYS
                 } else if (in_string[0] == '!') {
-                   send_message(CRT_DISPLAY_PID, message);
+             //      send_message(CRT_DISPLAY_PID, message);
                    uart_debug_decoder(in_string);
 #endif
                 } else {
-                    send_message(CRT_DISPLAY_PID, message);
+            //        send_message(CRT_DISPLAY_PID, message);
                 }
 
                 message = NULL;
@@ -102,9 +102,15 @@ void i_process_uart() {
         //
 
         } else if (uart_state & 0x04) {
-            char_handled = 0;
             SERIAL1_WD = char_out;
             SERIAL1_IMR = 0x02;
+            if (char_out == CR) {
+                char_out = '\n';
+                char_handled = 1;
+                uart1_set_interrupts(&inter_cfg);
+            } else {
+                char_handled = 0;
+            }
         }
 
         release_processor();
