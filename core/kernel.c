@@ -191,13 +191,25 @@ k_set_process_priority_done:
 
 void* k_request_memory_block() {
     int block_index;
+    unsigned int num_blocks;
+    unsigned long int alloc_field;
     void* block;
-    
+
+    //
+    // Count the number of blocks allocated
+    //
+
+    alloc_field = memory_alloc_field;
+    for (num_blocks = 0; alloc_field; num_blocks++) {
+        alloc_field &= alloc_field - 1;
+    }
+
     //
     // Check if we have any free memory left. If not, return NULL
     //
 
-    while (memory_head == NULL) {
+    while (memory_head == NULL || 
+           (num_blocks >= 31 && !running_process->is_i_process)) {
 
         //
         // There is no memory available, switch out of this process

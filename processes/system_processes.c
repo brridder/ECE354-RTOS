@@ -94,6 +94,7 @@ void i_process_uart() {
                 char_out = char_in;
                 uart1_set_interrupts(&inter_cfg);
             }
+
 #ifdef UART_DEBUG
             printf_1("uart1 char in : %i\r\n", char_in);
 #endif
@@ -215,12 +216,12 @@ void process_kcd() {
         if (message_receive->type == MESSAGE_KEY_INPUT) {
             for(i = 0; i < num_cmds; i++) {
                 if (message_receive->data[1] == cmds[i].cmd_str[1]) {
-                    message_send = (message_envelope*)request_memory_block();
-                    str_cpy(message_send->data, message_receive->data);
-                    send_message(cmds[i].reg_pid, message_send);
+                    send_message(cmds[i].reg_pid, message_receive);
+
 #ifdef KCD_DEBUG
                     printf_1("Found it for pid: %i\r\n", cmds[i].reg_pid);
 #endif
+
                     break;
                 }
             }

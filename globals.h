@@ -12,7 +12,7 @@
 
 #define PROCESS_NUM_REGISTERS 15
 
-#define NUM_MEM_BLKS 64
+#define NUM_MEM_BLKS 32
 #define MEM_BLK_SIZE 128
 
 #define PROC_A 7
