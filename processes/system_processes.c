@@ -417,13 +417,10 @@ void process_wall_clock() {
 void process_set_priority_command() {
     const char *cmd = "%C";
     message_envelope* message; 
-    char in_str[100];
-    char str_buf[50];
-
+    char* str_iter;
     int target_pid;
     int priority;
-    int i;
-    int j;
+    int consumed;
 
     printf_0("Process set priority started\r\n");
     
@@ -440,29 +437,42 @@ void process_set_priority_command() {
     target_pid = 0;
     priority = 0;
     while(1) {
-        message = (message_envelope*)receive_message(0);
-        str_cpy(in_str, message->data);        
+        message = (message_envelope*)receive_message((int*)NULL);
+        str_iter = (char*)message->data + 2;
         
+        while(consume(&str_iter, ' ') == 0);
         
+        target_pid = atoi(str_iter, &consumed);
+        if (consumed == 0 || target_pid < 0 || target_pid > NUM_PROCESSES-1) {
+            printf_0("Invalid PID\r\n");
+            goto process_set_priority_command_done;
+        }
 
-        i = 0;
-        while(in_str[i++] != ' ');
-        
-        j = 0;
-        while(in_str[i] != ' ') {
-            str_buf[j] = in_str[i];
-            i++;
+        str_iter += consumed;
+
+        while(consume(&str_iter, ' ') == 0);
+        if (consume(&str_iter, '\r') == 0) {
+            printf_0("Priority value expected\r\n");
+            goto process_set_priority_command_done;
         }
         
-        target_pid = atoi(str_buf);
-        
-        j = 0;
-        while(in_str[i] != '\r') {
-            str_buf[j] = in_str[i];
-            i++;
+        priority = atoi(str_iter, &consumed);
+        if (consumed == 0 || priority < 0 || priority > NUM_PRIORITIES-1) {
+            printf_0("Invalid priority\r\n");
+            goto process_set_priority_command_done;
         }
-        priority = atoi(str_buf);
+
+        str_iter += consumed;
+
+        while(consume(&str_iter, ' ') == 0);
+        if (consume(&str_iter, '\r') == -1) {
+            printf_0("Newline expected\r\n");
+            goto process_set_priority_command_done;
+        }
+
         set_process_priority(target_pid, priority);
+
+    process_set_priority_command_done:
         release_processor();
     }
 }

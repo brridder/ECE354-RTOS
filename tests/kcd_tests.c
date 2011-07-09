@@ -35,13 +35,23 @@ void test1() {
 /* third party dummy test process 2 */ 
 void test2()
 {
+    int previous_priority;
+    int current_priority;
+
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
 
+    previous_priority = g_test_fixture.get_process_priority(2);
     while (1) {
-        printf_1("PID2 : priority = %i\r\n", g_test_fixture.get_process_priority(2));
+        current_priority = g_test_fixture.get_process_priority(2);
+        if (previous_priority != current_priority) {
+            previous_priority = current_priority;
+            printf_1("PID2 : priority = %i\r\n", previous_priority);
+        }
+
         g_test_fixture.release_processor();
     }
 }
+
 /* third party dummy test process 3 */ 
 void test3()
 {

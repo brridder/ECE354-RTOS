@@ -10,7 +10,7 @@ int consume(char** str, const char c);
 int atoi_e(char str[], int length);
 void itoa(int n, char* s);
 void itox(unsigned int n, char* s);
-int atoi(const char *s);
+int atoi(const char *s, int* consumed);
 void reverse(char* s);
 int strlen(const char* s);
 void str_cpy(char* dest, char* src); 

@@ -116,12 +116,22 @@ void itox(unsigned int n, char s[]) {
     reverse(s);
 }
 
-int atoi(const char *s) {
-   int res = 0;
-   while(*s >= '0' && *s <= '9') {
+int atoi(const char *s, int* consumed) {
+    int i;
+    int res;
+    
+    i = 0;
+    res = 0;
+    while(*s >= '0' && *s <= '9') {
         res = res * 10  + *s++ - '0';
-   }
-   return res;
+        i++;
+    }
+
+    if (consumed != NULL) {
+        *consumed = i;
+    }
+
+    return res;
 }
 
 void reverse(char s[]) {
