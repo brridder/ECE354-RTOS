@@ -382,13 +382,17 @@ void* k_receive_message(int* sender_id) {
 }
 
 int k_delayed_send(int process_id, message_envelope* message, int delay) {
+    if (process_id < 0 || process_id > NUM_PROCESSES-1 || delay < 0) {
+        return RTX_ERROR;
+    }
+
     message->sender_pid = running_process->pid;
     message->receiver_pid = process_id;
     message->delay = delay;
     message->delay_start = timer;
     queue_insert_m(&delayed_messages, message);
     
-    return 0;
+    return RTX_SUCCESS;
 }
 
 /**
