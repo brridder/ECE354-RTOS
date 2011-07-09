@@ -235,8 +235,8 @@ void process_kcd() {
         } else {
             release_memory_block(message_receive);
         }
+
         message_receive = NULL;
-        release_processor();
     }
 }
 
