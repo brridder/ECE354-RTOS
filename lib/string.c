@@ -161,7 +161,7 @@ void str_cpy(char* dest, char* src) {
     while(*dest++ = *src++);
 }
 
-int str_cmp(char* s1, char* s2) {
+int str_cmp(const char* s1, const char* s2) {
     for( ; *s1 == *s2; ++s1, ++s2) {
         if (*s1 == 0) {
             return 0; // equal

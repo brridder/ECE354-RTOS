@@ -9,7 +9,10 @@ enum system_calls {
     CALL_RELEASE_MEM_BLK = 4,
     CALL_SEND_MESSAGE = 5,
     CALL_RECEIVE_MESSAGE = 6,
-    CALL_DELAYED_SEND = 7
+    CALL_DELAYED_SEND = 7,
+    CALL_DEBUG_PRT_RDY_Q = 8,
+    CALL_DEBUG_PRT_BLK_MEM = 9,
+    CALL_DEBUG_PRT_BLK_REC = 10
 };
 
 int do_system_call(int call_id, int* args, int num_args);

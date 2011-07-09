@@ -14,9 +14,7 @@
 #include "../lib/string.h"
 #include "../globals.h"
 #include "../uart/uart.h"
-#include "uart_debug.h"
 
-#define _DEBUG_HOTKEYS
 
 char char_out;
 int char_handled;
@@ -72,8 +70,11 @@ void i_process_uart() {
                 need_new_line = 1;
                 char_handled = 1;
 
-                in_string[i++] = '\n';
+                //in_string[i++] = '\n';
                 in_string[i++] = '\0';
+                
+                char_out = CR;
+                uart1_set_interrupts(&inter_cfg);
 
                 message = (message_envelope*)request_memory_block();
                 message->type = MESSAGE_KEY_INPUT;
@@ -81,21 +82,19 @@ void i_process_uart() {
                
                 if (in_string[0] == '%') {
                     send_message(KCD_PID, message);
-#ifdef _DEBUG_HOTKEYS
-                } else if (in_string[0] == '!') {
-                   send_message(CRT_DISPLAY_PID, message);
-                   uart_debug_decoder(in_string);
-#endif
-                } else {
-                    send_message(CRT_DISPLAY_PID, message);
                 }
+#ifdef _DEBUG_HOTKEYS
+                else if (in_string[0] == '!') {
+                   uart_debug_decoder(in_string);
+                }
+#endif
 
                 message = NULL;
                 i = 0;
+            } else {
+                char_out = char_in;
+                uart1_set_interrupts(&inter_cfg);
             }
-
-            char_out = char_in;
-            uart1_set_interrupts(&inter_cfg);
 #ifdef UART_DEBUG
             printf_1("uart1 char in : %i\r\n", char_in);
 #endif
@@ -104,9 +103,15 @@ void i_process_uart() {
         //
 
         } else if (uart_state & 0x04) {
-            char_handled = 0;
             SERIAL1_WD = char_out;
             SERIAL1_IMR = 0x02;
+            if (char_out == CR) {
+                char_out = '\n';
+                char_handled = 1;
+                uart1_set_interrupts(&inter_cfg);
+            } else {
+                char_handled = 0;
+            }
         }
 
         release_processor();
@@ -222,8 +227,6 @@ void process_kcd() {
                     break;
                 }
             }
-
-            send_message(CRT_DISPLAY_PID, message_receive);
         } else if (message_receive->type == MESSAGE_CMD_REG) {
             str_cpy(cmds[num_cmds].cmd_str, message_receive->data);
             cmds[num_cmds].reg_pid = sender_id;
@@ -237,8 +240,8 @@ void process_kcd() {
         } else {
             release_memory_block(message_receive);
         }
+
         message_receive = NULL;
-        release_processor();
     }
 }
 
@@ -455,6 +458,7 @@ void process_set_priority_command() {
     message = 0; 
     target_pid = 0;
     priority = 0;
+
     while(1) {
         message = (message_envelope*)receive_message((int*)NULL);
         str_iter = (char*)message->data + 2;
@@ -494,5 +498,37 @@ void process_set_priority_command() {
     process_set_priority_command_done:
         release_memory_block((void*)message);
         release_processor();
+    }
+}
+
+void uart_debug_decoder(char *str) {
+    if (consume(&str, '!') == -1) {
+        // ERROR'D
+        return;
+    }
+    
+    consume(&str, '!');
+
+    //
+    // !RQ == dump out ready queues and priorities
+    // !BMQ = dump out blocked memory queues
+    // !BRQ = dump out blocked received queues
+    //
+    
+    if (consume(&str,'r') == 0 || consume(&str, 'R') == 0) {
+        if (consume(&str,'q') == 0 || consume(&str, 'Q') == 0) {
+            // print out ready queues 
+            debug_prt_rdy_q();
+        }
+    } else if (consume(&str, 'b') == 0 || consume(&str, 'B') == 0) {
+        if (consume(&str, 'm') == 0 || consume(&str, 'M') == 0) {
+            // print blocked memory queues
+            debug_prt_blk_mem_q();
+        } else if (consume(&str, 'r') == 0|| consume(&str,'R') == 0) {
+            // print blocked recevied queues
+            debug_prt_blk_rec_q();
+        }
+    } else { // Bad input
+        printf_0("Invalid hot key command for debugging\r\n");
     }
 }

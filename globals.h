@@ -28,4 +28,6 @@
 
 #define GID "S11-G031"
 
+#define _DEBUG_HOTKEYS
+
 #endif
