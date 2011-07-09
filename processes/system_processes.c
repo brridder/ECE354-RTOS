@@ -40,7 +40,6 @@ void i_process_uart() {
     uart_interrupt_config inter_cfg;
     message_envelope *message;
     unsigned char uart_state;
-    int need_new_line;
     char in_string[64];
     char char_in;
     int i;
@@ -49,7 +48,7 @@ void i_process_uart() {
     message = NULL;
     inter_cfg.rx_rdy = false;
     inter_cfg.tx_rdy = true;
-    need_new_line = 0; 
+    uart_skip_newline = 0;
 
     while(1) {
         uart_state = SERIAL1_USR;
@@ -68,7 +67,6 @@ void i_process_uart() {
             in_string[i++] = char_in;
 
             if (char_in == CR) {
-                need_new_line = 1;
                 char_handled = 1;
 
                 //in_string[i++] = '\n';
@@ -110,6 +108,7 @@ void i_process_uart() {
                 char_out = '\n';
                 char_handled = 1;
                 uart1_set_interrupts(&inter_cfg);
+                uart_skip_newline = 0;
             } else {
                 char_handled = 0;
             }
