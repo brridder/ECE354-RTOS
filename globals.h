@@ -12,7 +12,7 @@
 
 #define PROCESS_NUM_REGISTERS 15
 
-#define NUM_MEM_BLKS 32
+#define NUM_MEM_BLKS 64
 #define MEM_BLK_SIZE 128
 
 #define PROC_A 7
@@ -26,9 +26,9 @@
 #define WALL_CLOCK_PID 14
 #define SET_PRIORITY_PID 15
 
-#define PROC_A_PRIORITY 0
-#define PROC_B_PRIORITY 0
-#define PROC_C_PRIORITY 0
+#define PROC_A_PRIORITY 2
+#define PROC_B_PRIORITY 1
+#define PROC_C_PRIORITY 1
 
 #define GID "S11-G031"
 

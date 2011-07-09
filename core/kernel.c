@@ -7,6 +7,8 @@
 #include "../lib/string.h"
 #include "../rtx.h"
 
+#define DEBUG_BLOCKED
+
 extern message_queue delayed_messages;
 extern int timer;
 
@@ -202,7 +204,7 @@ void* k_request_memory_block() {
         // and set our state to blocked
         //
 
-        #ifdef DEBUG
+        #ifdef DEBUG_BLOCKED
         printf_1("No free memory: process %i is now blocked\r\n",
             running_process->pid);
         #endif
@@ -264,6 +266,12 @@ int k_release_memory_block(void* memory_block) {
           unblocked_process->state = STATE_READY;
           k_priority_enqueue_process(unblocked_process, QUEUE_READY);
 
+ #ifdef DEBUG_BLOCKED
+          printf_1("Process %i is now unblocked (memory)\r\n",
+                   unblocked_process->pid);
+#endif
+
+
           if (unblocked_process->priority < running_process->priority) {
               k_release_processor();
           }
@@ -316,6 +324,11 @@ int k_send_message(int process_id, message_envelope* message) {
         receiving_process = k_priority_queue_remove(process_id);
         k_priority_enqueue_process(receiving_process, QUEUE_READY);
 
+#ifdef DEBUG_BLOCKED
+        printf_1("Process %i is now unblocked (message)\r\n",
+                 receiving_process->pid);
+#endif
+
         if (receiving_process->priority < running_process->priority) {
             k_release_processor();
         }
@@ -363,7 +376,7 @@ void* k_receive_message(int* sender_id) {
         // to blocked
         //
 
-        #ifdef DEBUG
+        #ifdef DEBUG_BLOCKED
         printf_1("Message queue is empty: process %i is now blocked\r\n",
             running_process->pid);
         #endif

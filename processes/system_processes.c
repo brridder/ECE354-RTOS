@@ -75,12 +75,11 @@ void i_process_uart() {
                 
                 char_out = CR;
                 uart1_set_interrupts(&inter_cfg);
-
-                message = (message_envelope*)request_memory_block();
-                message->type = MESSAGE_KEY_INPUT;
-                str_cpy(message->data, in_string);
                
                 if (in_string[0] == '%') {
+                    message = (message_envelope*)request_memory_block();
+                    message->type = MESSAGE_KEY_INPUT;
+                    str_cpy(message->data, in_string);
                     send_message(KCD_PID, message);
                 }
 #ifdef _DEBUG_HOTKEYS
@@ -224,6 +223,10 @@ void process_kcd() {
 #endif
                     break;
                 }
+            }
+
+            if (i == num_cmds) {
+                release_memory_block(message_receive);
             }
         } else if (message_receive->type == MESSAGE_CMD_REG) {
             str_cpy(cmds[num_cmds].cmd_str, message_receive->data);

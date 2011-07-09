@@ -62,6 +62,7 @@ void proc_c() {
         }
 
         if (message_in->type == MESSAGE_COUNT_REPORT) {
+            printf_1("It is: %i\r\n", (int)(message_in->data[0]));
             if ((int)(message_in->data[0]) % 20 == 0 && (int)(message_in->data[0]) != 0) {
                 message_in->type = MESSAGE_KEY_INPUT;
                 str_cpy(message_in->data, (char*)output);
