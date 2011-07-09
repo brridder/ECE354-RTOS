@@ -259,7 +259,7 @@ void process_wall_clock() {
 
     while (1) {
         if (!message_out) {
-            message = request_memory_block();
+            message = (message_envelope*)request_memory_block();
             delayed_send(WALL_CLOCK_PID, message, 1000);
             message_out = TRUE;
         }
@@ -315,7 +315,7 @@ void process_wall_clock() {
                     out_string[1] = digit_buffer[1];
                 }
 
-                printf_0(out_string);
+                printf_u_0(out_string);
             }
         } else if (sender_id == KCD_PID) {
             if (((char*)(message->data))[2] == 'S') {
@@ -340,8 +340,8 @@ void process_wall_clock() {
 
                 while(consume(&str_iter, ' ') == 0) {}
 
-                if (str_iter == '\r') {
-                    printf_0("Parse error: enter a time");
+                if (*str_iter == '\r') {
+                    printf_0("Parse error: enter a time\r\nx");
                     goto wall_clock_done;
                 }
 
@@ -425,21 +425,26 @@ void process_set_priority_command() {
     int i;
     int j;
 
+    printf_0("Process set priority started\r\n");
+    
+    //
+    // Register for the %C command
+    // 
+
     message = (message_envelope*)request_memory_block();
     message->type = MESSAGE_CMD_REG;
     str_cpy(message->data, cmd);
     send_message(KCD_PID, message);
+
     message = 0; 
     target_pid = 0;
     priority = 0;
-
-    printf_0("Process set priority started\r\n");
     while(1) {
         message = (message_envelope*)receive_message(0);
-        //while(message->type != MESSAGE_KEY_INPUT || message == 0) {
-        //}
         str_cpy(in_str, message->data);        
         
+        
+
         i = 0;
         while(in_str[i++] != ' ');
         

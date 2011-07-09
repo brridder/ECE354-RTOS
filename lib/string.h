@@ -15,7 +15,11 @@ void reverse(char* s);
 int strlen(const char* s);
 void str_cpy(char* dest, char* src); 
 int str_cmp(char* s1, char* s2);
+
 void printf_0(const char* format);
 void printf_1(const char* format, int input);
+
+void printf_u_0(const char* format);
+void printf_u_1(const char* format, int input);
 
 #endif
