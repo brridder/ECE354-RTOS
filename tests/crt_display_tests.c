@@ -23,10 +23,10 @@ void test1() {
         i = 0;
         printf_0("test1\r\n");
         while (str[i] != '\0') {
-            (char*)(message->data)[i] = str[i];
+            ((char*)(message->data))[i] = str[i];
             i++;
         }
-        (char*)(message->data)[i] = '\0';
+        ((char*)(message->data))[i] = '\0';
 
         g_test_fixture.send_message(12, message);    
         g_test_fixture.release_processor();
@@ -47,10 +47,10 @@ void test2()
 
         i = 0;
         while (str[i] != '\0') {
-            (char*)(message->data)[i] = str[i];
+            ((char*)(message->data))[i] = str[i];
             i++;
         }
-        (char*)(message->data)[i] = '\0';
+        ((char*)(message->data))[i] = '\0';
 
         g_test_fixture.send_message(12, message);    
         g_test_fixture.release_processor();
