@@ -62,3 +62,18 @@ int delayed_send(int process_id, void* message_envelope, int delay) {
 
     return do_system_call(CALL_DELAYED_SEND, args, 3);
 }
+
+#ifdef _DEBUG_HOTKEYS
+int debug_prt_rdy_q() {
+    return do_system_call(CALL_DEBUG_PRT_RDY_Q, 0, 0);
+}
+
+int debug_prt_blk_mem_q() {
+    return do_system_call(CALL_DEBUG_PRT_BLK_MEM, 0, 0);
+}
+
+int debug_prt_blk_rec_q() {
+    return do_system_call(CALL_DEBUG_PRT_BLK_REC, 0, 0);
+}
+#endif
+

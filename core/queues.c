@@ -247,3 +247,18 @@ queue_insert_m_done:
     return;
 }
 
+int queue_debug_print(process_queue queue[]) {
+    int i = 0;
+    process_control_block *proc;
+    
+    for(i = 0; i < NUM_PRIORITIES; i++) {
+        proc = queue[i].head;
+        while (proc != NULL) {
+            printf_1("Process ID: %i ", proc->pid);
+            printf_1("Priority: %i\r\n", proc->priority);
+            proc = proc->next;
+        }
+    }
+
+    return RTX_SUCCESS;
+}
