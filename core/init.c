@@ -13,11 +13,13 @@
 #include "../globals.h"
 #include "../lib/dbug.h"
 #include "../processes/system_processes.h"
+#include "../processes/user_processes.h"
 #include "../tests/rtx_test.h"
 #include "../rtx.h"
 #include "../lib/string.h"
 #include "../uart/uart.h"
 #include "./hard_interrupts.h"
+
 extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
@@ -224,7 +226,9 @@ void init_priority_queues() {
     for (i = 0; i < NUM_TEST_PROCS; i++) {
         k_priority_enqueue_process(&processes[i+1], QUEUE_READY);
     }
-
+    k_priority_enqueue_process(&processes[PROC_A], QUEUE_READY);
+    k_priority_enqueue_process(&processes[PROC_B], QUEUE_READY);
+    k_priority_enqueue_process(&processes[PROC_C], QUEUE_READY);
     k_priority_enqueue_process(&processes[CRT_DISPLAY_PID], QUEUE_READY);
     k_priority_enqueue_process(&processes[KCD_PID], QUEUE_READY);
     k_priority_enqueue_process(&processes[WALL_CLOCK_PID], QUEUE_READY);
@@ -263,26 +267,26 @@ void init_user_procs() {
     processes[0].next = NULL;
     processes[0].previous = NULL;
 
-    processes[PROC_A].pid = 0;
-    processes[PROC_A].priority = 4;
+    processes[PROC_A].pid = PROC_A;
+    processes[PROC_A].priority = 0;
     processes[PROC_A].stack_size = 4096; 
-    processes[PROC_A].entry = &process_null;
+    processes[PROC_A].entry = &proc_a;
     processes[PROC_A].is_i_process = FALSE;
     processes[PROC_A].next = NULL;
     processes[PROC_A].previous = NULL;
     
-    processes[PROC_B].pid = 0;
-    processes[PROC_B].priority = 4;
+    processes[PROC_B].pid = PROC_B;
+    processes[PROC_B].priority = 0;
     processes[PROC_B].stack_size = 4096; 
-    processes[PROC_B].entry = &process_null;
+    processes[PROC_B].entry = &proc_b;
     processes[PROC_B].is_i_process = FALSE;
     processes[PROC_B].next = NULL;
     processes[PROC_B].previous = NULL;
 
-    processes[PROC_C].pid = 0;
-    processes[PROC_C].priority = 4;
+    processes[PROC_C].pid = PROC_C;
+    processes[PROC_C].priority = 0;
     processes[PROC_C].stack_size = 4096; 
-    processes[PROC_C].entry = &process_null;
+    processes[PROC_C].entry = &proc_c;
     processes[PROC_C].is_i_process = FALSE;
     processes[PROC_C].next = NULL;
     processes[PROC_C].previous = NULL;

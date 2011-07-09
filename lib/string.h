@@ -14,7 +14,7 @@ int atoi(const char *s, int* consumed);
 void reverse(char* s);
 int strlen(const char* s);
 void str_cpy(char* dest, char* src); 
-int str_cmp(char* s1, char* s2);
+int str_cmp(const char* s1, const char* s2);
 
 void printf_0(const char* format);
 void printf_1(const char* format, int input);

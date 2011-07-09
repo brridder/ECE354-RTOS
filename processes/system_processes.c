@@ -227,8 +227,6 @@ void process_kcd() {
                     break;
                 }
             }
-            
-            //send_message(CRT_DISPLAY_PID, message_receive);
         } else if (message_receive->type == MESSAGE_CMD_REG) {
             str_cpy(cmds[num_cmds].cmd_str, message_receive->data);
             cmds[num_cmds].reg_pid = sender_id;
