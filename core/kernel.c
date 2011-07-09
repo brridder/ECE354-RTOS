@@ -14,8 +14,6 @@ void* memory_head;
 unsigned long int memory_alloc_field;
 void* mem_end;
 
-//#define DEBUG
-
 /**
  * Priority Queues
  */
@@ -33,11 +31,12 @@ process_queue* process_queues[] = {ready_queue,
 /**
  * @brief: System call used by a running process to release the processor.
  */
+
 int k_release_processor() {
     process_control_block* process;
     
 #ifdef DEBUG
-    rtx_dbug_outs("k_release_processor()\r\n");
+    printf_0("k_release_processor()\r\n");
 #endif
 
     if (!running_process->is_i_process) {
@@ -59,17 +58,21 @@ int k_release_processor() {
 }
 
 int k_preempt_processor(process_control_block* process) {
+
 #ifdef DEBUG
     printf_1("k_preempt_processor(%x)\r\n", process);
 #endif
+
     k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
     return k_context_switch(process);
 }
 
 process_control_block* k_get_next_process(int queue) {
-    int i = 0;
-    process_control_block* process = NULL;
-
+    int i;
+    process_control_block* process;
+    
+    i = 0;
+    process = NULL;
     while(i < NUM_PRIORITIES) {
         process = k_priority_dequeue_process(i, queue);
         if (process == NULL) {
@@ -89,11 +92,11 @@ process_control_block* k_get_next_process(int queue) {
 
 int k_get_process_priority(int pid) {
 #ifdef DEBUG
-    rtx_dbug_outs("k_get_process_priority()\r\n");
+    printf_0("k_get_process_priority()\r\n");
 #endif 
     
     //
-    // An invalid pid was passed in
+    // Check if the PID is valid
     //
 
     if (pid >= NUM_PROCESSES || pid < 0) {
@@ -113,7 +116,7 @@ int k_set_process_priority(int pid, int priority) {
     process_control_block* process;
 
 #ifdef DEBUG
-    rtx_dbug_outs("k_set_process_priority()\r\n");
+    printf_0("k_set_process_priority()\r\n");
 #endif
 
     //
@@ -456,11 +459,12 @@ int k_context_switch(process_control_block* process) {
         asm("move.l (%sp)+, %a0"); // A0
     } else {
 #ifdef DEBUG
-        rtx_dbug_outs("  Error: trying to switch to a process that is in an"
-                      " unknown state\r\n");
+        printf_0("  Error: trying to switch to a process that is in an"
+                 " unknown state\r\n");
 #endif
         return RTX_ERROR;
     }
+
     return RTX_SUCCESS;
 }
 
