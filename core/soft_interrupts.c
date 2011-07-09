@@ -171,6 +171,21 @@ void system_call() {
         case CALL_DELAYED_SEND:
             return_value = k_delayed_send(args[0], (void*)args[1], args[2]);
             break;
+
+        //
+        // 8: debug_prt_rdy_q()
+        //
+        case CALL_DEBUG_PRT_RDY_Q:
+            return_value = k_debug_prt_rdy_q();
+            break;
+
+        case CALL_DEBUG_PRT_BLK_MEM:
+            return_value = k_debug_prt_blk_mem_q();
+            break;
+
+        case CALL_DEBUG_PRT_BLK_REC:
+            return_value = k_debug_prt_blk_rec_q();
+            break;
         //
         // Invalid call ID
         //

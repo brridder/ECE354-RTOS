@@ -589,3 +589,24 @@ void k_init_priority_queues() {
         process_queues[QUEUE_BLOCKED_MEMORY][i].tail = NULL;
     }
 }
+
+#ifdef _DEBUG_HOTKEYS
+/*
+ * process_queue ready_queue[NUM_PRIORITIES];
+ * process_queue blocked_message_queue[NUM_PRIORITIES];
+ * process_queue blocked_memory_queue[NUM_PRIORITIES];
+ */
+
+int k_debug_prt_rdy_q() {
+    return queue_debug_print(ready_queue);
+}
+
+int k_debug_prt_blk_mem_q() {
+    return queue_debug_print(blocked_memory_queue);
+}
+
+int k_debug_prt_blk_rec_q() {
+    return queue_debug_print(blocked_message_queue);
+}
+
+#endif /* _DEBUG_HOTKEYS */

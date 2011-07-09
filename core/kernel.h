@@ -50,4 +50,10 @@ process_control_block* k_priority_dequeue_process(int priority,
                                                   enum queue_type queue);
 process_control_block* k_priority_queue_remove(int pid);
 
+#ifdef _DEBUG_HOTKEYS
+int k_debug_prt_rdy_q();
+int k_debug_prt_blk_mem_q();
+int k_debug_prt_blk_rec_q();
+#endif /* _DEBUG_HOTKEYS */
+
 #endif

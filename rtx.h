@@ -8,6 +8,7 @@
 #ifndef _RTX_H_
 #define _RTX_H_
 
+#include "globals.h"
 /*
  * Message Envelope
  */
@@ -58,4 +59,13 @@ int release_memory_block(void* memory_block);
 int send_message(int process_id, void* message_envelope);
 void* receive_message(int* sender_id);
 int delayed_send(int process_id, void* message_envelope, int delay);
-#endif
+
+#ifdef _DEBUG_HOTKEYS
+
+int debug_prt_rdy_q();
+int debug_prt_blk_mem_q();
+int debug_prt_blk_rec_q();
+
+#endif /*_DEBUG_HOTKEYS*/
+
+#endif /* _RTX_H_ */
