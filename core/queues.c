@@ -1,6 +1,23 @@
 #include "queues.h"
 #include "../lib/string.h"
 
+void queue_insert_p(process_queue* queue, process_control_block* process) {
+    if (queue->head == NULL && queue->tail == NULL) {
+        queue_enqueue_p(queue, process);
+    } else {
+
+        // 
+        // The queue is not empty. Attach the process to the current 
+        // head and update the head pointer.
+        //
+
+        process->previous = NULL;
+        process->next = queue->head;
+        queue->head->previous = process;
+        queue->head = process;
+    }
+}
+
 void queue_enqueue_p(process_queue* queue, process_control_block* process) {
     if (queue->head == NULL && queue->tail == NULL) {
 

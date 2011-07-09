@@ -26,6 +26,7 @@ int k_send_message(int process_id, message_envelope* message);
 int k_forward_message(message_envelope* message);
 void* k_receive_message(int* sender_id);
 int k_delayed_send(int process_id, message_envelope* message, int delay);
+
 /**
  * Internal kernel calls
  */
@@ -42,6 +43,8 @@ int k_get_block_index(void* addr);
 
 void k_init_priority_queues();
 void k_priority_enqueue_process(process_control_block* process,
+                                enum queue_type queue);
+void k_priority_insert_process(process_control_block* process,
                                 enum queue_type queue);
 process_control_block* k_priority_dequeue_process(int priority,
                                                   enum queue_type queue);

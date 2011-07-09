@@ -21,12 +21,10 @@ void* mem_end;
 process_queue ready_queue[NUM_PRIORITIES];
 process_queue blocked_message_queue[NUM_PRIORITIES];
 process_queue blocked_memory_queue[NUM_PRIORITIES];
-process_queue preempted_queue[NUM_PRIORITIES];
 
 process_queue* process_queues[] = {ready_queue,
                                    blocked_message_queue,
-                                   blocked_memory_queue,
-                                   preempted_queue};
+                                   blocked_memory_queue};
 
 /**
  * @brief: System call used by a running process to release the processor.
@@ -49,10 +47,7 @@ int k_release_processor() {
         }
     }
  
-    process = k_get_next_process(QUEUE_PREEMPTED);
-    if (!process) {
-        process = k_get_next_process(QUEUE_READY);
-    }
+    process = k_get_next_process(QUEUE_READY);
 
     return k_context_switch(process);
 }
@@ -63,7 +58,7 @@ int k_preempt_processor(process_control_block* process) {
     printf_1("k_preempt_processor(%x)\r\n", process);
 #endif
 
-    k_priority_enqueue_process(running_process, QUEUE_PREEMPTED);
+    k_priority_insert_process(running_process, QUEUE_READY);
     return k_context_switch(process);
 }
 
@@ -84,6 +79,25 @@ process_control_block* k_get_next_process(int queue) {
 
     return process;
 } 
+
+process_control_block* k_peek_next_process(int queue) {
+    int i;
+    process_control_block* process;
+    
+    i = 0;
+    process = NULL;
+    while(i < NUM_PRIORITIES) {
+        process = k_priority_dequeue_process(i, queue);
+        k_priority_insert_process(process, queue);
+        if (process == NULL) {
+            i++;
+        } else {
+            break;
+        }
+    }
+
+    return process;    
+}
 
 /**
  * @brief: Returns the priority of a process
@@ -133,10 +147,10 @@ int k_set_process_priority(int pid, int priority) {
     //
 
     if (running_process) {
-      if (running_process->pid == pid) {
-        running_process->priority = priority;
-        goto k_set_process_priority_done;
-      } 
+        if (running_process->pid == pid) {
+            running_process->priority = priority;
+            goto k_set_process_priority_done;
+        } 
     }
    
     // 
@@ -151,17 +165,21 @@ int k_set_process_priority(int pid, int priority) {
 #endif
 
     if (process == NULL) {
-      processes[pid].priority = priority;
+        processes[pid].priority = priority;
     } else {
-      process->priority = priority;
-      k_priority_enqueue_process(process, process->queue);
+        process->priority = priority;
+        k_priority_enqueue_process(process, process->queue);
     }
 
 #ifdef DEBUG
     printf_1("  priority is %i, enqueing...\r\n", process->priority);
-#endif
+#endif    
 
 k_set_process_priority_done:
+    if (k_peek_next_process(QUEUE_READY)->priority < running_process->priority) {
+        k_release_processor();
+    }
+
     return RTX_SUCCESS;
 }
 
@@ -219,10 +237,11 @@ int k_release_memory_block(void* memory_block) {
     // Check the memory allocation field to see if this block has already
     // been deallocated.
     //
-    //
+
 #ifdef DEBUG_MEM
     printf_1("Release_memory: MEMORY BLOCK = %x\r\n", memory_block);
 #endif
+
     block_index = k_get_block_index(memory_block);
     
     if (memory_alloc_field & (0x01 << block_index)) {
@@ -244,6 +263,10 @@ int k_release_memory_block(void* memory_block) {
       if (unblocked_process) {
           unblocked_process->state = STATE_READY;
           k_priority_enqueue_process(unblocked_process, QUEUE_READY);
+
+          if (unblocked_process->priority < running_process->priority) {
+              k_release_processor();
+          }
       }
 
       return RTX_SUCCESS;
@@ -292,6 +315,10 @@ int k_send_message(int process_id, message_envelope* message) {
         receiving_process->state = STATE_READY;      
         receiving_process = k_priority_queue_remove(process_id);
         k_priority_enqueue_process(receiving_process, QUEUE_READY);
+
+        if (receiving_process->priority < running_process->priority) {
+            k_release_processor();
+        }
     }
 
     //
@@ -373,7 +400,7 @@ int k_context_switch(process_control_block* process) {
     process_control_block* previous_process;
 
 #ifdef DEBUG
-    printf_1("k_context_switch(%x)\r\n", process);
+    printf_1("k_context_switch(pid = %i)\r\n", process->pid);
 #endif
 
     if (!process) {
@@ -485,6 +512,22 @@ void k_priority_enqueue_process(process_control_block* process,
 }
 
 /**
+ * @brief: Insert a process onto the appropriate priority queue
+ * @param: process the process to enqueue
+ * @param: queue the queue type to use
+ */
+
+void k_priority_insert_process(process_control_block* process,
+                               enum queue_type queue) {
+    if (process != NULL) {
+        queue_insert_p(&process_queues[queue][process->priority], process);
+        process->queue = queue;
+    }
+
+    return; 
+}
+
+/**
  * @brief: Dequeue the head of the priority param.
  * @params: priority the priority queue to dequeue from
  * @param: queue the queue type to use
@@ -544,7 +587,5 @@ void k_init_priority_queues() {
         process_queues[QUEUE_BLOCKED_MESSAGE][i].tail = NULL;
         process_queues[QUEUE_BLOCKED_MEMORY][i].head = NULL;
         process_queues[QUEUE_BLOCKED_MEMORY][i].tail = NULL;
-        process_queues[QUEUE_PREEMPTED][i].head = NULL;
-        process_queues[QUEUE_PREEMPTED][i].tail = NULL;
     }
 }

@@ -15,8 +15,6 @@
 #include "../globals.h"
 #include "../uart/uart.h"
 
-//#define KCD_DEBUG
-
 char char_out;
 int char_handled;
 
@@ -178,23 +176,25 @@ void process_crt_display() {
                 }
             }
         }
+
         release_memory_block(message);
         message = NULL;
         
-       release_processor();
+        release_processor();
     }
 }
 
 // 
 // Keyboard command decoder
 //
+
 void process_kcd() {
     int sender_id;
     int num_cmds;
     int i;
     message_envelope *message_receive; 
     message_envelope *message_send; 
-    command cmds[32]; 
+    command cmds[32];
     
     num_cmds = 0;
 
@@ -206,21 +206,26 @@ void process_kcd() {
                     message_send = (message_envelope*)request_memory_block();
                     str_cpy(message_send->data, message_receive->data);
                     send_message(cmds[i].reg_pid, message_send);
+
 #ifdef KCD_DEBUG
                     printf_1("Found it for pid: %i\r\n", cmds[i].reg_pid);
 #endif
+
                     break;
                 }
             }
+
             send_message(CRT_DISPLAY_PID, message_receive);
         } else if (message_receive->type == MESSAGE_CMD_REG) {
             str_cpy(cmds[num_cmds].cmd_str, message_receive->data);
             cmds[num_cmds].reg_pid = sender_id;
             num_cmds++;
             release_memory_block(message_receive);
+
 #ifdef KCD_DEBUG
             printf_1("Registered for %i\r\n",  cmds[num_cmds-1].reg_pid);
 #endif
+
         } else {
             release_memory_block(message_receive);
         }

@@ -21,8 +21,7 @@ enum queue_type {
     QUEUE_READY = 0,
     QUEUE_BLOCKED_MESSAGE = 1,
     QUEUE_BLOCKED_MEMORY = 2,
-    QUEUE_PREEMPTED = 3,
-    QUEUE_NONE = 4
+    QUEUE_NONE = 3
 };
 
 typedef struct _process_control_block {

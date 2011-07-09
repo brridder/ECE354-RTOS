@@ -4,6 +4,7 @@
 #include "../rtx.h"
 #include "process.h"
 
+void queue_insert_p(process_queue* queue, process_control_block* process);
 void queue_enqueue_p(process_queue* queue, process_control_block* process);
 process_control_block* queue_dequeue_p(process_queue* queue);
 void queue_remove_p(process_queue* queue, process_control_block* process);
