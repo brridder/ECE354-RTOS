@@ -219,11 +219,9 @@ void process_kcd() {
                     message_send = (message_envelope*)request_memory_block();
                     str_cpy(message_send->data, message_receive->data);
                     send_message(cmds[i].reg_pid, message_send);
-
 #ifdef KCD_DEBUG
                     printf_1("Found it for pid: %i\r\n", cmds[i].reg_pid);
 #endif
-
                     break;
                 }
             }
@@ -232,11 +230,9 @@ void process_kcd() {
             cmds[num_cmds].reg_pid = sender_id;
             num_cmds++;
             release_memory_block(message_receive);
-
 #ifdef KCD_DEBUG
             printf_1("Registered for %i\r\n",  cmds[num_cmds-1].reg_pid);
 #endif
-
         } else {
             release_memory_block(message_receive);
         }

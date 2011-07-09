@@ -16,7 +16,8 @@ enum message_type {
     MESSAGE_CMD_REG = 0,
     MESSAGE_KEY_INPUT,
     MESSAGE_OUTPUT,
-    MESSAGE_COUNT_REPORT
+    MESSAGE_COUNT_REPORT,
+    MESSAGE_WAKE_UP_10
 };
 
 typedef struct _message_envelope {
