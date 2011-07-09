@@ -11,20 +11,23 @@
 #include "../lib/string.h"
 
 void test1() {
-    message_envelope *message; 
-    char* str = "TEST\r\n\0";
+    message_envelope* message; 
+    char str[] = "TEST 1\r\n";
     int i;
 
-    rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");
+    printf_0("rtx_test: test1\r\n");
     while (1) {
         message = (message_envelope*)g_test_fixture.request_memory_block();
+        message->type = MESSAGE_OUTPUT;
+
         i = 0;
-        printf_0("test1 ");
+        printf_0("test1\r\n");
         while (str[i] != '\0') {
-            message->data[i] = str[i];
+            (char*)(message->data)[i] = str[i];
             i++;
         }
-        message->data[i] = '\0';
+        (char*)(message->data)[i] = '\0';
+
         g_test_fixture.send_message(12, message);    
         g_test_fixture.release_processor();
     }
@@ -34,19 +37,21 @@ void test1() {
 void test2()
 {
     message_envelope *message; 
-    char* str = "3423423j\r\n\0";
+    char str[] = "TEST 2\r\n";
     int i;
 
     rtx_dbug_outs((CHAR *)"rtx_test: test2\r\n");
     while (1) {
         message = (message_envelope*)g_test_fixture.request_memory_block();
-        i = 0;
+        message->type = MESSAGE_OUTPUT;
 
+        i = 0;
         while (str[i] != '\0') {
-            message->data[i] = str[i];
+            (char*)(message->data)[i] = str[i];
             i++;
         }
-        message->data[i] = '\0';
+        (char*)(message->data)[i] = '\0';
+
         g_test_fixture.send_message(12, message);    
         g_test_fixture.release_processor();
     }
