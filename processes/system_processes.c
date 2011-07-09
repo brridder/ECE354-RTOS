@@ -73,6 +73,7 @@ void i_process_uart() {
                 in_string[i++] = '\0';
                 
                 char_out = CR;
+                uart_skip_newline = 0;
                 uart1_set_interrupts(&inter_cfg);
                
                 if (in_string[0] == '%') {
@@ -108,9 +109,9 @@ void i_process_uart() {
                 char_out = '\n';
                 char_handled = 1;
                 uart1_set_interrupts(&inter_cfg);
-                uart_skip_newline = 0;
             } else {
                 char_handled = 0;
+                uart_skip_newline = 0;
             }
         }
 
