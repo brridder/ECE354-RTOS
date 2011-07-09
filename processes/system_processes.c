@@ -72,6 +72,9 @@ void i_process_uart() {
 
                 //in_string[i++] = '\n';
                 in_string[i++] = '\0';
+                
+                char_out = CR;
+                uart1_set_interrupts(&inter_cfg);
 
                 message = (message_envelope*)request_memory_block();
                 message->type = MESSAGE_KEY_INPUT;
@@ -79,21 +82,19 @@ void i_process_uart() {
                
                 if (in_string[0] == '%') {
                     send_message(KCD_PID, message);
-#ifdef _DEBUG_HOTKEYS
-                } else if (in_string[0] == '!') {
-             //      send_message(CRT_DISPLAY_PID, message);
-                   uart_debug_decoder(in_string);
-#endif
-                } else {
-            //        send_message(CRT_DISPLAY_PID, message);
                 }
+#ifdef _DEBUG_HOTKEYS
+                else if (in_string[0] == '!') {
+                   uart_debug_decoder(in_string);
+                }
+#endif
 
                 message = NULL;
                 i = 0;
+            } else {
+                char_out = char_in;
+                uart1_set_interrupts(&inter_cfg);
             }
-
-            char_out = char_in;
-            uart1_set_interrupts(&inter_cfg);
 #ifdef UART_DEBUG
             printf_1("uart1 char in : %i\r\n", char_in);
 #endif
@@ -226,8 +227,8 @@ void process_kcd() {
                     break;
                 }
             }
-
-            send_message(CRT_DISPLAY_PID, message_receive);
+            
+            //send_message(CRT_DISPLAY_PID, message_receive);
         } else if (message_receive->type == MESSAGE_CMD_REG) {
             str_cpy(cmds[num_cmds].cmd_str, message_receive->data);
             cmds[num_cmds].reg_pid = sender_id;
@@ -459,6 +460,7 @@ void process_set_priority_command() {
     message = 0; 
     target_pid = 0;
     priority = 0;
+
     while(1) {
         message = (message_envelope*)receive_message((int*)NULL);
         str_iter = (char*)message->data + 2;
