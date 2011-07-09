@@ -14,6 +14,9 @@
 #include "../lib/string.h"
 #include "../globals.h"
 #include "../uart/uart.h"
+#include "uart_debug.h"
+
+#define _DEBUG_HOTKEYS
 
 char char_out;
 int char_handled;
@@ -78,6 +81,11 @@ void i_process_uart() {
                
                 if (in_string[0] == '%') {
                     send_message(KCD_PID, message);
+#ifdef _DEBUG_HOTKEYS
+                } else if (in_string[0] == '!') {
+                   send_message(CRT_DISPLAY_PID, message);
+                   uart_debug_decoder(in_string);
+#endif
                 } else {
                     send_message(CRT_DISPLAY_PID, message);
                 }
