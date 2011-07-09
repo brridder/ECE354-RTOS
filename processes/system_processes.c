@@ -57,7 +57,7 @@ void i_process_uart() {
         // Read in waiting data
         //
         
-        if (uart_state & 0x01) {
+        if (uart_state & UART_READ) {
             char_in = SERIAL1_RD;
             
             if (char_in == '\0') {
@@ -102,7 +102,7 @@ void i_process_uart() {
         // Print out data
         //
 
-        } else if (uart_state & 0x04) {
+        } else if (uart_state & UART_WRITE) {
             SERIAL1_WD = char_out;
             SERIAL1_IMR = 0x02;
             if (char_out == CR) {
