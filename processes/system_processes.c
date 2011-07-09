@@ -18,6 +18,7 @@
 
 char char_out;
 int char_handled;
+int uart_skip_newline;
 
 message_queue delayed_messages;
 int timer;
@@ -105,7 +106,7 @@ void i_process_uart() {
         } else if (uart_state & UART_WRITE) {
             SERIAL1_WD = char_out;
             SERIAL1_IMR = 0x02;
-            if (char_out == CR) {
+            if (char_out == CR && !uart_skip_newline) {
                 char_out = '\n';
                 char_handled = 1;
                 uart1_set_interrupts(&inter_cfg);
@@ -179,11 +180,16 @@ void process_crt_display() {
     while(1) {
         message = receive_message(&sender_id);
         if (message->type == MESSAGE_OUTPUT || 
-            message->type == MESSAGE_KEY_INPUT) { 
+            message->type == MESSAGE_KEY_INPUT ||
+            message->type == MESSAGE_OUTPUT_NO_NEWLINE) { 
             i = 0;
             while (message->data[i] != '\0') { 
                 if (!char_handled) {
                     char_handled = 1;
+                    if (message->data[i] == CR && 
+                        message->type == MESSAGE_OUTPUT_NO_NEWLINE) {
+                        uart_skip_newline = 1; 
+                    }
                     char_out = message->data[i++];        
                     uart1_set_interrupts(&int_config);
                 }
@@ -328,7 +334,7 @@ void process_wall_clock() {
                     out_string[1] = digit_buffer[1];
                 }
 
-                printf_u_0(out_string);
+                printf_u_0(out_string, 1);
             }
         } else if (sender_id == KCD_PID) {
             if (((char*)(message->data))[2] == 'S') {

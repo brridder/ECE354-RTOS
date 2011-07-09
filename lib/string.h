@@ -19,7 +19,7 @@ int str_cmp(const char* s1, const char* s2);
 void printf_0(const char* format);
 void printf_1(const char* format, int input);
 
-void printf_u_0(const char* format);
+void printf_u_0(const char* format, int skip_newline);
 void printf_u_1(const char* format, int input);
 
 #endif

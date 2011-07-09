@@ -18,7 +18,7 @@
 /* third party dummy test process 1 */ 
 void test1() {
     int i;
-    printf_u_0("rtx_test: test1\r\n");
+    printf_u_0("rtx_test: test1\r\n", 1);
 
     set_process_priority(1, 1);
     printf_u_1("Getting priority for PID 1: %i\n\r", get_process_priority(1));
@@ -39,7 +39,7 @@ void test1() {
 /* third party dummy test process 2 */ 
 void test2()
 {
-    printf_u_0("rtx_test: test2\r\n");
+    printf_u_0("rtx_test: test2\r\n",0);
     while (1) 
     {
         g_test_fixture.release_processor();
@@ -49,7 +49,7 @@ void test2()
 /* third party dummy test process 3 */ 
 void test3()
 {
-    printf_u_0("rtx_test: test3\r\n");
+    printf_u_0("rtx_test: test3\r\n",0);
     while (1) 
     {
         g_test_fixture.release_processor();
@@ -59,7 +59,7 @@ void test3()
 /* third party dummy test process 4 */ 
 void test4()
 {
-    printf_u_0("rtx_test: test4\r\n");
+    printf_u_0("rtx_test: test4\r\n",0);
     while (1) 
     {
         g_test_fixture.release_processor();
@@ -68,7 +68,7 @@ void test4()
 /* third party dummy test process 5 */ 
 void test5()
 {
-    printf_u_0("rtx_test: test5\r\n");
+    printf_u_0("rtx_test: test5\r\n",0);
     while (1) 
     {
         g_test_fixture.release_processor();
@@ -77,7 +77,7 @@ void test5()
 /* third party dummy test process 6 */ 
 void test6()
 {
-    printf_u_0("rtx_test: test6\r\n");
+    printf_u_0("rtx_test: test6\r\n",0);
     while (1) 
     {
         g_test_fixture.release_processor();

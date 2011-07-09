@@ -305,11 +305,11 @@ void printf_0(const char* format) {
     printf_1(format, 0);
 }
 
-void printf_u_0(const char* format) {
+void printf_u_0(const char* format, int skip_newlines) {
     message_envelope* out_message;
 
     out_message = (message_envelope*)request_memory_block();
-    out_message->type = MESSAGE_OUTPUT;
+    out_message->type = skip_newlines ? MESSAGE_OUTPUT_NO_NEWLINES : MESSAGE_OUTPUT;
     str_cpy(out_message->data, format);
     send_message(CRT_DISPLAY_PID, out_message);
 }
