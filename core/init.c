@@ -268,7 +268,7 @@ void init_user_procs() {
     processes[0].previous = NULL;
 
     processes[PROC_A].pid = PROC_A;
-    processes[PROC_A].priority = 0;
+    processes[PROC_A].priority = PROC_A_PRIORITY;
     processes[PROC_A].stack_size = 4096; 
     processes[PROC_A].entry = &proc_a;
     processes[PROC_A].is_i_process = FALSE;
@@ -276,7 +276,7 @@ void init_user_procs() {
     processes[PROC_A].previous = NULL;
     
     processes[PROC_B].pid = PROC_B;
-    processes[PROC_B].priority = 0;
+    processes[PROC_B].priority = PROC_B_PRIORITY;
     processes[PROC_B].stack_size = 4096; 
     processes[PROC_B].entry = &proc_b;
     processes[PROC_B].is_i_process = FALSE;
@@ -284,7 +284,7 @@ void init_user_procs() {
     processes[PROC_B].previous = NULL;
 
     processes[PROC_C].pid = PROC_C;
-    processes[PROC_C].priority = 0;
+    processes[PROC_C].priority = PROC_C_PRIORITY;
     processes[PROC_C].stack_size = 4096; 
     processes[PROC_C].entry = &proc_c;
     processes[PROC_C].is_i_process = FALSE;

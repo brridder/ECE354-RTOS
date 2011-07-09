@@ -26,6 +26,10 @@
 #define WALL_CLOCK_PID 14
 #define SET_PRIORITY_PID 15
 
+#define PROC_A_PRIORITY 0
+#define PROC_B_PRIORITY 0
+#define PROC_C_PRIORITY 0
+
 #define GID "S11-G031"
 
 #define _DEBUG_HOTKEYS
