@@ -116,6 +116,13 @@ void itox(unsigned int n, char s[]) {
     reverse(s);
 }
 
+/**
+ * @brief: Convert a string to an integer
+ * @param: s string to convert
+ * @param: consumed number of characters consumed will be written this this.
+           Can be NULL.
+ */
+
 int atoi(const char *s, int* consumed) {
     int i;
     int res;

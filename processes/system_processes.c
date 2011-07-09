@@ -73,21 +73,18 @@ void i_process_uart() {
 
                 in_string[i++] = '\n';
                 in_string[i++] = '\0';
+
+                message = (message_envelope*)request_memory_block();
+                message->type = MESSAGE_KEY_INPUT;
+                str_cpy(message->data, in_string);
                
                 if (in_string[0] == '%') {
-                    message = (message_envelope*)request_memory_block();
-                    message->type = MESSAGE_KEY_INPUT;
-                    str_cpy(message->data, in_string);
                     send_message(KCD_PID, message);
-                    message = NULL;
                 } else {
-                    message = (message_envelope*)request_memory_block();
-                    message->type = MESSAGE_KEY_INPUT;
-                    message->data[0] = '\n';
-                    message->data[1] = '\0';
                     send_message(CRT_DISPLAY_PID, message);
                 }
 
+                message = NULL;
                 i = 0;
             }
 
@@ -393,6 +390,11 @@ void process_wall_clock() {
                 clock = hours * 3600 + minutes * 60 + seconds;
                 clock_display = TRUE;
             } else if (((char*)(message->data))[2] == 'T') {
+
+                //
+                // Erase the clock
+                //
+                
                 out_string[0] = '\r';
                 out_string[1] = ' ';
                 out_string[2] = ' ';
@@ -404,6 +406,10 @@ void process_wall_clock() {
                 out_string[8] = ' ';
                 out_string[9] = '\r';
                 printf_0(out_string);
+                
+                out_string[2] = ':';
+                out_string[5] = ':';
+
                 clock_display = FALSE;
             }
         }
@@ -473,6 +479,7 @@ void process_set_priority_command() {
         set_process_priority(target_pid, priority);
 
     process_set_priority_command_done:
+        release_memory_block((void*)message);
         release_processor();
     }
 }
