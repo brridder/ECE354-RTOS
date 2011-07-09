@@ -46,7 +46,7 @@ void proc_b() {
 }
 
 void proc_c() {
-    const unsigned char output[] = "Process C";
+    const unsigned char output[] = "Process C\r";
     message_envelope* message_in;
     message_envelope* message_delay; 
     message_queue queue;
@@ -69,7 +69,7 @@ void proc_c() {
 
                 message_delay = (message_envelope*)request_memory_block();
                 message_delay->type = MESSAGE_WAKE_UP_10;
-                delayed_send(PROC_C, message_delay, 10);
+                delayed_send(PROC_C, message_delay, 10000);
 
                 while(1) {
                     message_in = (message_envelope*)receive_message(0);
