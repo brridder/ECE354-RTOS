@@ -17,7 +17,6 @@
 char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 char format_int_buffer[FORMAT_INT_BUFFER_SIZE];
 
-
 /**
  * @brief: Copy num bytes from source to destination
  * @param: destination

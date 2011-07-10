@@ -340,8 +340,8 @@ void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
         g_test_proc[i].sz_stack = 2048;
     }
 
-    g_test_proc[TEST_DELAY_SENDER_PID].entry = test_delay_sender;
-    g_test_proc[TEST_DELAY_RECEIVER_PID].entry = test_delay_receiver;
+    g_test_proc[TEST_DELAY_SENDER_PID-1].entry = test_delay_sender;
+    g_test_proc[TEST_DELAY_RECEIVER_PID-1].entry = test_delay_receiver;
     g_test_proc[2].entry = test3;
     g_test_proc[3].entry = test4;
     g_test_proc[4].entry = test5;
