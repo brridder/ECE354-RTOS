@@ -30,8 +30,8 @@
 #define WALL_CLOCK_PID 14
 #define SET_PRIORITY_PID 15
 
-#define PROC_A_PRIORITY 1
-#define PROC_B_PRIORITY 1
+#define PROC_A_PRIORITY 2
+#define PROC_B_PRIORITY 2
 #define PROC_C_PRIORITY 1
 
 #define GID "S11-G031"
