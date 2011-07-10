@@ -186,6 +186,10 @@ void system_call() {
         case CALL_DEBUG_PRT_BLK_REC:
             return_value = k_debug_prt_blk_rec_q();
             break;
+		
+		case CALL_DEBUG_PRT_MEM_BLKS_FREE:
+		    return_value = k_debug_prt_mem_blks_free();
+            break;
         //
         // Invalid call ID
         //

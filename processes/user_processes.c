@@ -4,6 +4,7 @@
 #include "../core/queues.h"
 #include "../core/process.h"
 
+#define USER_DEBUG
 void proc_a() {
     const unsigned char command[] = "%Z";
     message_envelope* message;
@@ -30,7 +31,7 @@ void proc_a() {
     while(1) {
         message = (message_envelope*)request_memory_block();
         message->type = MESSAGE_COUNT_REPORT;
-        (int)(message->data[0]) = num;
+        message->data[0] = (char)num;
         send_message(PROC_B, message);
         num++;
         release_processor();

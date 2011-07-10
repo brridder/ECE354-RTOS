@@ -180,7 +180,7 @@ void test2()
     // 
 
     printf_0("  Process 2: Allocate every block...");
-    for (i = 0; i < NUM_MEM_BLKS; i++) {
+    for (i = 0; i < NUM_MEM_BLKS - MEM_RESERVED; i++) {
         p_mem_array[i] = request_memory_block();
     }
     printf_0("...done - releasing processor\r\n");

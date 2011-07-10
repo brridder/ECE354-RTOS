@@ -54,6 +54,7 @@ process_control_block* k_priority_queue_remove(int pid);
 int k_debug_prt_rdy_q();
 int k_debug_prt_blk_mem_q();
 int k_debug_prt_blk_rec_q();
+int k_debug_prt_mem_blks_free();
 #endif /* _DEBUG_HOTKEYS */
 
 #endif

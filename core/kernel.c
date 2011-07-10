@@ -8,7 +8,7 @@
 #include "../rtx.h"
 
 #define DEBUG_BLOCKED
-
+#define DEBUG_MEMORY_ALLOCS
 extern message_queue delayed_messages;
 extern int timer;
 
@@ -239,7 +239,9 @@ void* k_request_memory_block() {
 
     block_index = k_get_block_index(block);
     memory_alloc_field |= (0x01 << block_index);
-
+#ifdef DEBUG_MEMORY_ALLOCS
+	printf_1("Allocating memory block %i\r\n", block_index);
+#endif
     return block;    
 }
 
@@ -278,7 +280,7 @@ int k_release_memory_block(void* memory_block) {
           unblocked_process->state = STATE_READY;
           k_priority_enqueue_process(unblocked_process, QUEUE_READY);
 
- #ifdef DEBUG_BLOCKED
+#ifdef DEBUG_BLOCKED
           printf_1("Process %i is now unblocked (memory)\r\n",
                    unblocked_process->pid);
 #endif
@@ -288,7 +290,9 @@ int k_release_memory_block(void* memory_block) {
               k_release_processor();
           }
       }
-
+#ifdef DEBUG_MEMORY_ALLOCS
+	  printf_1("Deallocating memory block %i\r\n", block_index);
+#endif
       return RTX_SUCCESS;
     }
 
@@ -627,15 +631,29 @@ void k_init_priority_queues() {
  */
 
 int k_debug_prt_rdy_q() {
+    printf_0("Processes in ready queue\r\n");
     return queue_debug_print(ready_queue);
 }
 
 int k_debug_prt_blk_mem_q() {
+    printf_0("Processes blocked on memory\r\n");
     return queue_debug_print(blocked_memory_queue);
 }
 
 int k_debug_prt_blk_rec_q() {
+    printf_0("Processes blocked on receiving messages\r\n");
     return queue_debug_print(blocked_message_queue);
+}
+
+int k_debug_prt_mem_blks_free() {
+    unsigned long int alloc_field;
+    int num_blocks;
+    alloc_field = memory_alloc_field;
+    for (num_blocks = 0; alloc_field; num_blocks++) {
+        alloc_field &= alloc_field - 1;
+    }
+	printf_1("Number of free blocks: %i\r\n", NUM_MEM_BLKS - num_blocks);
+    return RTX_SUCCESS;
 }
 
 #endif /* _DEBUG_HOTKEYS */

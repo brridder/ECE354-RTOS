@@ -519,6 +519,7 @@ void uart_debug_decoder(char *str) {
     // !RQ == dump out ready queues and priorities
     // !BMQ = dump out blocked memory queues
     // !BRQ = dump out blocked received queues
+    // !FM == dump out # of free memory blocks
     //
     
     if (consume(&str,'r') == 0 || consume(&str, 'R') == 0) {
@@ -533,6 +534,10 @@ void uart_debug_decoder(char *str) {
         } else if (consume(&str, 'r') == 0|| consume(&str,'R') == 0) {
             // print blocked recevied queues
             debug_prt_blk_rec_q();
+        }
+    } else if (consume(&str, 'f') == 0 || consume(&str, 'F') == 0) {
+        if (consume(&str, 'm') == 0 || consume(&str, 'M') == 0) {
+            debug_prt_mem_blks_free();
         }
     } else { // Bad input
         printf_0("Invalid hot key command for debugging\r\n");

@@ -68,6 +68,7 @@ int delayed_send(int process_id, void* message_envelope, int delay);
 int debug_prt_rdy_q();
 int debug_prt_blk_mem_q();
 int debug_prt_blk_rec_q();
+int debug_prt_mem_blks_free();
 
 #endif /*_DEBUG_HOTKEYS*/
 
