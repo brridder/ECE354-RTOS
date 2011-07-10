@@ -11,7 +11,6 @@ void proc_a() {
     int num;
     
     num = 0;
-
     message = (message_envelope*)request_memory_block(); 
     message->type = MESSAGE_CMD_REG;
     str_cpy(message->data, (char*)command);
@@ -30,7 +29,10 @@ void proc_a() {
     while(1) {
         message = (message_envelope*)request_memory_block();
         message->type = MESSAGE_COUNT_REPORT;
-        memcpy(message->data, &num, sizeof(num));
+
+        //memcpy(message->data, &num, sizeof(num));
+        itoa(num, message->data);
+
         send_message(PROC_B, message);
         num++;
         release_processor();
@@ -63,7 +65,8 @@ void proc_c() {
         }
 
         if (message_in->type == MESSAGE_COUNT_REPORT) {
-            memcpy(&message_data, message_in->data, sizeof(message_data));
+            //memcpy(&message_data, message_in->data, sizeof(message_data));
+            message_data = atoi(message_in->data, NULL);
             if (message_data % 20 == 0 && message_data != 0) {
                 message_in->type = MESSAGE_KEY_INPUT;
                 str_cpy(message_in->data, (char*)output);
