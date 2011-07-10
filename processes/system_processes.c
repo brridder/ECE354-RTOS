@@ -344,7 +344,11 @@ void process_wall_clock() {
                     out_string[1] = digit_buffer[1];
                 }
 
-                //printf_u_0(out_string, 1);
+                //
+                // Send clock output to CRT, reusing the memory block that we 
+                // received from delayed_send
+                //
+
                 message->type = MESSAGE_OUTPUT_NO_NEWLINE;
                 str_cpy(message->data, out_string);
                 send_message(CRT_DISPLAY_PID, message);
