@@ -284,6 +284,12 @@ void process_wall_clock() {
     send_message(KCD_PID, message);
 
     while (1) {
+        
+        //
+        // If we currently aren't waiting for a delayed message, send one
+        // to ourself with a delay of 1 second.
+        //
+
         if (!sent_message) {
             if (message_delayed == NULL) {
                 message_delayed = (message_envelope*)request_memory_block();
@@ -294,25 +300,29 @@ void process_wall_clock() {
         }
 
         //
-        // Try to receive the 1s delayed message sent by this process
+        // Try to receive either the 1 second delayed wall clock message,
+        // or a command from the KCD.
         //
 
         message = receive_message(&sender_id);
-
-        //
-        // Update timer display, make sure that the sender of the delayed
-        // message was this process.
-        //
-
         if (sender_id == WALL_CLOCK_PID) {
             sent_message = FALSE;
             clock++;
+
+            //
+            // Roll the clock over after 24 hours
+            //
 
             if (clock == 86400) {
                 clock = 0;
             }
         
             if (clock_display) {
+
+                //
+                // Update clock output string
+                //
+
                 seconds = clock % 60;
                 minutes = ((clock - seconds) % 3600) / 60;
                 hours = ((clock - seconds - (minutes*60)))/3600;
@@ -454,6 +464,18 @@ void process_wall_clock() {
             }
 
         wall_clock_done:
+
+            //
+            // We are done with this message, release it
+            //
+
+            release_memory_block(message);
+        } else {            
+
+            //
+            // Unknown message type received, release it
+            //
+
             release_memory_block(message);
         }
     }
