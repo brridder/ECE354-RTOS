@@ -119,7 +119,8 @@ and a message is created. A check is made to determine the first value in the st
 it is a percent (\%) the message is sent to the KCD, if it is an exclamation mark (!) the message 
 is sent to the CRT and the string buffer is sent to the UART debug decoder, otherwise the message 
 is sent to the CRT. After this the interrupts are re-enabled. If it is a write state, a character is 
-written to serial port and tx ready is masked. Then the process is released.
+written to serial port and tx ready is masked. A check is made to ensure that if carriage return is being 
+written then a newline character is also writte. Then the process is released.
 We made a UART I-Process. Pseudo code here at Listing~\ref{uart}.
 
 \lstset{caption={Pseudo code for the UART I-Process}, label=uart}
@@ -153,6 +154,9 @@ void i_process_uart(){
         } else if (state = write){
             write out character;
             mask tx ready;
+            if (character = carriage return){
+                print newline;
+            }
         }
     
         release processor;
@@ -162,20 +166,82 @@ void i_process_uart(){
 
 \subsection*{The Timer I-Process}
 
-We made a Timer I-Process. Pseudo code here at Listing~\ref{timer}.
+The \texttt{i\_process\_timer()} primitive is a process that is run immediately in response to timer interrupts.
+Upon receiving an interrupt the process will release itself and then increment the timer counter. The process 
+also checks to see if the delayed send queue is empty. If the queue is not empty another check is made to determine 
+if any messages in the queue need to be sent. If enough time has passed then the messages is appended to the appropriate 
+message queue. Pseudo code is shown at Listing~\ref{timer}.
 
 \lstset{caption={Pseudo code for the UART I-Process}, label=timer}
 \begin{lstlisting}
-UART_Process();
+void i_process_timer(){
+    initialize local variables;
+
+    while(1){
+        release processor;
+        increment timer;
+
+        if(delayed messages queue != NULL){
+            while (there are messages to be sent){
+                remove message from delay messages queue;
+                append message to appropriate message queue;
+            }
+        }
+    }
+}
 \end{lstlisting}
 
 \subsection*{The Wall Clock Process}
 
-There is a clock on the wall. Pseudo code here at Listing~\ref{wallclock}.
+The \texttt{process\_wall\_clock()} is used to display a time on UART1. This clock is given an initial time and updates it every 
+second. This is printed until a second command to terminate the display is received. The process checks to see if it has received 
+a message from itself, if has not a message is sent with a delay of 1 second. Then the process receives a message and verifies that
+the sender was itself. The clock is incremented and if it has reached 86400 seconds (24 hours) it is reset to 0. A check of a display 
+flag is made. If the flag is true then the integers are converted to a string and a message is sent to the CRT to be outputted. 
+If the message was from the KCD the message body is checked to see if it was a \%WS or \%WT command. If it was a \%WS command the message 
+body is parsed and the initial timer conditions are converted from characters to integers and the display flag is turned on. When parsing 
+the string error checking is done to make sure the initial value sent by the user is valid. If the \%WT command is received the output 
+string is overwritten with null characters and the display flag is turned off. Upon completion the message is released. Pseudo code for 
+the wall clock process can be seen at Listing~\ref{wallclock}.
 
 \lstset{caption={Pseudo code for the wall clock process}, label=wallclock}
 \begin{lstlisting}
-wall_clock_Process();
+void process_wall_clock(){
+    initialize local variables;
+
+    while (1){
+        if(process hasn't sent a message to itself){
+            send a delayed message to itself with delay of 1s;
+        }
+        
+        receive message;
+        if(sender_id = wall clock pid){
+            increment clock;
+
+            if(clock = 86400){
+                reset clock;
+            }
+            
+            if(clock display = true){
+                convert clock to hours, minutes and seconds;
+                convert int to string;
+                send message to CRT;
+            }
+        } else if (sender_id = KCD pid){
+            if(%WS){
+                parse string and validate input;
+                store hours, minutes and seconds as ints;
+                set clock display = true;
+            } else if (%WT){
+                set out string = null;
+                set clock display = false;
+            }
+            
+            release message;        
+
+        }
+    }
+}
 \end{lstlisting}
 
 \end{document}
