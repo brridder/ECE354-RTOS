@@ -4,6 +4,10 @@
 #define GID "S11-G031"
 #define TEST_DELAY_SENDER_PID 1
 #define TEST_DELAY_RECEIVER_PID 2
+#define TEST_MANAGEMENT_PID 6
+
+#define TEST_SUCCESS 64
+#define TEST_FAILURE 128
 
 #define SNPRINTF_BUFFER_SIZE 128
 #define FORMAT_INT_BUFFER_SIZE 16
@@ -111,7 +115,7 @@ void itox(unsigned int n, char s[]) {
 
 /**
  * @brief: Format the input into the string, replacing %i as the input as
-           an integer, and %x as the input as hex.
+ an integer, and %x as the input as hex.
  * @param: buffer buffer to write to
  * @param: buffer_size maximum length to write to buffer
  * @param: format format string
@@ -213,14 +217,14 @@ void snprintf_1(char* buffer, int buffer_size, const char* format, int input) {
 
     buffer[index] = '\0';
 
- format_done:
+format_done:
     return;
 }
 
 /**
  * @brief: print a formatted string to JanusROM terminal
  * @param: format format string, supported substitutions are %i (integer),
-           and %x (hex).
+ and %x (hex).
  * @param: input input to subsitute into the format string
  */
 
@@ -285,48 +289,50 @@ void test_delay_receiver() {
     message_num = 0;
     while (1) 
     {
-        message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
-        printf_1("Process 2 expected message with delay %i...",
-                 delays[message_num]);
+        if (message_num < num_messages) {
+            message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
 
-        memcpy(&message_delay, message->data, sizeof(message_delay));
-        if (message_delay == delays[message_num]) {
-            successes++;
 #ifdef _DEBUG
-            printf_0("success.\r\n");
+            printf_1("Process 2 expected message with delay %i...",
+                     delays[message_num]);
 #endif
-        } else { 
+            memcpy(&message_delay, message->data, sizeof(message_delay));
+            if (message_delay == delays[message_num]) {
+                successes++;
 #ifdef _DEBUG
-            printf_0("fail.\r\n");
+                printf_0("success.\r\n");
 #endif
-        }
+            } else {
+#ifdef _DEBUG
+                printf_0("fail.\r\n");
+#endif
+            }
         
-        message_num++;        
-        if (message_num == num_messages) {
-            successes++;
+            message_num++;        
+            if (message_num == num_messages) {
+                successes++;
 
 #ifdef _DEBUG
-            printf_1("Process 2 received %i messages total...success.\r\n",
-                     num_messages);
+                printf_1("Process 2 received %i messages total...success.\r\n",
+                         num_messages);
 #endif
-        } else if (message_num > num_messages) {
-            total_failures++;
-            if (successes == expected_successes) {
-                total_successes--;
             }
 
-#ifdef _DEBUG
-            printf_1("Process 2 received over %i messages total...fail.\r\n",
-                     num_messages);
-#endif
+            if (successes == expected_successes) {
+
+                //
+                // Message the test management process with success
+                //
+
+                message = (message_envelope*)g_test_fixture.request_memory_block();
+                message->data[0] = 1;
+                message->data[1] = RTX_SUCCESS;                
+                g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
+            } else {
+                g_test_fixture.release_memory_block(message);
+            }
         }
 
-        if (successes == expected_successes) {
-            total_successes++;
-            printf_0(GID"_test: test 1 OK\r\n");            
-        }
-
-        g_test_fixture.release_memory_block(message);        
         g_test_fixture.release_processor();
     }
 }
@@ -349,17 +355,33 @@ void test5() {
     }
 }
 
-void test6() {
-    int tests_done;
+void test_management() {
+    const int total_tests = 1;
+    int successes;
+    int failures;
 
-    tests_done = 0;
+    int sender_id;
+    int test_result;
+    message_envelope* message;
+
+    successes = 0;
+    failures = 0;
+    test_result = 0;
     while(1) {
-        if ((total_successes + total_failures) == total_expected_successes &&
-            tests_done == 0) {
-            tests_done = 1;
+        message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
+        test_result = message->data[1];
+  
+        if (test_result == TEST_SUCCESS) {
+            successes++;
+            printf_1(GID"_test: test %i OK\r\n", message->data[0]);
+        } else if (test_result == TEST_FAILURE) {
+            failures++;
+            printf_1(GID"_test: test %i FAIL\r\n", message->data[0]);
+        }
 
-            printf_1(GID"_test: %i/1 tests OK\r\n", total_successes);
-            printf_1(GID"_test: %i/1 tests FAIL\r\n", total_failures);
+        if ((successes + failures) == total_tests) {
+            printf_1(GID"_test: %i/1 tests OK\r\n", successes);
+            printf_1(GID"_test: %i/1 tests FAIL\r\n", failures);
             printf_0(GID"_test: END\r\n");
         }
 
@@ -388,7 +410,9 @@ void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
     g_test_proc[2].entry = test3;
     g_test_proc[3].entry = test4;
     g_test_proc[4].entry = test5;
-    g_test_proc[5].entry = test6;
+
+    g_test_proc[TEST_MANAGEMENT_PID-1].entry = test_management;
+    g_test_proc[TEST_MANAGEMENT_PID-1].priority = 2;
 }
 
 /**
