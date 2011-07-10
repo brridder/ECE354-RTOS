@@ -324,6 +324,10 @@ void test_delay_receiver() {
                 // Message the test management process with success
                 //
 
+#ifdef _DEBUG
+                printf_0("Process 2 done, sending message to management\r\n");
+#endif
+
                 message = (message_envelope*)g_test_fixture.request_memory_block();
                 message->data[0] = 1;
                 message->data[1] = RTX_SUCCESS;                
