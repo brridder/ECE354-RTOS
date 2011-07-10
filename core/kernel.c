@@ -190,12 +190,10 @@ k_set_process_priority_done:
 // Memory
 //
 
-void* k_request_memory_block() {
-    int block_index;
+int k_num_blocks_allocated() {
     unsigned int num_blocks;
     int block_check;
     int block_iter;
-    void* block;
 
     //
     // Count the number of blocks allocated
@@ -204,17 +202,26 @@ void* k_request_memory_block() {
     num_blocks = 0;
     block_check = 1;
     for (block_iter = 0; block_iter < NUM_MEM_BLKS; block_iter++) {
-        if (block_check & memory_alloc_field == block_check) {
+        if ((block_check & memory_alloc_field) == block_check) {
             num_blocks++;
         }
 
         block_check = block_check << 1;
     }
+    
+    return num_blocks;
+}
+
+void* k_request_memory_block() {
+    int block_index;
+    void* block;
+    int num_blocks;
 
     //
     // Check if we have any free memory left. If not, return NULL
     //
 
+    num_blocks = k_num_blocks_allocated();
     while (memory_head == NULL || 
            (num_blocks > (NUM_MEM_BLKS - MEM_RESERVED) && !(running_process->is_i_process))) {
 
@@ -235,6 +242,7 @@ void* k_request_memory_block() {
 
         running_process->state = STATE_BLOCKED_MEMORY;
         k_release_processor();
+        num_blocks = k_num_blocks_allocated();
     }
 
     //
@@ -658,20 +666,9 @@ int k_debug_prt_blk_rec_q() {
 }
 
 int k_debug_prt_mem_blks_free() {
-    int block_check;
-    int block_iter;
     int num_blocks;
 
-    num_blocks = 0;
-    block_check = 1;
-    for (block_iter = 0; block_iter < NUM_MEM_BLKS; block_iter++) {
-        if (block_check & memory_alloc_field == block_check) {
-            num_blocks++;
-        }
-
-        block_check = block_check << 1;
-    }
-
+    num_blocks = k_num_blocks_allocated();
     printf_1("Number of free blocks: %i\r\n", NUM_MEM_BLKS - num_blocks);
     printf_1("Alloc field: %x\r\n", memory_alloc_field);
     
