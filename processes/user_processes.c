@@ -82,7 +82,9 @@ void proc_c() {
                 }
             }
         }
+
         error_code = release_memory_block(message_in);
+
 #ifdef USER_DEBUG
         if (error_code == RTX_ERROR) {
             printf_0("Performed a double deallocation in Process C\r\n");

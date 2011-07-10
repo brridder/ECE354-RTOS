@@ -344,7 +344,11 @@ void process_wall_clock() {
                     out_string[1] = digit_buffer[1];
                 }
 
-                printf_u_0(out_string, 1);
+                //printf_u_0(out_string, 1);
+                message->type = MESSAGE_OUTPUT_NO_NEWLINE;
+                str_cpy(message->data, out_string);
+                send_message(CRT_DISPLAY_PID, message);
+                message_delayed = NULL;
             }
         } else if (sender_id == KCD_PID) {
             if (((char*)(message->data))[2] == 'S') {
