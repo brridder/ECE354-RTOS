@@ -193,16 +193,22 @@ k_set_process_priority_done:
 void* k_request_memory_block() {
     int block_index;
     unsigned int num_blocks;
-    unsigned long int alloc_field;
+    int block_check;
+    int block_iter;
     void* block;
 
     //
     // Count the number of blocks allocated
     //
 
-    alloc_field = memory_alloc_field;
-    for (num_blocks = 0; alloc_field; num_blocks++) {
-        alloc_field &= alloc_field - 1;
+    num_blocks = 0;
+    block_check = 1;
+    for (block_iter = 0; block_iter < NUM_MEM_BLKS; block_iter++) {
+        if (block_check & memory_alloc_field == block_check) {
+            num_blocks++;
+        }
+
+        block_check = block_check << 1;
     }
 
     //
@@ -210,7 +216,12 @@ void* k_request_memory_block() {
     //
 
     while (memory_head == NULL || 
-           (num_blocks > (NUM_MEM_BLKS - MEM_RESERVED) && !running_process->is_i_process)) {
+           (num_blocks > (NUM_MEM_BLKS - MEM_RESERVED) && !(running_process->is_i_process))) {
+
+        printf_1("  Memory head: %x\r\n", memory_head);
+        printf_1("  Num blocks: %i\r\n", num_blocks);
+        printf_1("  Alloc field: %x\r\n", memory_alloc_field);
+
 
         //
         // There is no memory available, switch out of this process
@@ -647,13 +658,23 @@ int k_debug_prt_blk_rec_q() {
 }
 
 int k_debug_prt_mem_blks_free() {
-    unsigned long int alloc_field;
+    int block_check;
+    int block_iter;
     int num_blocks;
-    alloc_field = memory_alloc_field;
-    for (num_blocks = 0; alloc_field; num_blocks++) {
-        alloc_field &= alloc_field - 1;
+
+    num_blocks = 0;
+    block_check = 1;
+    for (block_iter = 0; block_iter < NUM_MEM_BLKS; block_iter++) {
+        if (block_check & memory_alloc_field == block_check) {
+            num_blocks++;
+        }
+
+        block_check = block_check << 1;
     }
-	printf_1("Number of free blocks: %i\r\n", NUM_MEM_BLKS - num_blocks);
+
+    printf_1("Number of free blocks: %i\r\n", NUM_MEM_BLKS - num_blocks);
+    printf_1("Alloc field: %x\r\n", memory_alloc_field);
+    
     return RTX_SUCCESS;
 }
 
