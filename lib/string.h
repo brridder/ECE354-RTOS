@@ -5,6 +5,7 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
+void* memcpy(void* destination, const void* source, int num);
 int power(int base, int exponent);
 int consume(char** str, const char c);
 int atoi_e(char str[], int length);

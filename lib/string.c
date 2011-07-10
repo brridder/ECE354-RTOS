@@ -17,6 +17,14 @@
 char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 char format_int_buffer[FORMAT_INT_BUFFER_SIZE];
 
+
+/**
+ * @brief: Copy num bytes from source to destination
+ * @param: destination
+ * @param: source
+ * @param: num number of bytes to copy
+ */
+
 void* memcpy(void* destination, const void* source, int num) {
     int i;
     char* d;

@@ -20,7 +20,6 @@ void proc_a() {
     while(1) {
         message = (message_envelope*)receive_message(0);
         if (str_cmp(message->data, command)) {
-            printf_0("GOT %Z\r\n");
             release_memory_block(message);
             break;
         } else {
@@ -31,7 +30,7 @@ void proc_a() {
     while(1) {
         message = (message_envelope*)request_memory_block();
         message->type = MESSAGE_COUNT_REPORT;
-        message->data[0] = (char)num;
+        memcpy(message->data, &num, sizeof(num));
         send_message(PROC_B, message);
         num++;
         release_processor();
@@ -54,6 +53,7 @@ void proc_c() {
     queue.head = NULL;
     queue.tail = NULL;
     int error_code;
+    int message_data;
 
     while(1) {
         if (queue.head == NULL) {
@@ -63,8 +63,8 @@ void proc_c() {
         }
 
         if (message_in->type == MESSAGE_COUNT_REPORT) {
-            printf_1("It is: %i\r\n", (int)(message_in->data[0]));
-            if ((int)(message_in->data[0]) % 20 == 0 && (int)(message_in->data[0]) != 0) {
+            memcpy(&message_data, message_in->data, sizeof(message_data));
+            if (message_data % 20 == 0 && message_data != 0) {
                 message_in->type = MESSAGE_KEY_INPUT;
                 str_cpy(message_in->data, (char*)output);
                 send_message(CRT_DISPLAY_PID, message_in);
