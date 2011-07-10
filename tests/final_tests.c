@@ -239,7 +239,7 @@ void printf_0(const char* format) {
 
 
 void test_delay_sender() {
-    const int delays[] = {2, 100, 2000, 1000, 500, 1};
+    const int delays[] = {10, 100, 2000, 1000, 500, 1};
     const int num_messages = 6;
     int i;
     message_envelope* message;
@@ -263,7 +263,7 @@ void test_delay_sender() {
 }
 
 void test_delay_receiver() {
-    const int delays[] = {1, 2, 100, 500, 1000, 2000};
+    const int delays[] = {1, 10, 100, 500, 1000, 2000};
     const int num_messages = 6;
     int message_num;
     int sender_id;
@@ -276,8 +276,8 @@ void test_delay_receiver() {
         message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
         printf_1("Process 2 expected message with delay %i...",
                  delays[message_num]);
-        memcpy(&message_delay, message->data, sizeof(message_delay));
 
+        memcpy(&message_delay, message->data, sizeof(message_delay));
         if (message_delay == delays[message_num]) {
             printf_0("success.\r\n");
         } else { 
