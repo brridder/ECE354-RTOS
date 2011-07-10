@@ -9,6 +9,7 @@
 
 #define DEBUG_BLOCKED
 #define DEBUG_MEMORY_ALLOCS
+
 extern message_queue delayed_messages;
 extern int timer;
 
@@ -209,7 +210,7 @@ void* k_request_memory_block() {
     //
 
     while (memory_head == NULL || 
-           (num_blocks >= NUM_MEM_BLKS - MEM_RESERVED && !running_process->is_i_process)) {
+           (num_blocks > (NUM_MEM_BLKS - MEM_RESERVED) && !running_process->is_i_process)) {
 
         //
         // There is no memory available, switch out of this process

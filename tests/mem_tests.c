@@ -23,7 +23,7 @@ void test1()
     rtx_dbug_outs((CHAR *)"rtx_test: test1\r\n");
     int i;
     int failures;
-    void* p_mem_array[NUM_MEM_BLKS];
+    void* p_mem_array[NUM_MEM_BLKS - MEM_RESERVED];
 
     rtx_dbug_outs((CHAR *) "\r\nBeginning memory tests...\r\n");
 
@@ -33,7 +33,7 @@ void test1()
         
     failures = 0;
     rtx_dbug_outs((CHAR *) "  Try releasing all memory before being allocated...\r\n");
-    for (i=0; i< NUM_MEM_BLKS; i++) {
+    for (i=0; i< NUM_MEM_BLKS - MEM_RESERVED; i++) {
         int temp;
         temp = release_memory_block( p_mem_array[i] );
 
@@ -58,7 +58,7 @@ void test1()
 
     failures = 0;
     rtx_dbug_outs((CHAR *) "  Try allocating every block...\r\n");
-    for (i=0; i< NUM_MEM_BLKS; i++) {
+    for (i=0; i< NUM_MEM_BLKS - MEM_RESERVED; i++) {
         p_mem_array[i] = request_memory_block();
         if (p_mem_array[i] == NULL) {
             rtx_dbug_outs((CHAR *) "    Null pointer.\r\n");
@@ -79,7 +79,7 @@ void test1()
 
     failures = 0;
     rtx_dbug_outs((CHAR *) "  Try releasing all memory blocks...\r\n");
-    for (i=0; i< NUM_MEM_BLKS; i++) {
+    for (i=0; i< NUM_MEM_BLKS - MEM_RESERVED; i++) {
         int temp;
         temp = release_memory_block(p_mem_array[i]);
         if (temp != 0 ) {
@@ -99,7 +99,7 @@ void test1()
 
     failures = 0;
     rtx_dbug_outs((CHAR *) "  Attempting to release all memory again...\r\n");
-    for (i=0; i< NUM_MEM_BLKS; i++) {
+    for (i=0; i< NUM_MEM_BLKS - MEM_RESERVED; i++) {
         int temp;
         temp = release_memory_block( p_mem_array[i] );
         if (temp == 0 ) {
@@ -119,7 +119,7 @@ void test1()
         
     failures = 0;
     rtx_dbug_outs((CHAR *) "  Allocate all memory, write 128 bytes to each block, deallocate, and then reallocate...\r\n");
-    for (i=0; i< NUM_MEM_BLKS; i++) {
+    for (i=0; i< NUM_MEM_BLKS - MEM_RESERVED; i++) {
         p_mem_array[i] = request_memory_block();
             
         int j;        
@@ -130,7 +130,7 @@ void test1()
         }
     }
 
-    for (i = 0; i < NUM_MEM_BLKS; i++) {
+    for (i = 0; i < NUM_MEM_BLKS - MEM_RESERVED; i++) {
         int temp;
         temp = release_memory_block(p_mem_array[i]);
         if (temp == RTX_ERROR) {
@@ -139,7 +139,7 @@ void test1()
         }
     }
 
-    for (i = 0; i < NUM_MEM_BLKS; i++) {
+    for (i = 0; i < NUM_MEM_BLKS - MEM_RESERVED; i++) {
         p_mem_array[i] = request_memory_block();
 
         if (p_mem_array[i] == NULL || (int)p_mem_array[i] > (int)0x10200000) {
@@ -155,7 +155,7 @@ void test1()
     }    
 
     printf_0("    Cleanup...");
-    for (i = 0; i < NUM_MEM_BLKS; i++) {
+    for (i = 0; i < NUM_MEM_BLKS - MEM_RESERVED; i++) {
         release_memory_block(p_mem_array[i]);
     }
     printf_0("...done\r\n");
@@ -171,7 +171,7 @@ void test1()
 void test2()
 {
     int i;
-    void* p_mem_array[NUM_MEM_BLKS];
+    void* p_mem_array[NUM_MEM_BLKS - MEM_RESERVED];
 
     printf_0("rtx_test: test2\r\nBeginning memory blocked queue test...\r\n");
 
@@ -192,7 +192,7 @@ void test2()
     g_test_fixture.release_processor();
 
     printf_0("  Process 2: Cleanup...");
-    for (i = 1; i < NUM_MEM_BLKS; i++) {
+    for (i = 1; i < NUM_MEM_BLKS - MEM_RESERVED; i++) {
         release_memory_block(p_mem_array[i]);
     }
     printf_0("...done\r\n");
