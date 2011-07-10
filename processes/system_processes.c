@@ -211,8 +211,7 @@ void process_kcd() {
     int sender_id;
     int num_cmds;
     int i;
-    message_envelope *message_receive; 
-    message_envelope *message_send; 
+    message_envelope *message_receive;
     command cmds[32];
     
     num_cmds = 0;
@@ -257,19 +256,27 @@ void process_wall_clock() {
     char digit_buffer[3];
     char* str_iter;
     int sender_id;
-    int message_out;
+
+    int sent_message;
+
     int clock;
     int clock_display;
     int hours;
     int minutes;
     int seconds;
+
     message_envelope* message;
+    message_envelope* message_delayed;
 
+    message_delayed = NULL;
+    sent_message = FALSE;
+
+#ifdef DEBUG
     printf_0("Wall clock started\r\n");
-
+#endif 
+    
     clock = 0;
     clock_display = FALSE;
-    message_out = FALSE;
 
     message = (message_envelope*)request_memory_block();
     message->type = MESSAGE_CMD_REG;
@@ -277,10 +284,13 @@ void process_wall_clock() {
     send_message(KCD_PID, message);
 
     while (1) {
-        if (!message_out) {
-            message = (message_envelope*)request_memory_block();
-            delayed_send(WALL_CLOCK_PID, message, 1000);
-            message_out = TRUE;
+        if (!sent_message) {
+            if (message_delayed == NULL) {
+                message_delayed = (message_envelope*)request_memory_block();
+            }
+
+            delayed_send(WALL_CLOCK_PID, message_delayed, 1000);
+            sent_message = TRUE;
         }
 
         //
@@ -295,7 +305,7 @@ void process_wall_clock() {
         //
 
         if (sender_id == WALL_CLOCK_PID) {
-            message_out = FALSE;
+            sent_message = FALSE;
             clock++;
 
             if (clock == 86400) {
@@ -434,10 +444,10 @@ void process_wall_clock() {
 
                 clock_display = FALSE;
             }
+
+        wall_clock_done:
+            release_memory_block(message);
         }
-        
-    wall_clock_done:
-        release_memory_block(message);
     }
 }
 
