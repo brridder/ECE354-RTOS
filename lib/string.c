@@ -17,6 +17,20 @@
 char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 char format_int_buffer[FORMAT_INT_BUFFER_SIZE];
 
+void* memcpy(void* destination, const void* source, int num) {
+    int i;
+    char* d;
+    const char* s;
+
+    d = (char*)destination;
+    s = (const char*)source;
+    for (i = 0; i < num; i++) {
+        d[i] = s[i];
+    }
+
+    return destination;
+}
+
 /**
  * @brief: Consume a character, return 0 on success, -1 on failure
  * @param: str string to consume from
