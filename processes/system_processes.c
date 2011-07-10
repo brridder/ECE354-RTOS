@@ -253,7 +253,7 @@ void process_kcd() {
 
 void process_wall_clock() {
     const unsigned char command[] = "%W";
-    char out_string[] = "hh:mm:ss\r\r";
+    char out_string[] = "hh:mm:ss \r";
     char digit_buffer[3];
     char* str_iter;
     int sender_id;
@@ -427,7 +427,7 @@ void process_wall_clock() {
                 out_string[7] = ' ';
                 out_string[8] = ' ';
                 out_string[9] = '\r';
-                printf_0(out_string);
+                printf_u_0(out_string, 1);
                 
                 out_string[2] = ':';
                 out_string[5] = ':';

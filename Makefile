@@ -42,7 +42,7 @@ main.s19: rtx.s19 rtx_loader.s19
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
 
-.PHONY: clean tests build_tests cfserver
+.PHONY: clean tests build_tests cfserver sizeopt
 clean:
 	rm -f *.s19 *.o *.bin *.map *.lst *.d
 	@for d in $(DIRS); do (cd $$d; $(MAKE) clean); done
@@ -74,3 +74,6 @@ demo: rtx.s19
 
 cfserver:
 	$(MAKE) all "CFLAGS=$(CFLAGS) -D_CFSERVER_"
+
+sizeopt:
+	$(MAKE) all "CFLAGS=$(CFLAGS) -Os"

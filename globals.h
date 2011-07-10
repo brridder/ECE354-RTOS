@@ -14,7 +14,7 @@
 
 #define NUM_MEM_BLKS 32
 #define MEM_BLK_SIZE 128
-#define MEM_RESERVED 1
+#define MEM_RESERVED 2
 
 #define UART_READ 0x01
 #define UART_WRITE 0x04
