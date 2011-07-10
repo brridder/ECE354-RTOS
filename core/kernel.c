@@ -7,8 +7,8 @@
 #include "../lib/string.h"
 #include "../rtx.h"
 
-#define DEBUG_BLOCKED
-#define DEBUG_MEMORY_ALLOCS
+//#define DEBUG_BLOCKED
+//#define DEBUG_MEMORY_ALLOCS
 
 extern message_queue delayed_messages;
 extern int timer;
@@ -225,20 +225,18 @@ void* k_request_memory_block() {
     while (memory_head == NULL || 
            (num_blocks > (NUM_MEM_BLKS - MEM_RESERVED) && !(running_process->is_i_process))) {
 
-        printf_1("  Memory head: %x\r\n", memory_head);
-        printf_1("  Num blocks: %i\r\n", num_blocks);
-        printf_1("  Alloc field: %x\r\n", memory_alloc_field);
-
-
         //
         // There is no memory available, switch out of this process
         // and set our state to blocked
         //
 
-        #ifdef DEBUG_BLOCKED
+#ifdef DEBUG_BLOCKED
+        printf_1("  Memory head: %x\r\n", memory_head);
+        printf_1("  Num blocks: %i\r\n", num_blocks);
+        printf_1("  Alloc field: %x\r\n", memory_alloc_field);
         printf_1("No free memory: process %i is now blocked\r\n",
-            running_process->pid);
-        #endif
+                 running_process->pid);
+#endif
 
         running_process->state = STATE_BLOCKED_MEMORY;
         k_release_processor();
