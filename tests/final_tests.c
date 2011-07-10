@@ -1,14 +1,21 @@
-/*
- * String.c
- */
-
-#include "string.h"
-#include "../rtx.h"
-#include "../globals.h"
+#include "rtx_test.h"
 #include "dbug.h"
+
+#define GID "S11-G031"
+#define TEST_DELAY_SENDER_PID 1
+#define TEST_DELAY_RECEIVER_PID 2
 
 #define SNPRINTF_BUFFER_SIZE 128
 #define FORMAT_INT_BUFFER_SIZE 16
+
+/**
+ * Basic message envelope
+ */
+
+typedef struct _message_envelope {
+    unsigned char internal[64];
+    unsigned char data[64];
+} message_envelope;
 
 /**
  * Globals used for string formatting
@@ -16,7 +23,6 @@
  
 char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 char format_int_buffer[FORMAT_INT_BUFFER_SIZE];
-
 
 /**
  * @brief: Copy num bytes from source to destination
@@ -40,65 +46,30 @@ void* memcpy(void* destination, const void* source, int num) {
 }
 
 /**
- * @brief: Consume a character, return 0 on success, -1 on failure
- * @param: str string to consume from
- * @param: c character to consume
+ * @brief get the length of a string
+ * @param str input string
  */
 
-int consume(char** str, const char c) {
-  if (**str == c) {
-    (*str)++;
-
-    return 0;
-  } else {
-    return -1;
-  }
+int strlen(const char *str) {
+    const char *s;
+    for (s = str; *s; ++s);
+    return (s-str);
 }
 
 /**
- * @brief: power function: base^exponent
- * @param: base 
- * @param: exponent
- */
-
-int power(int base, int exponent) {
-  int i;
-  int total;
-
-  if (exponent == 0) {
-    return 1;
-  } else { 
-    total = base;
-    for (i = 0; i < exponent - 1; i++) {
-      total *= base;
-    }
-
-    return total;
-  }
-}
-
-/**
- * @brief: converts a string into integer, returns -1 if non-digit encountered
- * @param: str input string
- * @param: length number of characters of str to parse
+ * @brief reverses a string in place
+ * @param s string to reverse
  */ 
 
-int atoi_e(char str[], int length) {
-  int i;
-  int total;
-
-  total = 0;
-  for (i = 0; i < length; i++) {
-    if (str[i] < 0x30 || str[i] > 0x39) {
-      return -1;
-    } else {
-      total += (str[i] - 0x30) * power(10, length - i - 1);
+void reverse(char s[]) {
+    int i,j;
+    char c;
+    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
     }
-  }
-
-  return total;
 }
-
 
 /**
  * @brief: converts integer into c string
@@ -136,70 +107,6 @@ void itox(unsigned int n, char s[]) {
     } while((n/=16) != 0);
     s[i] = '\0';
     reverse(s);
-}
-
-/**
- * @brief: Convert a string to an integer
- * @param: s string to convert
- * @param: consumed number of characters consumed will be written this this.
-           Can be NULL.
- */
-
-int atoi(const char *s, int* consumed) {
-    int i;
-    int res;
-    
-    i = 0;
-    res = 0;
-    while(*s >= '0' && *s <= '9') {
-        res = res * 10  + *s++ - '0';
-        i++;
-    }
-
-    if (consumed != NULL) {
-        *consumed = i;
-    }
-
-    return res;
-}
-
-/**
- * @brief reverses a string in place
- * @param s string to reverse
- */ 
-
-void reverse(char s[]) {
-    int i,j;
-    char c;
-    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
-        c = s[i];
-        s[i] = s[j];
-        s[j] = c;
-    }
-}
-
-/**
- * @brief get the length of a string
- * @param str input string
- */
-
-int strlen(const char *str) {
-    const char *s;
-    for (s = str; *s; ++s);
-    return (s-str);
-}
-
-void str_cpy(char* dest, char* src) {
-    while(*dest++ = *src++);
-}
-
-int str_cmp(const char* s1, const char* s2) {
-    for( ; *s1 == *s2; ++s1, ++s2) {
-        if (*s1 == 0) {
-            return 0; // equal
-        }
-    }
-    return *(const unsigned char*)s1 - *(const unsigned char*)s2;
 }
 
 /**
@@ -312,23 +219,14 @@ void snprintf_1(char* buffer, int buffer_size, const char* format, int input) {
 
 /**
  * @brief: print a formatted string to JanusROM terminal
- * @param: format format string
+ * @param: format format string, supported substitutions are %i (integer),
+           and %x (hex).
  * @param: input input to subsitute into the format string
  */
 
 void printf_1(const char* format, int input) {
     snprintf_1(snprintf_buffer, SNPRINTF_BUFFER_SIZE, format, input);
     rtx_dbug_outs(snprintf_buffer);
-}
-
-void printf_u_1(const char* format, int input) {
-    message_envelope* out_message;
-
-    snprintf_1(snprintf_buffer, SNPRINTF_BUFFER_SIZE, format, input);
-    out_message = (message_envelope*)request_memory_block();
-    out_message->type = MESSAGE_OUTPUT;
-    str_cpy(out_message->data, snprintf_buffer);
-    send_message(CRT_DISPLAY_PID, out_message);
 }
 
 /**
@@ -339,11 +237,123 @@ void printf_0(const char* format) {
     printf_1(format, 0);
 }
 
-void printf_u_0(const char* format, int skip_newlines) {
-    message_envelope* out_message;
 
-    out_message = (message_envelope*)request_memory_block();
-    out_message->type = skip_newlines ? MESSAGE_OUTPUT_NO_NEWLINE : MESSAGE_OUTPUT;
-    str_cpy(out_message->data, format);
-    send_message(CRT_DISPLAY_PID, out_message);
+void test_delay_sender() {
+    const int delays[] = {2, 100, 2000, 1000, 500, 1};
+    const int num_messages = 6;
+    int i;
+    message_envelope* message;
+
+    printf_0(GID"_test: START\r\n"GID"_test: total 6 tests\r\n");
+
+    //
+    // Send six delayed messages (out of receive order). These messages should be
+    // received in the correct order by the `test_delay_receiver()` process.
+    //
+
+    for (i = 0; i < num_messages; i++) {
+        message = (message_envelope*)g_test_fixture.request_memory_block();
+        memcpy(message->data, &delays[i], sizeof(delays[i]));
+        g_test_fixture.delayed_send(TEST_DELAY_RECEIVER_PID, message, delays[i]);
+    }
+
+    while (1) {
+        g_test_fixture.release_processor();
+    } 
+}
+
+void test_delay_receiver() {
+    const int delays[] = {1, 2, 100, 500, 1000, 2000};
+    const int num_messages = 6;
+    int message_num;
+    int sender_id;
+    int message_delay;
+    message_envelope* message;
+    
+    message_num = 0;
+    while (1) 
+    {
+        message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
+        printf_1("Process 2 expected message with delay %i...",
+                 delays[message_num]);
+        memcpy(&message_delay, message->data, sizeof(message_delay));
+
+        if (message_delay == delays[message_num]) {
+            printf_0("success.\r\n");
+        } else { 
+            printf_0("fail.\r\n");
+        }
+        
+        message_num++;
+        
+        if (message_num == num_messages) {
+            printf_1("Process 2 received %i messages total...success.\r\n",
+                     num_messages);
+            printf_0(GID"_test: END\r\n");
+        } else if (message_num > num_messages) {
+            printf_1("Process 2 received over %i messages total...fail.\r\n",
+                     num_messages);
+        }
+
+        g_test_fixture.release_memory_block(message);        
+        g_test_fixture.release_processor();
+    }
+}
+
+void test3() {
+    while(1) {
+        g_test_fixture.release_processor();
+    }
+}
+
+void test4() {
+    while(1) {
+        g_test_fixture.release_processor();
+    }
+}
+
+void test5() {
+    while(1) {
+        g_test_fixture.release_processor();
+    }
+}
+
+void test6() {
+    while(1) {
+        g_test_fixture.release_processor();
+    }
+}
+
+//
+// Register the third party test processes with RTX
+//
+
+void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
+{
+    int i;
+
+    printf_0("rtx_test: register_test_proc()\r\n");
+
+    for (i = 0; i < NUM_TEST_PROCS; i++ ) {
+        g_test_proc[i].pid = i + 1;
+        g_test_proc[i].priority = 3;
+        g_test_proc[i].sz_stack = 2048;
+    }
+
+    g_test_proc[TEST_DELAY_SENDER_PID].entry = test_delay_sender;
+    g_test_proc[TEST_DELAY_RECEIVER_PID].entry = test_delay_receiver;
+    g_test_proc[2].entry = test3;
+    g_test_proc[3].entry = test4;
+    g_test_proc[4].entry = test5;
+    g_test_proc[5].entry = test6;
+}
+
+/**
+ * Main entry point for this program.
+ * never get invoked
+ */
+int main(void)
+{
+    printf_0("rtx_test: started\r\n");
+    return 0;
 }

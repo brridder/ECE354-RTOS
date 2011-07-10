@@ -15,9 +15,14 @@ MESSAGE_TESTS_OBJS= message_tests.o $(OBJS)
 DELAY_TESTS_OBJS= delay_tests.o $(OBJS)
 CRT_DISPLAY_TESTS_OBJS = crt_display_tests.o $(OBJS)
 KCD_TESTS_OBJS = kcd_tests.o $(OBJS)
+FINAL_TESTS_OBJS = final_tests.o ../lib/dbug.o
 
 all: rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 \
-	crt_display_tests.s19 delay_tests.s19 kcd_tests.s19
+	crt_display_tests.s19 delay_tests.s19 kcd_tests.s19 final_tests.s19
+
+final_tests.s19: $(FINAL_TESTS_OBJS) final_tests.o
+	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o final_tests.bin $(ASM) $(FINAL_TESTS_OBJS)
+	$(OBJCPY) --output-format=srec final_tests.bin final_tests.s19
 
 rtx_test_dummy.s19: $(RTX_TEST_DUMMY_OBJS) 
 	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o rtx_test_dummy.bin $(ASM) $(RTX_TEST_DUMMY_OBJS) 
