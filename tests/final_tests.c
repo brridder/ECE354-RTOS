@@ -237,6 +237,13 @@ void printf_0(const char* format) {
     printf_1(format, 0);
 }
 
+/**
+ * Test globals
+ */  
+
+const int total_expected_successes = 1;
+int total_failures;
+int total_successes;
 
 void test_delay_sender() {
     const int delays[] = {10, 100, 2000, 1000, 500, 1};
@@ -244,7 +251,8 @@ void test_delay_sender() {
     int i;
     message_envelope* message;
 
-    printf_0(GID"_test: START\r\n"GID"_test: total 6 tests\r\n");
+    printf_0(GID"_test: START\r\n"GID"_test: total 1 test\r\n");
+    total_successes = 0;
 
     //
     // Send six delayed messages (out of receive order). These messages should be
@@ -265,11 +273,15 @@ void test_delay_sender() {
 void test_delay_receiver() {
     const int delays[] = {1, 10, 100, 500, 1000, 2000};
     const int num_messages = 6;
+    const int expected_successes = 7;
+
     int message_num;
     int sender_id;
     int message_delay;
+    int successes;
     message_envelope* message;
     
+    successes = 0;
     message_num = 0;
     while (1) 
     {
@@ -279,20 +291,39 @@ void test_delay_receiver() {
 
         memcpy(&message_delay, message->data, sizeof(message_delay));
         if (message_delay == delays[message_num]) {
+            successes++;
+#ifdef _DEBUG
             printf_0("success.\r\n");
+#endif
         } else { 
+#ifdef _DEBUG
             printf_0("fail.\r\n");
+#endif
         }
         
-        message_num++;
-        
+        message_num++;        
         if (message_num == num_messages) {
+            successes++;
+
+#ifdef _DEBUG
             printf_1("Process 2 received %i messages total...success.\r\n",
                      num_messages);
-            printf_0(GID"_test: END\r\n");
+#endif
         } else if (message_num > num_messages) {
+            total_failures++;
+            if (successes == expected_successes) {
+                total_successes--;
+            }
+
+#ifdef _DEBUG
             printf_1("Process 2 received over %i messages total...fail.\r\n",
                      num_messages);
+#endif
+        }
+
+        if (successes == expected_successes) {
+            total_successes++;
+            printf_0(GID"_test: test 1 OK\r\n");            
         }
 
         g_test_fixture.release_memory_block(message);        
@@ -319,7 +350,19 @@ void test5() {
 }
 
 void test6() {
+    int tests_done;
+
+    tests_done = 0;
     while(1) {
+        if ((total_successes + total_failures) == total_expected_successes &&
+            tests_done == 0) {
+            tests_done = 1;
+
+            printf_1(GID"_test: %i/1 tests OK\r\n", total_successes);
+            printf_1(GID"_test: %i/1 tests FAIL\r\n", total_failures);
+            printf_0(GID"_test: END\r\n");
+        }
+
         g_test_fixture.release_processor();
     }
 }
