@@ -336,9 +336,9 @@ void test_delay_receiver() {
                 g_test_fixture.release_memory_block(message);
             }
         }
-
-        g_test_fixture.release_processor();
     }
+
+    g_test_fixture.release_processor();
 }
 
 void test3() {
@@ -388,8 +388,6 @@ void test_management() {
             printf_1(GID"_test: %i/1 tests FAIL\r\n", failures);
             printf_0(GID"_test: END\r\n");
         }
-
-        g_test_fixture.release_processor();
     }
 }
 
