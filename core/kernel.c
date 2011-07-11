@@ -642,10 +642,10 @@ void k_init_priority_queues() {
 }
 
 #ifdef _DEBUG_HOTKEYS
-/*
- * process_queue ready_queue[NUM_PRIORITIES];
- * process_queue blocked_message_queue[NUM_PRIORITIES];
- * process_queue blocked_memory_queue[NUM_PRIORITIES];
+
+/** 
+ * Debugging commands that print out processes in various queues and their
+ * priorities as well as the number of free memory blocks
  */
 
 int k_debug_prt_rdy_q() {

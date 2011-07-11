@@ -251,6 +251,10 @@ int queue_debug_print(process_queue queue[]) {
     int i = 0;
     process_control_block *proc;
     
+    //
+    // Print out the process id and priority in the passed in queue
+    //
+    
     for(i = 0; i < NUM_PRIORITIES; i++) {
         proc = queue[i].head;
         while (proc != NULL) {

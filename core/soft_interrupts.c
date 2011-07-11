@@ -175,21 +175,35 @@ void system_call() {
         //
         // 8: debug_prt_rdy_q()
         //
+       
         case CALL_DEBUG_PRT_RDY_Q:
             return_value = k_debug_prt_rdy_q();
             break;
+        
+        //
+        // 9: debug_prt_blk_mem_q()
+        //
 
         case CALL_DEBUG_PRT_BLK_MEM:
             return_value = k_debug_prt_blk_mem_q();
             break;
 
+        //
+        // 10: debug_prt_blk_rec_q()
+        //
+        
         case CALL_DEBUG_PRT_BLK_REC:
             return_value = k_debug_prt_blk_rec_q();
             break;
 		
-		case CALL_DEBUG_PRT_MEM_BLKS_FREE:
+        //
+        // 11: debug_prt_mem_blks_free()
+        //
+		
+        case CALL_DEBUG_PRT_MEM_BLKS_FREE:
 		    return_value = k_debug_prt_mem_blks_free();
             break;
+
         //
         // Invalid call ID
         //
