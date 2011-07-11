@@ -19,6 +19,8 @@
 #define UART_READ 0x01
 #define UART_WRITE 0x04
 
+#define NUM_KCD_CMDS 32
+
 #define PROC_A 7
 #define PROC_B 8
 #define PROC_C 9

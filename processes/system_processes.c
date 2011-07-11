@@ -30,11 +30,16 @@ int timer;
 void process_null() {
     while (1) {
         rtx_dbug_outs("Null process run.\r\n");
-
-        // TODO :: Remove when we get preemption working
         release_processor();
     }
 }
+
+/**
+ * i_process_uart: Interrupt process for uart interrupt requests.
+ *
+ * Does NOT use the interprocess communication system for printing to the
+ * serial port as this WILL block this process which is bad.
+ */
 
 void i_process_uart() {
     uart_interrupt_config inter_cfg;
@@ -46,36 +51,73 @@ void i_process_uart() {
 
     i = 0;
     message = NULL;
+    
+    //
+    // Prepare the interrupt config struct to prevent rx and turn on tx.
+    //
+
     inter_cfg.rx_rdy = false;
     inter_cfg.tx_rdy = true;
     uart_skip_newline = 0;
 
     while(1) {
+
+        //
+        // Get UART state
+        //
+        
         uart_state = SERIAL1_USR;
 
         // 
-        // Read in waiting data
+        // Read in waiting data if uart_state == UART_READ
         //
         
         if (uart_state & UART_READ) {
+            //
+            // Get char from serial buffer
+            //
+            
             char_in = SERIAL1_RD;
+            
+            //
+            // If input is NUL, go back to the start of loop
+            //
             
             if (char_in == '\0') {
                 continue;
             }
+            
+            //
+            // Store in character in the string buffer
+            //
 
             in_string[i++] = char_in;
 
+            //
+            // Enter was pressed, so send the input to the appropriate location
+            //
+            
             if (char_in == CR) {
                 char_handled = 1;
 
-                //in_string[i++] = '\n';
+                //
+                // NUL terminate the string
+                //
+                
                 in_string[i++] = '\0';
+                
+                //
+                // Output the CR and don't skip the new line on the echo
+                //
                 
                 char_out = CR;
                 uart_skip_newline = 0;
                 uart1_set_interrupts(&inter_cfg);
-               
+                
+                //
+                // Started with %, so pass it onto the KCD process
+                //
+
                 if (in_string[0] == '%') {
                     message = (message_envelope*)request_memory_block();
                     message->type = MESSAGE_KEY_INPUT;
@@ -83,14 +125,24 @@ void i_process_uart() {
                     send_message(KCD_PID, message);
                 }
 #ifdef _DEBUG_HOTKEYS
+                //
+                // Started with !, so go into the debugging decoder 
+                //
                 else if (in_string[0] == '!') {
                    uart_debug_decoder(in_string);
                 }
 #endif
-
+                // 
+                // Reset buffers and pointers
+                // 
                 message = NULL;
                 i = 0;
             } else {
+
+                //
+                // Echo the input
+                //
+                
                 char_out = char_in;
                 uart1_set_interrupts(&inter_cfg);
             }
@@ -99,12 +151,22 @@ void i_process_uart() {
             printf_1("uart1 char in : %i\r\n", char_in);
 #endif
         //
-        // Print out data
+        // Print out data if uart_state == UART_WRITE
         //
 
         } else if (uart_state & UART_WRITE) {
+            //
+            // Write out char to the write register
+            // Ack the interrupt
+            //
             SERIAL1_WD = char_out;
             SERIAL1_IMR = 0x02;
+            
+            //
+            // Two cases to handle: One to output a new line, another to skip
+            // it
+            //
+
             if (char_out == CR && !uart_skip_newline) {
                 char_out = '\n';
                 char_handled = 1;
@@ -166,6 +228,14 @@ void i_process_timer() {
     }
 }
 
+/**
+ * process_crt_display: receives messages from other processes and handles the
+ * printing to the uart using the uart ISR and i_process_uart
+ *
+ * Does NOT use the IPC for sending a single character to the uart as this WILL
+ * block the uart which is bad.
+ */
+
 void process_crt_display() {
     int i;
     int sender_id;
@@ -173,28 +243,64 @@ void process_crt_display() {
     uart_interrupt_config int_config;
     
     int_config.tx_rdy = true;
+    int_config.rx_rdy = false;
     message = NULL;
     i = 0;
-    char_handled = 0;
 
     while(1) {
+        //
+        // Get a message to print
+        //
+
         message = receive_message(&sender_id);
+
+        //
+        // Verify message is of the correct type.
+        //
+        
         if (message->type == MESSAGE_OUTPUT || 
-            message->type == MESSAGE_KEY_INPUT ||
-            message->type == MESSAGE_OUTPUT_NO_NEWLINE) { 
+            message->type == MESSAGE_OUTPUT_NO_NEWLINE ||
+            message->type == MESSAGE_KEY_INPUT ) { 
             i = 0;
+            
+            //
+            // Iterate over the string until we get to the end (NULL) 
+            //
+            
             while (message->data[i] != '\0') { 
+
+                //
+                // Only move the next char into char_out buffer if the process
+                // is ready.
+                //
+                
                 if (!char_handled) {
                     char_handled = 1;
+
+                    // 
+                    // Skip the new line if CR and correct message, useful for
+                    // the wall clock process to override itself
+                    //
+                    
                     if (message->data[i] == CR && 
                         message->type == MESSAGE_OUTPUT_NO_NEWLINE) {
                         uart_skip_newline = 1; 
                     }
+                    
+                    // 
+                    // Move the next char into the buffer, increment our
+                    // iterator, and signal to the UART ISR to fire
+                    //
+
                     char_out = message->data[i++];        
                     uart1_set_interrupts(&int_config);
                 }
             }
         }
+        
+        //
+        // Free up our memory received by the message
+        //
 
         release_memory_block(message);
         message = NULL;
@@ -203,50 +309,86 @@ void process_crt_display() {
     }
 }
 
-// 
-// Keyboard command decoder
-//
+/** 
+ * Keyboard command decoder: Takes input from the uart and sends it to the
+ * correct, registered process.
+ */
 
 void process_kcd() {
     int sender_id;
     int num_cmds;
     int i;
-    message_envelope *message_receive;
-    command cmds[32];
+    message_envelope *message;
+    command cmds[NUM_KCD_CMDS];
     
     num_cmds = 0;
 
     while(1) {
-        message_receive = (message_envelope*)receive_message(&sender_id);
-        if (message_receive->type == MESSAGE_KEY_INPUT) {
-            for(i = 0; i < num_cmds; i++) {
-                if (message_receive->data[1] == cmds[i].cmd_str[1]) {
-                    send_message(cmds[i].reg_pid, message_receive);
 
+        //
+        // Get a message
+        //
+
+        message = (message_envelope*)receive_message(&sender_id);
+
+        //
+        // It is a message to pass to another process
+        //
+        
+        if (message->type == MESSAGE_KEY_INPUT) {
+
+            //
+            // Iterate over the cmds list and try to find it.
+            //
+            
+            for(i = 0; i < num_cmds; i++) {
+
+                //
+                // Only need to compare the first character from our
+                // understanding of the requirements. If found, forward the
+                // message to the register
+                //
+                
+                if (message->data[1] == cmds[i].cmd_str[1]) {
+                    send_message(cmds[i].reg_pid, message);
 #ifdef KCD_DEBUG
                     printf_1("Found it for pid: %i\r\n", cmds[i].reg_pid);
 #endif
-
                     break;
                 }
             }
 
+            // 
+            // Didn't find it, release the memory alloc'd by the sender
+            //
+            
             if (i == num_cmds) {
-                release_memory_block(message_receive);
+                release_memory_block(message);
             }
-        } else if (message_receive->type == MESSAGE_CMD_REG) {
-            str_cpy(cmds[num_cmds].cmd_str, message_receive->data);
+        
+        //
+        // It is a message to register a command for a process (sender). Copy
+        // the cmd string into the cmd data structure and save the register's
+        // pid, increment the total number of commands, release memory
+        //
+
+        } else if (message->type == MESSAGE_CMD_REG) {
+            str_cpy(cmds[num_cmds].cmd_str, message->data);
             cmds[num_cmds].reg_pid = sender_id;
             num_cmds++;
-            release_memory_block(message_receive);
+            release_memory_block(message);
 #ifdef KCD_DEBUG
             printf_1("Registered for %i\r\n",  cmds[num_cmds-1].reg_pid);
 #endif
+        //
+        // Received message was the incorrect type, just dealloc it.
+        //
+        
         } else {
-            release_memory_block(message_receive);
+            release_memory_block(message);
         }
 
-        message_receive = NULL;
+        message = NULL;
     }
 }
 
@@ -506,24 +648,51 @@ void process_set_priority_command() {
     priority = 0;
 
     while(1) {
+        
+        //
+        // Get a message, don't care about the sender
+        //
+        
         message = (message_envelope*)receive_message((int*)NULL);
+
+        //
+        // Skip the first two characters, %C, and start at first ' '
+        //
+        
         str_iter = (char*)message->data + 2;
         
+        // 
+        // Strip out whitespace
+        //
+        
         while(consume(&str_iter, ' ') == 0);
+       
+        //
+        // Get the target's PID and ensure it is valid
+        //
         
         target_pid = atoi(str_iter, &consumed);
         if (consumed == 0 || target_pid < 0 || target_pid > NUM_PROCESSES-1) {
             printf_0("Invalid PID\r\n");
             goto process_set_priority_command_done;
         }
-
+        
         str_iter += consumed;
-
+        
         while(consume(&str_iter, ' ') == 0);
+
+        // 
+        // Check to ensure that input has a priority value
+        //
+
         if (consume(&str_iter, '\r') == 0) {
             printf_0("Priority value expected\r\n");
             goto process_set_priority_command_done;
         }
+       
+        //
+        // Get the new priority value and ensure validity
+        //
         
         priority = atoi(str_iter, &consumed);
         if (consumed == 0 || priority < 0 || priority > NUM_PRIORITIES-1) {
@@ -532,20 +701,39 @@ void process_set_priority_command() {
         }
 
         str_iter += consumed;
-
+        
         while(consume(&str_iter, ' ') == 0);
+
+        //
+        // If the line wasn't terminated correctly, error'd
+        //
+
         if (consume(&str_iter, '\r') == -1) {
             printf_0("Newline expected\r\n");
             goto process_set_priority_command_done;
         }
 
+        //
+        // Kernel function call to set priority of the target as parsed
+        //
+
         set_process_priority(target_pid, priority);
 
     process_set_priority_command_done:
+
+        // 
+        // Release the received memory block
+        //
+        
         release_memory_block((void*)message);
         release_processor();
     }
 }
+
+/**
+ * uart_debug_decoder: Used to decode and select the appropriate debug function
+ * call 
+ */
 
 void uart_debug_decoder(char *str) {
     if (consume(&str, '!') == -1) {
@@ -577,6 +765,7 @@ void uart_debug_decoder(char *str) {
         }
     } else if (consume(&str, 'f') == 0 || consume(&str, 'F') == 0) {
         if (consume(&str, 'm') == 0 || consume(&str, 'M') == 0) {
+            // print number of memory blocks free
             debug_prt_mem_blks_free();
         }
     } else { // Bad input
