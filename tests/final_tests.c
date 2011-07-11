@@ -329,7 +329,7 @@ void test_delay_receiver() {
 #endif
 
                 message->data[0] = 1;
-                message->data[1] = RTX_SUCCESS;                
+                message->data[1] = TEST_SUCCESS;             
                 g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
             } else {
                 g_test_fixture.release_memory_block(message);
