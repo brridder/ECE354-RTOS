@@ -79,5 +79,9 @@ int debug_prt_blk_rec_q() {
 int debug_prt_mem_blks_free() {
     return do_system_call(CALL_DEBUG_PRT_MEM_BLKS_FREE, 0, 0);
 }
+
+int debug_prt_message_history() {
+    return do_system_call(CALL_DEBUG_PRT_MESSAGE_HISTORY, 0, 0);
+}
 #endif
 

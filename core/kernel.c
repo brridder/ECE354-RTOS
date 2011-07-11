@@ -17,6 +17,24 @@ void* memory_head;
 unsigned long int memory_alloc_field;
 void* mem_end;
 
+#ifdef _DEBUG_HOTKEYS
+typedef struct _debug_message_envelope {
+    int sender_pid;
+    int receiver_pid;
+    enum message_type type;
+    unsigned char data[16];
+    int time_stamp;
+} debug_message_envelope;
+
+debug_message_envelope debug_sent_messages[DEBUG_MESSAGE_LOG_SIZE];
+debug_message_envelope debug_rec_messages[DEBUG_MESSAGE_LOG_SIZE];
+
+int debug_sent_mes_buf_pos = -1; // So we start at the correct index in the circular buffer (keep logic simple)
+int debug_rec_mes_buf_pos = -1;
+
+void k_debug_store_message(message_envelope* message, debug_message_envelope buffer[]);
+#endif
+
 /**
  * Priority Queues
  */
@@ -333,10 +351,12 @@ int k_get_block_index(void* addr) {
 
 int k_send_message(int process_id, message_envelope* message) {
     process_control_block* receiving_process;
-	
+
     if (process_id < 0 || process_id > NUM_PROCESSES - 1) {
         return RTX_ERROR;
     }
+
+
 
     receiving_process = &processes[process_id];
     
@@ -347,6 +367,11 @@ int k_send_message(int process_id, message_envelope* message) {
     message->sender_pid = running_process->pid;
     message->receiver_pid = process_id;
     queue_enqueue_m(&receiving_process->messages, message);
+
+#ifdef _DEBUG_HOTKEYS
+    k_debug_store_message(message, debug_sent_messages);
+#endif
+
 
     //
     // Update the state of the receiving process to be unblocked and move
@@ -425,6 +450,9 @@ void* k_receive_message(int* sender_id) {
         *sender_id = message->sender_pid;
     }
 
+#ifdef _DEBUG_HOTKEYS
+    k_debug_store_message(message, debug_rec_messages);
+#endif
     return message;
 }
 
@@ -671,6 +699,57 @@ int k_debug_prt_mem_blks_free() {
     printf_1("Alloc field: %x\r\n", memory_alloc_field);
     
     return RTX_SUCCESS;
+}
+
+int k_debug_prt_message_history() {
+    int i;
+
+    printf_0("\r\n\n");
+    printf_1("Last %i sent messages:\r\n", DEBUG_MESSAGE_LOG_SIZE);
+    for(i = 0; i < DEBUG_MESSAGE_LOG_SIZE; i++) {
+        printf_1("Message - Sender: %i\r\n", debug_sent_messages[i].sender_pid);
+        printf_1("        Reciever: %i\r\n", debug_sent_messages[i].receiver_pid);
+        printf_1("            Type: %i\r\n", debug_sent_messages[i].type);
+        printf_0("            Data: ");
+        printf_0(debug_sent_messages[i].data);
+        printf_0("\r\n");
+        printf_1("      Time Stamp: %i\r\n", debug_sent_messages[i].time_stamp);
+    }
+    printf_0("\r\n\n");
+    printf_1("Last %i received messages:\r\n", DEBUG_MESSAGE_LOG_SIZE);
+    for(i = 0; i < DEBUG_MESSAGE_LOG_SIZE; i++) {
+        printf_1("Message - Sender: %i\r\n", debug_rec_messages[i].sender_pid);
+        printf_1("        Reciever: %i\r\n", debug_rec_messages[i].receiver_pid);
+        printf_1("            Type: %i\r\n", debug_rec_messages[i].type);
+        printf_0("            Data: ");
+        printf_0(debug_rec_messages[i].data);
+        printf_0("\r\n");
+        printf_1("      Time Stamp: %i\r\n", debug_rec_messages[i].time_stamp);
+    }
+    printf_0("\r\n\n");
+}
+
+//int debug_sent_mes_buf_pos;
+//int debug_rec_mes_buf_pos;
+
+//debug_message_envelope debug_sent_messages[DEBUG_MESSAGE_LOG_SIZE];
+//debug_message_envelope debug_rec_messages[DEBUG_MESSAGE_LOG_SIZE];
+void k_debug_store_message(message_envelope* message, debug_message_envelope buffer[]) {
+    int pos;
+
+    if(buffer == debug_sent_messages) {
+        debug_sent_mes_buf_pos = (debug_sent_mes_buf_pos + 1) % DEBUG_MESSAGE_LOG_SIZE;
+        pos = debug_sent_mes_buf_pos; 
+    } else {
+        debug_rec_mes_buf_pos = (debug_rec_mes_buf_pos + 1) % DEBUG_MESSAGE_LOG_SIZE;
+        pos = debug_rec_mes_buf_pos;
+    }
+    buffer[pos].sender_pid = message->sender_pid;
+    buffer[pos].receiver_pid = message->receiver_pid;
+    buffer[pos].type = message->type;
+    memcpy(buffer[pos].data, message->data, 16);
+    buffer[pos].time_stamp = timer;
+    return;
 }
 
 #endif /* _DEBUG_HOTKEYS */

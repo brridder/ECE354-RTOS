@@ -748,6 +748,7 @@ void uart_debug_decoder(char *str) {
     // !BMQ = dump out blocked memory queues
     // !BRQ = dump out blocked received queues
     // !FM == dump out # of free memory blocks
+    // !M == dump out last 10 sent and recieved messages
     //
     
     if (consume(&str,'r') == 0 || consume(&str, 'R') == 0) {
@@ -768,7 +769,16 @@ void uart_debug_decoder(char *str) {
             // print number of memory blocks free
             debug_prt_mem_blks_free();
         }
+    } else if (consume(&str, 'm') == 0 || consume(&str, 'M') == 0) {
+        debug_prt_message_history();
     } else { // Bad input
-        printf_0("Invalid hot key command for debugging\r\n");
+        printf_0("Invalid hotkey command for debugging\r\n");
+        printf_0("The following are valid hotkeys:\r\n");
+        printf_0("    !RQ:  Print ready processes and priorities\r\n");
+        printf_0("    !BMQ: Print out processes blocked on memory\r\n");
+        printf_0("    !BRQ: Print out processes blocked on receiving messages\r\n");
+        printf_0("    !FM:  Print out the # of free memory blocks\r\n");
+        printf_1("    !M:   Print out the last %i sent", DEBUG_MESSAGE_LOG_SIZE);
+        printf_1("and %i received messages\r\n", DEBUG_MESSAGE_LOG_SIZE);
     }
 }

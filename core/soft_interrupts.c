@@ -172,6 +172,7 @@ void system_call() {
             return_value = k_delayed_send(args[0], (void*)args[1], args[2]);
             break;
 
+#ifdef _DEBUG_HOTKEYS
         //
         // 8: debug_prt_rdy_q()
         //
@@ -203,13 +204,22 @@ void system_call() {
         case CALL_DEBUG_PRT_MEM_BLKS_FREE:
 		    return_value = k_debug_prt_mem_blks_free();
             break;
+       
+        // 
+        // 12: debug_prt_message_history()
+        //
+        
+        case CALL_DEBUG_PRT_MESSAGE_HISTORY:
+            return_value = k_debug_prt_message_history();
+            break;
 
+#endif // _DEBUG_HOTKEYS
+        
         //
         // Invalid call ID
         //
         
         default:
-            // TODO: Handle this case
             rtx_dbug_outs("Error: Invalid system call ID\r\n");
             break;
     }

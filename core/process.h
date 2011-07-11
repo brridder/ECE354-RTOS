@@ -1,5 +1,5 @@
-#ifndef _SCHEDULER_H_
-#define _SCHEDULER_H_
+#ifndef _PROCESS_H_
+#define _PROCESS_H_
 
 #include "../rtx_inc.h"
 #include "../rtx.h"

@@ -69,6 +69,7 @@ int debug_prt_rdy_q();
 int debug_prt_blk_mem_q();
 int debug_prt_blk_rec_q();
 int debug_prt_mem_blks_free();
+int debug_prt_message_history();
 
 #endif /*_DEBUG_HOTKEYS*/
 

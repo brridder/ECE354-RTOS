@@ -40,4 +40,6 @@
 
 #define _DEBUG_HOTKEYS
 
+#define DEBUG_MESSAGE_LOG_SIZE 10
+
 #endif

@@ -13,7 +13,8 @@ enum system_calls {
     CALL_DEBUG_PRT_RDY_Q = 8,
     CALL_DEBUG_PRT_BLK_MEM = 9,
     CALL_DEBUG_PRT_BLK_REC = 10,
-    CALL_DEBUG_PRT_MEM_BLKS_FREE = 11
+    CALL_DEBUG_PRT_MEM_BLKS_FREE = 11,
+    CALL_DEBUG_PRT_MESSAGE_HISTORY = 12
 };
 
 int do_system_call(int call_id, int* args, int num_args);
