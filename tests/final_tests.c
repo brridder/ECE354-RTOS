@@ -372,8 +372,8 @@ void test_management() {
     test_result = 0;
     while(1) {
         message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
-        test_result = message->data[1];
-  
+        test_result = message->data[1];  
+
         if (test_result == TEST_SUCCESS) {
             successes++;
             printf_1(GID"_test: test %i OK\r\n", message->data[0]);
@@ -387,6 +387,13 @@ void test_management() {
             printf_1(GID"_test: %i/1 tests FAIL\r\n", failures);
             printf_0(GID"_test: END\r\n");
         }
+
+#ifdef _DEBUG
+        printf_1("Got a management message from case: %i\r\n", message->data[0]);
+        printf_1("  Success code: %i\r\n", test_result);
+        printf_1("  Successes: %i\r\n", successes);
+        printf_1("  Failures: %i\r\n", failures);
+#endif
     }
 }
 
