@@ -328,7 +328,6 @@ void test_delay_receiver() {
                 printf_0("Process 2 done, sending message to management\r\n");
 #endif
 
-                message = (message_envelope*)g_test_fixture.request_memory_block();
                 message->data[0] = 1;
                 message->data[1] = RTX_SUCCESS;                
                 g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
