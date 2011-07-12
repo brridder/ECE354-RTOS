@@ -69,8 +69,17 @@ int k_release_processor() {
     }
  
     process = k_get_next_process(QUEUE_READY);
+    
+    //
+    // Only switch to a process if there was one ready. It is possible that
+    // every process is blocked.
+    // 
 
-    return k_context_switch(process);
+    if (process) {
+        return k_context_switch(process);
+    }
+
+    return RTX_SUCCESS;
 }
 
 int k_preempt_processor(process_control_block* process) {
@@ -295,6 +304,18 @@ int k_release_memory_block(void* memory_block) {
 #endif
 
     block_index = k_get_block_index(memory_block);
+
+    //
+    // Check for out of range memory
+    // 
+
+    
+    if (block_index < 0 || block_index > 31) {
+#ifdef DEBUG_MEM
+        printf_1("Invalid index = %i\r\n", block_index);
+#endif
+        return RTX_ERROR;
+    }
     
     if (memory_alloc_field & (0x01 << block_index)) {
       *(int*)memory_block = (int)memory_head;
@@ -483,7 +504,7 @@ int k_context_switch(process_control_block* process) {
 #endif
 
     if (!process) {
-        printf_0("  Invalid process handle\r\n");
+        printf_1("  Invalid process handle: %x\r\n", process);
         return RTX_ERROR;
     }
 
