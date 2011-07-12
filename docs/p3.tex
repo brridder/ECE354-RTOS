@@ -272,7 +272,47 @@ void process_wall_clock(){
 
 \subsection*{Set Priority Command Process} 
 
-% TODO
+The \texttt{process\_set\_priority\_command()} is a process that allows the user to change the priority level 
+of any process directly from the UART. This process accepts from the UART data in the form \%C process\_id 
+priority\_level. When the process is initialized it registers the \%C command. It then waits to receive a message. 
+Upon receiving a message it skips the \%C characters and begins parsing the data. While parsing the process id that 
+is to be changed and the new priority level are extracted. Checks are made to ensure that proper process ids and 
+priority values were sent and that nothing else was entered after the priority value. A kernel function call of 
+\texttt{set\_process\_priority(...)} is then made using the parsed process id and priority value. The memory block 
+and the processor are then released. Pseudo code for this process can be seen at Listing \ref{set}.
+
+\lstset{caption={Pseudo code for the set priority command process}, label=set}
+
+\begin{lstlisting}
+void process_set_priority_command(){
+    initalize local variables;
+    
+    register %C Command
+
+    while (1){
+        receive a message;
+
+        skip %C in message;
+
+        parse process id;
+        validate process id;
+
+        parse priority level;
+        validate priority level;
+
+        validate line endings;
+
+        call set_process_priority(){
+            sets the process id to 
+                new priority level;
+        }
+
+        release memory block;
+        release processor;
+    }
+}
+\end{lstlisting}
+
 
 
 \end{document}
