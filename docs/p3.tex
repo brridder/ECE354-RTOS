@@ -13,10 +13,10 @@
 Group: ECE.354.S11-G031 \\
 Members: Ben Ridder (brridder), Casey Banner (cccbanne), 
 David Janssen (dajjanss) \\ \\
-This document is concerned with the high level implementation of the 
-specified primitives. As such, most of the low level back end is omitted for
-simplicity. Any kernel structures required to understand the primitive are
-described when the primitive is discussed.
+This document is concerned with the high level implementation of the specified
+primitives and processes. As such, most of the low level back end is omitted
+for simplicity. Any kernel structures required to understand the primitive are
+described when the primitive or process is discussed.
 
 \subsection*{Design of Delayed Send} 
 The \texttt{delayed\_send(...)} primitive works using a separate queue that
@@ -269,5 +269,10 @@ void process_wall_clock(){
     }
 }
 \end{lstlisting}
+
+\subsection*{Set Priority Command Process} 
+
+% TODO
+
 
 \end{document}
