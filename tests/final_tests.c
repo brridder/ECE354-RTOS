@@ -1,9 +1,13 @@
 #include "rtx_test.h"
 #include "dbug.h"
 
+//#define _DEBUG
+
 #define GID "S11-G031"
 #define TEST_DELAY_SENDER_PID 1
 #define TEST_DELAY_RECEIVER_PID 2
+#define TEST_MEMORY_WATCHDOG_PID 3
+#define TEST_MEMORY_ALLOCATOR_PID 4
 #define TEST_MANAGEMENT_PID 6
 
 #define TEST_SUCCESS 64
@@ -254,6 +258,7 @@ void test_delay_sender() {
     const int num_messages = 6;
     int i;
     message_envelope* message;
+    int sender_id;
 
     printf_0(GID"_test: START\r\n"GID"_test: total 1 test\r\n");
     total_successes = 0;
@@ -268,6 +273,21 @@ void test_delay_sender() {
         memcpy(message->data, &delays[i], sizeof(delays[i]));
         g_test_fixture.delayed_send(TEST_DELAY_RECEIVER_PID, message, delays[i]);
     }
+
+    //
+    // We are done with this process, try to receive a message in order
+    // to become blocked. If we get a message, it is a failure.
+    //
+
+    message = g_test_fixture.receive_message(&sender_id);
+
+    //
+    // This code should not run, if it does, it is a failure.
+    //
+
+    message->data[0] = 1;
+    message->data[1] = TEST_FAILURE;
+    g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
 
     while (1) {
         g_test_fixture.release_processor();
@@ -340,13 +360,145 @@ void test_delay_receiver() {
     g_test_fixture.release_processor();
 }
 
-void test3() {
+int memory_blocks_allocated;
+int memory_blocks_full;
+
+void test_memory_watchdog() {
+    void* block;
+    message_envelope* message;
+    int sender_id;
+
+    //
+    // This test verifies that blocked queues work as expected
+    // First, allocate a single block and let the ALLOCATOR process run
+    //
+    
+    message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
+    if (sender_id == TEST_MANAGEMENT_PID) {
+#ifdef _DEBUG
+        printf_0("Watchdog running, allocating a block...");
+#endif
+
+        memory_blocks_allocated = 0;
+        memory_blocks_full = 0;
+
+        block = g_test_fixture.request_memory_block();    
+        memory_blocks_allocated++;
+
+#ifdef _DEBUG
+        printf_0("got it. Sending message to allocator.\r\n");
+#endif
+
+        g_test_fixture.send_message(TEST_MEMORY_ALLOCATOR_PID, message);
+        g_test_fixture.release_processor();
+
+        //
+        // We will return here when the allocator becomes blocked. Release our 
+        // block, and release processor to unblock it.
+        //
+    
+#ifdef _DEBUG
+        printf_0("Watching running. Releasing our block...");
+#endif
+
+        memory_blocks_full = 1;
+        memory_blocks_allocated--;
+        g_test_fixture.release_memory_block(block);
+
+#ifdef _DEBUG
+        printf_0("done. Releasing processor.\r\n");
+#endif
+    } else {
+        g_test_fixture.release_memory_block(message);
+    }
+
     while(1) {
         g_test_fixture.release_processor();
     }
 }
 
-void test4() {
+void test_memory_allocator() {
+    void* blocks[128];
+    message_envelope* message;
+    int sender_id;
+    int i;
+    int j;
+    int failures;
+
+    //
+    // This process will allocate as much memory as it can, until it becomes blocked;
+    //
+
+    message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
+    if (sender_id == TEST_MEMORY_WATCHDOG_PID) {        
+#ifdef _DEBUG
+        printf_0("Allocator running, allocating blocks.\r\n");
+#endif
+
+        i = 0;
+        while (memory_blocks_full == 0) {
+            blocks[i] = g_test_fixture.request_memory_block();
+            memory_blocks_allocated++;
+            i++;
+
+#ifdef _DEBUG
+            printf_1("Allocated %i blocks total\r\n", memory_blocks_allocated);
+#endif
+        }
+
+#ifdef _DEBUG
+        printf_0("Allocator running, cleaning up.\r\n");
+#endif
+
+        //
+        // We return here when we got blocked and the watchdog ran and
+        // released a block. Now we verify we can release all our blocks
+        // without error.
+        //
+
+        failures = 0;
+
+        for (j = 0; j < i; j++) {
+
+#ifdef _DEBUG
+            printf_1("Deallocating block %i...", j);
+#endif
+
+            if (g_test_fixture.release_memory_block(blocks[j]) == RTX_ERROR) {
+                failures++;
+#ifdef _DEBUG
+                printf_0("fail\r\n");
+#endif
+            } 
+
+#ifdef _DEBUG
+            else {
+                printf_0("ok\r\n");
+            }
+#endif
+
+        }
+
+        //
+        // Test done. Signal success.
+        // 
+
+#ifdef _DEBUG
+        printf_0("Allocator done. Signaling success\r\n");
+#endif
+
+        message->data[0] = 2;
+        if (failures == 0) {
+            message->data[1] = TEST_SUCCESS;             
+        } else {
+            message->data[1] = TEST_FAILURE;  
+        }
+
+        g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
+    } else {
+        g_test_fixture.release_memory_block(message);
+    }
+
     while(1) {
         g_test_fixture.release_processor();
     }
@@ -359,11 +511,12 @@ void test5() {
 }
 
 void test_management() {
-    const int total_tests = 1;
+    const int total_tests = 2;
     int successes;
     int failures;
 
     int sender_id;
+    int test_case;
     int test_result;
     message_envelope* message;
 
@@ -372,19 +525,34 @@ void test_management() {
     test_result = 0;
     while(1) {
         message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
-        test_result = message->data[1];  
+        test_case = message->data[0];
+        test_result = message->data[1];
+        
+        if (test_case == 1) {
+
+            //
+            // Begin test 2
+            //
+
+            g_test_fixture.set_process_priority(TEST_DELAY_RECEIVER_PID, 3);
+            g_test_fixture.set_process_priority(TEST_MEMORY_WATCHDOG_PID, 2);
+            g_test_fixture.set_process_priority(TEST_MEMORY_ALLOCATOR_PID, 2);
+            g_test_fixture.send_message(TEST_MEMORY_WATCHDOG_PID, message);
+        } else if (test_case == 2) {
+            g_test_fixture.release_memory_block(message);
+        }
 
         if (test_result == TEST_SUCCESS) {
             successes++;
-            printf_1(GID"_test: test %i OK\r\n", message->data[0]);
+            printf_1(GID"_test: test %i OK\r\n", test_case);
         } else if (test_result == TEST_FAILURE) {
             failures++;
-            printf_1(GID"_test: test %i FAIL\r\n", message->data[0]);
+            printf_1(GID"_test: test %i FAIL\r\n", test_case);
         }
 
         if ((successes + failures) == total_tests) {
-            printf_1(GID"_test: %i/1 tests OK\r\n", successes);
-            printf_1(GID"_test: %i/1 tests FAIL\r\n", failures);
+            printf_1(GID"_test: %i/2 tests OK\r\n", successes);
+            printf_1(GID"_test: %i/2 tests FAIL\r\n", failures);
             printf_0(GID"_test: END\r\n");
         }
 
@@ -394,6 +562,7 @@ void test_management() {
         printf_1("  Successes: %i\r\n", successes);
         printf_1("  Failures: %i\r\n", failures);
 #endif
+
     }
 }
 
@@ -414,13 +583,18 @@ void __attribute__ ((section ("__REGISTER_TEST_PROCS__")))register_test_proc()
     }
 
     g_test_proc[TEST_DELAY_SENDER_PID-1].entry = test_delay_sender;
+    g_test_proc[TEST_DELAY_SENDER_PID-1].priority = 2;
+
     g_test_proc[TEST_DELAY_RECEIVER_PID-1].entry = test_delay_receiver;
-    g_test_proc[2].entry = test3;
-    g_test_proc[3].entry = test4;
+    g_test_proc[TEST_DELAY_RECEIVER_PID-1].priority = 2;
+
+    g_test_proc[TEST_MEMORY_WATCHDOG_PID-1].entry = test_memory_watchdog;
+    g_test_proc[TEST_MEMORY_ALLOCATOR_PID-1].entry = test_memory_allocator;
+
     g_test_proc[4].entry = test5;
 
     g_test_proc[TEST_MANAGEMENT_PID-1].entry = test_management;
-    g_test_proc[TEST_MANAGEMENT_PID-1].priority = 2;
+    g_test_proc[TEST_MANAGEMENT_PID-1].priority = 1;
 }
 
 /**
