@@ -267,7 +267,7 @@ void test_delay_sender() {
     message_envelope* message;
     int sender_id;
 
-    printf_0(GID"_test: START\r\n"GID"_test: total 1 test\r\n");
+    printf_0(GID"_test: START\r\n"GID"_test: total 3 tests\r\n");
 
 #ifdef _DEBUG
     printf_0("Test Case 1 - Delayed send\r\n");
