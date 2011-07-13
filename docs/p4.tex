@@ -66,7 +66,7 @@ from the managing process using differing priority levels and blocking on a
 message. The first few checks are against the memory system. It checks that
 releasing memory that is in locations both over and under what the memory
 blocks are located. Next, it tries to deallocate the same memory block twice.
-For each primative that takes in a process id as a parameter, an id that is out
+For each primitive that takes a process id as a parameter, an id that is out
 of range is sent in to ensure that the ranges are checked by the primative. The
 last error check performed is for the delayed send to ensure that a negative
 delay time is handled. If at any point in the test an \texttt{RTX\_ERROR} is
@@ -78,7 +78,7 @@ expected value, then \texttt{TEST\_SUCCESS} is sent to the test manager.
 The three tests are ultimately controlled by the last of the six processes,
 which is run right after the first test is completed. Once each set of tests is
 completed, the manager process receives a message from the testing processes.
-The next test set is selected by lowering the finished processes priorities and
+The next test set is selected by lowering the finished processes' priorities and
 raising the priorities of the next test processes. Results of each test are
 recorded for the final output of results. Once all tests are completed, the
 results are outputted in the required format. This management process should
