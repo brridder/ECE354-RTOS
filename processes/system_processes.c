@@ -519,7 +519,9 @@ void process_wall_clock() {
                 str_iter = (char*)(message->data) + 3;
                 
                 if (consume(&str_iter, ' ') == -1) {
-                    printf_0("Parse error: a space must follow command\r\n");
+                    printf_u_0_m("Parse error: a space must follow command\r\n",
+                                 message);
+                    message = NULL;
                     goto wall_clock_done;
                 } 
 
@@ -530,52 +532,62 @@ void process_wall_clock() {
                 while(consume(&str_iter, ' ') == 0) {}
 
                 if (*str_iter == '\r') {
-                    printf_0("Parse error: enter a time\r\nx");
+                    printf_u_0_m("Parse error: enter a time\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;
                 }
 
                 hours = atoi_e(str_iter, 2);
                 if (hours > 23) {
-                    printf_1("Bad value for hours: %i\r\n", hours);
+                    printf_u_1_m("Bad value for hours: %i\r\n", hours, message);
+                    message = NULL;
                     goto wall_clock_done;
                 } else if (hours == -1) {
-                    printf_0("Invalid time string\r\n");
+                    printf_u_0_m("Invalid time string\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;                    
                 }
                 
                 str_iter += 2;
                 if (consume(&str_iter, ':') == -1) {
-                    printf_0("Invalid time string\r\n");
+                    printf_u_0_m("Invalid time string\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;                    
                 };
 
                 minutes = atoi_e(str_iter, 2);
                 if (minutes > 59) {
-                    printf_1("Bad value for minutes: %i\r\n", minutes);
+                    printf_u_1_m("Bad value for minutes: %i\r\n", minutes, message);
+                    message = NULL;
                     goto wall_clock_done;
                 } else if (minutes == -1) {
-                    printf_0("Invalid time string\r\n");
+                    printf_u_0_m("Invalid time string\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;                    
                 }
 
                 str_iter += 2;
                 if (consume(&str_iter, ':') == -1) {
-                    printf_0("Invalid time string\r\n");
+                    printf_u_0_m("Invalid time string\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;                    
                 };
 
                 seconds = atoi_e(str_iter, 2);
                 if (seconds > 59) {
-                    printf_1("Bad value for seconds: %i\r\n", seconds);
+                    printf_u_1_m("Bad value for seconds: %i\r\n", seconds, message);
+                    message = NULL;
                     goto wall_clock_done;
                 } else if (seconds == -1) {
-                    printf_0("Invalid time string\r\n");
+                    printf_u_0_m("Invalid time string\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;                    
                 }
 
                 str_iter += 2;
                 if (consume(&str_iter, '\r') == -1) {
-                    printf_0("Invalid time string\r\n");
+                    printf_u_0_m("Invalid time string\r\n", message);
+                    message = NULL;
                     goto wall_clock_done;                    
                 }
                 
@@ -597,7 +609,9 @@ void process_wall_clock() {
                 out_string[7] = ' ';
                 out_string[8] = ' ';
                 out_string[9] = '\r';
-                printf_u_0(out_string, 1);
+                
+                printf_u_0_m(out_string, message);
+                message = NULL;
                 
                 out_string[2] = ':';
                 out_string[5] = ':';
@@ -605,13 +619,15 @@ void process_wall_clock() {
                 clock_display = FALSE;
             }
 
-        wall_clock_done:
-
             //
             // We are done with this message, release it
             //
 
-            release_memory_block(message);
+        wall_clock_done:
+            if (message != NULL) {
+                release_memory_block(message);
+            }
+
         } else {            
 
             //
@@ -632,8 +648,10 @@ void process_set_priority_command() {
     int priority;
     int consumed;
 
+#ifdef _DEBUG
     printf_0("Process set priority started\r\n");
-    
+#endif
+
     //
     // Register for the %C command
     // 
@@ -673,7 +691,7 @@ void process_set_priority_command() {
         
         target_pid = atoi(str_iter, &consumed);
         if (consumed == 0 || target_pid < 0 || target_pid > NUM_PROCESSES-1) {
-            printf_0("Invalid PID\r\n");
+            printf_u_0_m("Invalid PID\r\n", message);
             goto process_set_priority_command_done;
         }
         
@@ -686,7 +704,7 @@ void process_set_priority_command() {
         //
 
         if (consume(&str_iter, '\r') == 0) {
-            printf_0("Priority value expected\r\n");
+            printf_u_0_m("Priority value expected\r\n", message);
             goto process_set_priority_command_done;
         }
        
@@ -696,7 +714,7 @@ void process_set_priority_command() {
         
         priority = atoi(str_iter, &consumed);
         if (consumed == 0 || priority < 0 || priority > NUM_PRIORITIES-1) {
-            printf_0("Invalid priority\r\n");
+            printf_u_0_m("Invalid priority\r\n", message);
             goto process_set_priority_command_done;
         }
 
@@ -709,7 +727,7 @@ void process_set_priority_command() {
         //
 
         if (consume(&str_iter, '\r') == -1) {
-            printf_0("Newline expected\r\n");
+            printf_u_0_m("Newline expected\r\n", message);
             goto process_set_priority_command_done;
         }
 
@@ -717,15 +735,15 @@ void process_set_priority_command() {
         // Kernel function call to set priority of the target as parsed
         //
 
-        set_process_priority(target_pid, priority);
-
-    process_set_priority_command_done:
+        set_process_priority(target_pid, priority);\
 
         // 
         // Release the received memory block
         //
         
         release_memory_block((void*)message);
+
+    process_set_priority_command_done:
         release_processor();
     }
 }

@@ -346,3 +346,16 @@ void printf_u_0(const char* format, int skip_newlines) {
     str_cpy(out_message->data, format);
     send_message(CRT_DISPLAY_PID, out_message);
 }
+
+void printf_u_0_m(const char* format, message_envelope* message) {
+    message->type = MESSAGE_OUTPUT;
+    str_cpy(message->data, format);
+    send_message(CRT_DISPLAY_PID, message);
+}
+
+void printf_u_1_m(const char* format, int input, message_envelope* message) {
+    snprintf_1(snprintf_buffer, SNPRINTF_BUFFER_SIZE, format, input);
+    message->type = MESSAGE_OUTPUT;
+    str_cpy(message->data, snprintf_buffer);
+    send_message(CRT_DISPLAY_PID, message);
+}
