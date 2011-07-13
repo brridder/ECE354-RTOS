@@ -7,6 +7,8 @@ message sending.
 Documentation:
 
 Part 2B documentation is located in docs/p2b.pdf.
+Part 3 documentation is located in docs/p3.pdf.
+Part 4 documentation is located in docs/p4.pdf.
 
 Files:
 
@@ -14,7 +16,7 @@ Files:
   rtx.c and rtx.h - system calls
   README - this file
   core/ - all core kernel logic 
-  docs/ - documenattion
+  docs/ - documenation
   lib/ - debug and string libraries
   loader/ - supplied rtx loader
   tests/ - sets of test case programs

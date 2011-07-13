@@ -48,45 +48,52 @@ the test management process, otherwise a \texttt{TEST\_FAILURE} message is sent.
 primitive the testing harness will hang.
 
 \subsection*{Memory Management Tests}
-This test uses two processes, \texttt{test\_memory\_watchdog()} and 
-\texttt{test\_memory\_allocator()}, to verify the functionality of blocked 
-queues and memory allocation. First, the watchdog process allocates a block and 
-then sends a message to the allocator process. Upon receiving this message the 
-allocator requests as many memory block as are available. Once it is blocked the 
-watchdog process will continue to run. The next step of the watchdog process is 
-to release the memory block that it requested, and then release itself. At this 
-point the allocator process becomes unblocked and is now able to release all of 
-its memory blocks. If no deallocations fail then \texttt{TEST\_SUCCESS} is sent 
-to the the test management system, else \texttt{TEST\_FAILURE} is sent.
+This test uses two processes, \texttt{test\_memory\_watchdog()} and
+\texttt{test\_memory\_allocator()}, to verify the functionality of
+blocked queues and memory allocation. First, the watchdog process
+allocates a block and then sends a message to the allocator
+process. Upon receiving this message the allocator requests as many
+memory block as are available. Once it is blocked the watchdog process
+will continue to run. The next step of the watchdog process is to
+release the memory block that it requested, and then releases
+processor. At this point the allocator process becomes unblocked and
+is now able to release all of its memory blocks. If no deallocations
+fail then \texttt{TEST\_SUCCESS} is sent to the the test management
+system, else \texttt{TEST\_FAILURE} is sent.
 
 \subsection*{Error Checking Tests}
-Error checking tests deal with the edge cases that should return error values
-from the kernel primitives. Like all the other tests, this is pseudo-scheduled
-from the managing process using differing priority levels and blocking on a
-message. The first few checks are against the memory system. It checks that
-releasing memory that is in locations both over and under what the memory
-blocks are located. Next, it tries to deallocate the same memory block twice.
-For each primitive that takes a process id as a parameter, an id that is out
-of range is sent in to ensure that the ranges are checked by the primative. The
-last error check performed is for the delayed send to ensure that a negative
-delay time is handled. If at any point in the test an \texttt{RTX\_ERROR} is
-returned from the process, then \texttt{TEST\_FAILURE} is sent to the test
-manager and the test is halted at this point. If all primatives return the
-expected value, then \texttt{TEST\_SUCCESS} is sent to the test manager.
+Error checking tests deal with the edge cases that should return error
+values from the kernel primitives. Like all the other tests, this is
+pseudo-scheduled from the managing process using differing priority
+levels and blocking on a message. The first few checks are against the
+memory system. It checks that releasing memory that is in invalid
+locations: both over and under where the memory blocks are
+located. Next, it tries to deallocate the same memory block twice.
+For each primitive that takes a process id as a parameter, an id that
+is out of range is sent in to ensure that the ranges are checked by
+the primitive. The last error check performed is for the delayed send
+to ensure that a negative delay time is handled. If at any point in
+the test an \texttt{RTX\_ERROR} is returned from the process, then
+\texttt{TEST\_FAILURE} is sent to the test manager and the test is
+halted at this point. If all primitives return the expected value,
+then \texttt{TEST\_SUCCESS} is sent to the test manager.
 
 \subsection*{Test Management System}
-The three tests are ultimately controlled by the last of the six processes,
-which is run right after the first test is completed. Once each set of tests is
-completed, the manager process receives a message from the testing processes.
-The next test set is selected by lowering the finished processes' priorities and
-raising the priorities of the next test processes. Results of each test are
-recorded for the final output of results. Once all tests are completed, the
-results are outputted in the required format. This management process should
-not be preempted by the other test processes due to it having a higher priority
-level then the others. Test processes are blocked waiting for a message from
-the test manager. This message block is passed back and forth from the test
-processes and the manager so it is ultimately released by the manager.
-Listing~\ref{lsttestmansys} provides an outline of this process.
+The three tests are ultimately controlled by the last of the six
+processes, which is run right after the first test is completed. Once
+each set of tests is completed, the manager process receives a message
+from the testing processes.  The next test set is selected by lowering
+the finished processes' priorities and raising the priorities of the
+next test processes. The next test case is started by sending a
+message to the relevant process. Results of each test are recorded for
+the final output of results. Once all tests are completed, the results
+are output in the required format. This management process should
+not be preempted by the other test processes due to it having a higher
+priority level then the others. Test processes are blocked waiting for
+a message from the test manager. This message block is passed back and
+forth from the test processes and the manager so it is ultimately
+released by the manager.  Listing~\ref{lsttestmansys} provides an
+outline of this process.
 
 \lstset{caption={Test Management System Pseudo Code}, label=lsttestmansys}
 \begin{lstlisting}
