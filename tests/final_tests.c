@@ -294,17 +294,19 @@ void test_delay_receiver() {
     const int num_messages = 6;
     const int expected_successes = 7;
 
+    int failed;
     int message_num;
     int sender_id;
     int message_delay;
     int successes;
     message_envelope* message;
     
+    failed = 0;
     successes = 0;
     message_num = 0;
     while (1) 
     {
-        if (message_num < num_messages) {
+        if ((message_num < num_messages) && failed == 0) {
             message = (message_envelope*)g_test_fixture.receive_message(&sender_id);
 
 #ifdef _DEBUG
@@ -321,6 +323,10 @@ void test_delay_receiver() {
 #ifdef _DEBUG
                 printf_0("fail.\r\n");
 #endif
+                failed = 1;
+                message->data[0] = 1;
+                message->data[1] = TEST_FAILURE;
+                g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
             }
         
             message_num++;        
@@ -607,8 +613,54 @@ void test_error_check() {
         };
 
 #ifdef _DEBUG
+        printf_0("ok\r\n  Sending a message to a bad PID...");
+#endif
+
+        block = g_test_fixture.request_memory_block();
+        if (g_test_fixture.send_message(-79, block) != RTX_ERROR) {
+#ifdef _DEBUG
+        printf_0("fail\r\n");
+#endif
+            message->data[0] = 3;
+            message->data[1] = TEST_FAILURE;
+            g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
+            goto test_error_check_done;
+        };
+
+#ifdef _DEBUG
+        printf_0("ok\r\n  Sending delayed message to a bad PID...");
+#endif
+
+        if (g_test_fixture.delayed_send(-89, block, 1) != RTX_ERROR) {
+#ifdef _DEBUG
+        printf_0("fail\r\n");
+#endif
+            message->data[0] = 3;
+            message->data[1] = TEST_FAILURE;
+            g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
+            goto test_error_check_done;
+        };
+
+#ifdef _DEBUG
+        printf_0("ok\r\n  Sending delayed message with negative delay...");
+#endif
+
+        if (g_test_fixture.delayed_send(TEST_ERROR_CHECK_PID, block, -100) != 
+            RTX_ERROR) {
+#ifdef _DEBUG
+        printf_0("fail\r\n");
+#endif
+            message->data[0] = 3;
+            message->data[1] = TEST_FAILURE;
+            g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
+            goto test_error_check_done;
+        };
+        g_test_fixture.release_memory_block(block);
+
+#ifdef _DEBUG
         printf_0("ok\r\n");
 #endif
+
         message->data[0] = 3;
         message->data[1] = TEST_SUCCESS;
         g_test_fixture.send_message(TEST_MANAGEMENT_PID, message);
@@ -646,6 +698,7 @@ void test_management() {
             // Begin test 2
             //
 
+            g_test_fixture.set_process_priority(TEST_DELAY_SENDER_PID, 3);
             g_test_fixture.set_process_priority(TEST_DELAY_RECEIVER_PID, 3);
             g_test_fixture.set_process_priority(TEST_MEMORY_WATCHDOG_PID, 2);
             g_test_fixture.set_process_priority(TEST_MEMORY_ALLOCATOR_PID, 2);
