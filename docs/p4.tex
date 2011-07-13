@@ -3,12 +3,25 @@
 \usepackage[hmargin=1.5in,vmargin=1.0in]{geometry}
 \usepackage{graphicx}
 \usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
 \begin{document}
 \lstset{language=C, 
         frame=single, 
         breaklines=true,
         basicstyle=\small\ttfamily,
         columns=fullflexible}
+
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, text width=4.5em, text
+    badly centered, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, text width=5em, text
+    centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse, fill=red!20, node distance=3cm, minimum
+    height=2em]
+
 \section*{ECE 354: Part 4}
 Group: ECE.354.S11-G031 \\
 Members: Ben Ridder (brridder), Casey Banner (cccbanne), 
@@ -25,5 +38,38 @@ described in brief when the primitive or process is discussed.
 \subsection*{Error Checking Tests}
 
 \subsection*{Test Management System}
+The three tests are ultimately controlled by the last of the six processes,
+which is run right after the first test is completed. Once each set of tests is
+completed, the manager process receives a message from the testing processes.
+The next test set is selected by lowering the finished processes priorities and
+raising the priorities of the next test processes. Results of each test are
+recorded for the final output of results. Once all tests are completed, the
+results are outputted in the required format. This management process should
+not be preempted by the other test processes due to it having a higher priority
+level then the others. Test processes are blocked waiting for a message from
+the test manager. This message block is passed back and forth from the test
+processes and the manager so it is ultimately released by the manager.
+Listing~\ref{lsttestmansys} provides an outline of this process.
 
+\lstset{caption={Test Management System Pseudo Code}, label=lsttestmansys}
+\begin{lstlisting}
+void test_management():
+    while(1):
+        receive message
+        if message is not from the last test case:
+            lower priority of previous test processes
+            raise priority of next test processes
+            send message to start of next test process
+        if message is from last test case:
+            release message block
+        check message for test result:
+            if successful:
+                increment success counter
+            if failure:
+                increment failure counter
+            output result
+        
+        if all tests are done:
+            output total results
+\end{lstlisting}
 \end{document}
