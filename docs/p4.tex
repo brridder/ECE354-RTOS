@@ -36,6 +36,16 @@ described in brief when the primitive or process is discussed.
 \subsection*{Blocked Memory Queue and Allocation Tests}
 
 \subsection*{Error Checking Tests}
+Error checking tests deal with the edge cases that should return error values
+from the kernel primitives. Like all the other tests, this is pseudo-scheduled
+from the managing process using differing priority levels and blocking on a
+message. The first few checks are against the memory system. It checks that
+releasing memory that is in locations both over and under what the memory
+blocks are located. Next, it tries to deallocate the same memory block twice.
+For each primative that takes in a process id as a parameter, an id that is out
+of range is sent in to ensure that the ranges are checked by the primative. The
+last error check performed is for the delayed send to ensure that a negative
+delay time is handled.
 
 \subsection*{Test Management System}
 The three tests are ultimately controlled by the last of the six processes,
