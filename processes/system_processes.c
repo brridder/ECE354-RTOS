@@ -197,7 +197,7 @@ void i_process_timer() {
         
         timer++;
         
-        #ifdef DEBUG
+        #ifdef _DEBUG
         if (timer % 1000 == 0) {
             printf_1("Timer: %ims\r\n", timer);
         }
@@ -212,7 +212,7 @@ void i_process_timer() {
                    delayed_messages.head->delay) {
                 current_message = delayed_messages.head;
 
-                #ifdef DEBUG
+                #ifdef _DEBUG
                 printf_1("Message with delay: %i ready, forwarding\r\n", 
                          current_message->delay);
                 #endif
@@ -413,7 +413,7 @@ void process_wall_clock() {
     message_delayed = NULL;
     sent_message = FALSE;
 
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_0("Wall clock started\r\n");
 #endif 
     
