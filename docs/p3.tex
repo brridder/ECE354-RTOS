@@ -100,7 +100,6 @@ void process_crt_display():
         receive a message
         if (message type = output || message type = key input):
             send message data to uart
-        
         release message
     }
 }
@@ -201,7 +200,7 @@ been started with the \texttt{\%WS} command.
 
 When the wall clock receives a message from the KCD process it parses
 the command and performs one of two actions. If the command was
-\texttt{\%WS}, then it parses the time from the command, sets the internal
+\texttt{\%WS}, it parses the time from the command, sets the internal
 clock, and sends itself a delayed message. The user input is
 validated, and if it does not pass the clock is not changed.
 
@@ -234,12 +233,10 @@ void process_wall_clock():
                 store hours, minutes and seconds
             else if (%WT):
                 turn off clock
-            
         release message
 \end{lstlisting}
 
 \subsection*{Set Priority Command Process} 
-
 The \texttt{process\_set\_priority\_command()} is a process that
 allows the user to change the priority level of any process through a
 command. This process accepts data in the form \texttt{\%C process\_id 
@@ -274,7 +271,7 @@ void process_set_priority_command():
         validate priority level
 
         validate line endings
-
+        
         call set_process_priority()
             update the priority level of the specified process
 
