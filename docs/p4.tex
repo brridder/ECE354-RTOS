@@ -1,6 +1,6 @@
 \documentclass[oneside]{article}
 \usepackage{listings}
-\usepackage[hmargin=1.5in,vmargin=1.0in]{geometry}
+\usepackage[hmargin=1.4in,vmargin=1.0in]{geometry}
 \usepackage{graphicx}
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
@@ -69,7 +69,10 @@ blocks are located. Next, it tries to deallocate the same memory block twice.
 For each primative that takes in a process id as a parameter, an id that is out
 of range is sent in to ensure that the ranges are checked by the primative. The
 last error check performed is for the delayed send to ensure that a negative
-delay time is handled.
+delay time is handled. If at any point in the test an \texttt{RTX\_ERROR} is
+returned from the process, then \texttt{TEST\_FAILURE} is sent to the test
+manager and the test is halted at this point. If all primatives return the
+expected value, then \texttt{TEST\_SUCCESS} is sent to the test manager.
 
 \subsection*{Test Management System}
 The three tests are ultimately controlled by the last of the six processes,

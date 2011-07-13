@@ -55,7 +55,7 @@ int delayed_send(int process_id, void* message_envelope, int delay){
 
 \subsection*{The KCD Process}
 The keyboard command decoder is implemented as a process located in the
-\texttt{system\_processes.c}. The \texttt{process\_kcd()} idles until a message
+\texttt{system\_proc\-esses.c}. The \texttt{process\_kcd()} idles until a message
 is received, as it blocks on receiving messages and does not need to do
 anything until a message is passed to it. Once a message is received the
 message type is checked to see if it is either key input or command
@@ -70,19 +70,19 @@ The pseudo code for the KCD can been seen in Listing~\ref{kcd}.
 
 \lstset{caption={Pseudo code for implementing the KCD Processes}, label=kcd}
 \begin{lstlisting}
-void process_kcd(){
+void process_kcd() {
     initialize local variables;
 
-    while(1){
+    while(1) {
         receive a message;
-        if (message type = key input){
-            if (message body = registered command){
+        if (message type = key input) {
+            if (message body = registered command) {
                 copy message and send to process;
             }
         
             send message to CRT;    
 
-        } else if (message type = command registration){
+        } else if (message type = command registration) {
             register a new command;
         } else {
             release message;
@@ -102,12 +102,12 @@ can be found in Listing~\ref{crt}.
 
 \lstset{caption={Pseudo code for the CRT process}, label=crt}
 \begin{lstlisting}
-void process_crt_display(){
+void process_crt_display() {
     initialize local variables;
 
-    while(1){
+    while(1) {
         receive a message;
-        if (message type = output || message type = key input){
+        if (message type = output || message type = key input) {
                 send message data to uart;
         }
         
@@ -141,10 +141,10 @@ Listing~\ref{uart}
 
 \lstset{caption={Pseudo code for the UART I-Process}, label=uart}
 \begin{lstlisting}
-void i_process_uart(){
+void i_process_uart() {
     initialize local variables;
 
-    while(1){
+    while(1) {
         determine uart state;
 
         if(state = read) {
@@ -191,15 +191,15 @@ See Listing~\ref{timer} for the pseudo code implementation.
 
 \lstset{caption={Pseudo code for the UART I-Process}, label=timer}
 \begin{lstlisting}
-void i_process_timer(){
+void i_process_timer() {
     initialize local variables;
 
-    while(1){
+    while(1) {
         release processor;
         increment timer;
 
-        if(delayed messages queue != NULL){
-            while (there are messages to be sent){
+        if (delayed messages queue != NULL) {
+            while (there are messages to be sent) {
                 remove message from delay messages queue;
                 append message to appropriate message queue;
             }
@@ -232,10 +232,10 @@ the wall clock process can be seen at Listing~\ref{wallclock}.
 
 \lstset{caption={Pseudo code for the wall clock process}, label=wallclock}
 \begin{lstlisting}
-void process_wall_clock(){
+void process_wall_clock() {
     initialize local variables;
 
-    while (1){
+    while (1) {
         if (process has not sent a message to itself) {
             send a delayed message to itself with delay of 1s;
         }
@@ -272,25 +272,29 @@ void process_wall_clock(){
 
 \subsection*{Set Priority Command Process} 
 
-The \texttt{process\_set\_priority\_command()} is a process that allows the user to change the priority level 
-of any process directly from the UART. This process accepts data in the form \%C process\_id 
-priority\_level. When the process is initialized it registers the \%C command. It then waits to receive a message. 
-Upon receiving a message it skips the \%C characters and begins parsing the data. While parsing, the process id of the process  
-whose priority is to be changed and the new priority level are extracted. Checks are made to ensure that proper process ids and 
-priority values were provided and that nothing else was entered after the priority value. A kernel function call of 
-\texttt{set\_process\_priority(...)} is then made using the parsed process id and priority value. This function call is 
-responsible for the actual changing of the priority level. The memory block and the processor are then released. 
+The \texttt{process\_set\_priority\_command()} is a process that allows the
+user to change the priority level of any process directly from the UART. This
+process accepts data in the form \%C process\_id priority\_level. When the
+process is initialized it registers the \%C command. It then waits to receive a
+message.  Upon receiving a message it skips the \%C characters and begins
+parsing the data. While parsing, the process id of the process  whose priority
+is to be changed and the new priority level are extracted. Checks are made to
+ensure that proper process ids and priority values were provided and that
+nothing else was entered after the priority value. A kernel function call of
+\texttt{set\_process\_priority(...)} is then made using the parsed process id
+and priority value. This function call is responsible for the actual changing
+of the priority level. The memory block and the processor are then released.
 Pseudo code for this process can be seen at Listing \ref{set}.
 
 \lstset{caption={Pseudo code for the set priority command process}, label=set}
 
 \begin{lstlisting}
-void process_set_priority_command(){
+void process_set_priority_command() {
     initalize local variables;
     
     register %C Command
 
-    while (1){
+    while (1) {
         receive a message;
 
         skip %C in message;
@@ -303,7 +307,7 @@ void process_set_priority_command(){
 
         validate line endings;
 
-        call set_process_priority(){
+        call set_process_priority() {
             update the priority level of the
                 specified process;
         }
