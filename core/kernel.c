@@ -54,7 +54,7 @@ process_queue* process_queues[] = {ready_queue,
 int k_release_processor() {
     process_control_block* process;
     
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_0("k_release_processor()\r\n");
 #endif
 
@@ -84,7 +84,7 @@ int k_release_processor() {
 
 int k_preempt_processor(process_control_block* process) {
 
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_1("k_preempt_processor(%x)\r\n", process);
 #endif
 
@@ -135,7 +135,7 @@ process_control_block* k_peek_next_process(int queue) {
  */
 
 int k_get_process_priority(int pid) {
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_0("k_get_process_priority()\r\n");
 #endif 
     
@@ -159,7 +159,7 @@ int k_get_process_priority(int pid) {
 int k_set_process_priority(int pid, int priority) {
     process_control_block* process;
 
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_0("k_set_process_priority()\r\n");
 #endif
 
@@ -190,7 +190,7 @@ int k_set_process_priority(int pid, int priority) {
 
     process = k_priority_queue_remove(pid);
 
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_1("  process is: %x\r\n", process);
 #endif
 
@@ -201,7 +201,7 @@ int k_set_process_priority(int pid, int priority) {
         k_priority_enqueue_process(process, process->queue);
     }
 
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_1("  priority is %i, enqueing...\r\n", process->priority);
 #endif    
 
@@ -499,12 +499,14 @@ int k_delayed_send(int process_id, message_envelope* message, int delay) {
 int k_context_switch(process_control_block* process) {
     process_control_block* previous_process;
 
-#ifdef DEBUG
+#ifdef _DEBUG
     printf_1("k_context_switch(pid = %i)\r\n", process->pid);
 #endif
 
     if (!process) {
+#ifdef _DEBUG
         printf_1("  Invalid process handle: %x\r\n", process);
+#endif
         return RTX_ERROR;
     }
 
@@ -585,7 +587,7 @@ int k_context_switch(process_control_block* process) {
         asm("move.l (%sp)+, %a1"); // A1
         asm("move.l (%sp)+, %a0"); // A0
     } else {
-#ifdef DEBUG
+#ifdef _DEBUG
         printf_0("  Error: trying to switch to a process that is in an"
                  " unknown state\r\n");
 #endif
@@ -750,11 +752,6 @@ int k_debug_prt_message_history() {
     printf_0("\r\n\n");
 }
 
-//int debug_sent_mes_buf_pos;
-//int debug_rec_mes_buf_pos;
-
-//debug_message_envelope debug_sent_messages[DEBUG_MESSAGE_LOG_SIZE];
-//debug_message_envelope debug_rec_messages[DEBUG_MESSAGE_LOG_SIZE];
 void k_debug_store_message(message_envelope* message, debug_message_envelope buffer[]) {
     int pos;
 
