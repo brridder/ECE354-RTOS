@@ -40,11 +40,14 @@ David Janssen - dajjanss }
 \section{\textsc{Hot Keys}}
 % What they are, their functionality, pseudocode
 A total of five hot key commands were implemented to assist in debugging and
-testing of the system and user processes. A hot key function was used to
+testing of the system and user processes. A hot key decoder function was used to
 interpret the inputted command from the UART interrupt process. The interrupt
 process checks the first character for an exclamation mark ('!') and calls the
-hot key function directly with the intput string as a parameter. See
-Table~\ref{hot_keys_table} for a summary of the hot key strings and descriptions.
+hot key function directly with the input string as a parameter. See
+Table~\ref{hot_keys_table} for a summary of the hot key strings and
+descriptions. All of the code related to the debug hot keys are wrapped in
+\texttt{\#ifdef \_DEBUG\_HOTKEYS} and \texttt{\#endif} to ensure that in normal
+operation of the system that this code will not interfere.
 
 \begin{table}[h]
     \caption{Hot Keys and Descriptions}
@@ -62,6 +65,31 @@ Table~\ref{hot_keys_table} for a summary of the hot key strings and descriptions
         \hline
     \end{tabular}
 \end{table}
+
+Each of the debugging functions are kernel level calls as they require access
+to data structures in the kernel. This is done using the same soft interrupt
+method as the the rest of the kernel routines. The hot key command decoder
+uses a similar parsing method as the \texttt{process\_wall\_clock()} process to
+interrupt which kernel routine to run. The debugging processes related to the
+ready queues and blocked queues use the kernel print queue function as
+described in Listing~\ref{lsting_k_print_queue}. The specific queue debugging 
+function simply passes in the relavent queue into the queue print function.
+
+\lstset{caption={Kernel Print Queue Psuedo Code}, 
+        label=lsting_k_print_queue}
+\begin{lstlisting}
+int queue_debug_print(process_queue queue[]) {
+    for each process in the queue:
+        print process ID
+        print process priority
+}
+\end{lstlisting}
+
+The hot key, \texttt{!FM}, simply outputs the number of free blocks and the
+allocation bit field. The allocation bit field is described in
+Section~\ref{sec:memory_map}.
+
+The last hot key, \texttt{!M}, is the most complicated of the five.
 
 \section{\textsc{Initialization}}
 

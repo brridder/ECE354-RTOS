@@ -6,8 +6,8 @@
 \contentsline {section}{\numberline {1.5}\textsc {Software Interrupt Handlers}}{2}
 \contentsline {section}{\numberline {1.6}\textsc {Hardware Interrupt Handlers}}{2}
 \contentsline {section}{\numberline {1.7}\textsc {Hot Keys}}{2}
-\contentsline {section}{\numberline {1.8}\textsc {Initialization}}{2}
-\contentsline {section}{\numberline {1.9}\textsc {Implementation}}{2}
-\contentsline {chapter}{\numberline {2}\textsc {Major Design Changes}}{3}
-\contentsline {chapter}{\numberline {3}\textsc {Measurements}}{4}
-\contentsline {chapter}{\numberline {4}\textsc {Leasons Learned}}{5}
+\contentsline {section}{\numberline {1.8}\textsc {Initialization}}{3}
+\contentsline {section}{\numberline {1.9}\textsc {Implementation}}{3}
+\contentsline {chapter}{\numberline {2}\textsc {Major Design Changes}}{4}
+\contentsline {chapter}{\numberline {3}\textsc {Measurements}}{5}
+\contentsline {chapter}{\numberline {4}\textsc {Leasons Learned}}{6}
