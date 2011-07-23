@@ -578,7 +578,49 @@ these processes loop forever inorder to deplete memory. In order to have these
 processes work properly within our system \texttt{Process C} was assigned a
 priority of 1 and the other two processes were assigned a priority of 2.
 
-\section{\textsc{Software Interrupt Handlers}}
+\section{\textsc{Software Interrupt Handler}}
+
+% TODO: MAY ADD MORE?
+
+The system uses a single software interrupt handler for performing context
+switches into kernel mode for kernel functions. It is initialized in the 0th
+location on the trap table. The trap is only called from the function
+\texttt{do\_system\_call(int call\_id, int* args, int num\_args)} which is used
+to abstract common code used by all the primitives. The software handler itself
+that is called by the trap mnemonic is \texttt{system\_call()} which retrieves
+the parameters from data registers 1 to 4. It calls the appropriate kernel
+level function based on the call id parameter. The call ids are defined in an
+enumerator. 
+
+The software interrupt handler, as described in Listing~\ref{lst_system_call},
+is installed in vector 0 of the trap table. The operation of this interrupt
+handler retrieves the parameters from the data registers, saves the rest of
+the user process state into the stack, and calls the appropriate kernel level
+function. The parameters retrieved are passed in as arguments for the function.
+The function return value is stored in one of the data registers to be passed
+back to the function that called the trap. Finally, the function returns from
+exception to switch back from kernel mode into user mode.
+
+\lstset{caption={Software Interrupt Handler description},
+        label=lst_system_call}
+\begin{lstlisting}
+void system_call() {
+    disable interrupts
+
+    retrieve call id and arguments from data registers
+
+    save current user process state
+
+    use call id to select the appropriate kernel level function 
+    pass in the arguments as parameters to the function
+
+    restore user process state
+
+    load return value into a data register
+
+    return from exception
+}
+\end{lstlisting}
 
 \section{\textsc{Hardware Interrupt Handlers}}
 % data structures, functional outline, pseudocode
@@ -613,7 +655,7 @@ void interrupt_handler() {
 
 Interrupt service routines are loaded into the interrupt vector table and
 initialized with the required settings in the initialization period of the
-system startup.
+system startup. This is described in Section~\ref{sec:rtx_init}.
 
 \section{\textsc{Hot Keys}}
 % What they are, their functionality, pseudocode 
@@ -681,7 +723,9 @@ number of messages store in the two queues can be changed by modifying the
 \texttt{DEBUG\_MESSAGE\_LOG\_SIZE} definition.
 
 \section{\textsc{Initialization}}
+
 \subsection{\textsc{RTX Initialization}}
+\label{sec:rtx_init}
 The RTX initialization happens in three phases: process, priority queues, 
 and interrupts. Pseudo code for all of these phases can be seen in
 Listing~\ref{initlisting}.
