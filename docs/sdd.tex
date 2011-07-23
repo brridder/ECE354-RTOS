@@ -11,13 +11,18 @@
         basicstyle=\small\ttfamily,
         columns=fullflexible}
 
-\title{ECE354: RTX Project}
+% Pre-amble - title
+
+\title{ECE354: RTX Project Final Report}
 \author{Ben Ridder - brridder \\
 Casey Banner - cccbanne \\
 David Janssen - dajjanss }
 \date{\today}
+
 \maketitle
+
 \tableofcontents
+
 \chapter{\textsc{Software Design}}
 
 \section{\textsc{Introduction}}
@@ -33,6 +38,30 @@ David Janssen - dajjanss }
 \section{\textsc{Hardware Interrupt Handlers}}
 
 \section{\textsc{Hot Keys}}
+% What they are, their functionality, pseudocode
+A total of five hot key commands were implemented to assist in debugging and
+testing of the system and user processes. A hot key function was used to
+interpret the inputted command from the UART interrupt process. The interrupt
+process checks the first character for an exclamation mark ('!') and calls the
+hot key function directly with the intput string as a parameter. See
+Table~\ref{hot_keys_table} for a summary of the hot key strings and descriptions.
+
+\begin{table}[h]
+    \caption{Hot Keys and Descriptions}
+    \label{hot_keys_table}
+    \begin{tabular}{| r | r |}
+        \hline
+        Hot Key Command & Description \\
+        \hline
+        !RQ & Print ready processes and priorities \\ 
+        !BMQ & Print processes blocked on memory \\ 
+        !BRQ & Print processes blocked on receiving messages \\ 
+        !FM & Print the current number of free memory blocks \\ 
+        !M & Print the last $i$ messages sent where $i$ is the debug message
+        log size \\
+        \hline
+    \end{tabular}
+\end{table}
 
 \section{\textsc{Initialization}}
 
