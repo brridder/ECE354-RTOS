@@ -634,7 +634,16 @@ The hot key, \texttt{!FM}, simply outputs the number of free blocks and the
 allocation bit field. The allocation bit field is described in
 Section~\ref{sec:memory_map}.
 
-The last hot key, \texttt{!M}, is the most complicated of the five.
+The last hot key, \texttt{!M}, is the most complicated of the five. In each of
+the kernel functions related to message sending and receiving, a copy of each
+message is stored on a circular buffer that contains a record of the sender ID,
+receiver ID, message type, the first chunk of data, and the time stamp of the
+message. Seperate circular buffers are used for the sent messages and received
+messages to assist in debugging if a message has been sent but not received.
+When the hot key is called, it goes through every message in both queues and 
+outputs first all the sent messages and then all of the received messages. The
+number of messages store in the two queues can be changed by modifying the
+\texttt{DEBUG\_MESSAGE\_LOG\_SIZE} definition.
 
 \section{\textsc{Initialization}}
 \subsection{\textsc{RTX Initialization}}
