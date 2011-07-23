@@ -5,7 +5,7 @@
 // _DEBUG print statements describe what the tests are doing
 // 
 
-#define _DEBUG
+//#define _DEBUG
 
 //
 // __DEBUG print statements dump internals of tests and test infrastructure
