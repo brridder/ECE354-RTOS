@@ -30,8 +30,541 @@ David Janssen - dajjanss }
 \section{\textsc{Global Information}}
 
 \section{\textsc{Primitives}}
+\subsection{Release Processor}
+The release processor primitive is used to make a scheduling decision.
+Currently, this happens when the currently running process calls
+\texttt{release\_processor()}. After making a mode switch, the kernel makes a
+decision on the next process to execute. When this decision is made, a context
+switch is made to the selected process. See Listing~\ref{releaseproclisting}
+for a high level pseudo code representation of this primitive
+
+The kernel process decision currently uses several priority queues, four
+priority levels with two sub-queues. Every priority level has a \texttt{READY} and a
+\texttt{DONE} queue. Initially, all process in a priority level are in the
+priority level's \texttt{READY} queue and after execution they are moved to the
+\texttt{DONE} queue. In order to decide which process next, the kernel dequeues
+the next process on the highest non-empty \texttt{READY} priority queue. If all
+\texttt{READY} queues are empty, the \texttt{DONE} queues are moved to the
+\texttt{READY} queues and the kernel tries to select a process again.
+
+A context switch is made after the kernel selects the next process. If there is
+a process running, the registers are saved on the stack and it's stack pointer
+is moved to the PCB. It's state is marked as \texttt{STATE\_READY} to indicate
+it's state has been saved and is capable of executing again. Next, the selected
+process' stack pointer is restored. If the process is in the state
+\texttt{STATE\_STOPPED}, meaning it has never been run before, the kernel
+changes the state to \texttt{STATE\_RUNNING} and executes the process by
+returning from the exception. On the other hand, if the process has been run
+before, meaning that it is in the ready state, the data and address registers
+are restored from the stack. In this case, the method returns normally.
+Execution continues at the same it left off.
+
+\lstset{caption={Pseudo code for \texttt{release\_processor()}},
+        label=releaseproclisting}
+\begin{lstlisting}
+
+int release_processor() {
+    mode switch to kernel mode using system call exception
+
+    if all queues are empty:
+        move DONE queues to READY queues
+
+    dequeue next process from highest non-empty priority queue
+
+    if there is a currently running process:
+        save all of the registers on to the process stack
+        save stack pointer to PCB
+        set state to STATE_READY
+
+    restore next process stack pointer
+    if next process state is STOPPED:
+        return from exception using the next process exception frame
+    else if state is READY: 
+        restore registers from stack
+    
+    mode switch to user mode using system call exception frame
+    return RTX_SUCCESS
+}
+\end{lstlisting}
+
+\subsection{Priority Set and Get}
+The \texttt{set\_process\_priority(...)} and \texttt{get\_process\_priority(...)}
+primitives are used to set and get, respectively, the priorities of the 
+specified process ID. 
+
+Setting the process priority is shown as pseudo code in
+Listing~\ref{setplisting}. First, the values of the process ID and the priority
+are saved to registers as a mode switch to kernel mode needs to be performed.
+These values are retrieved after the mode switch. After the mode switch, a
+check is performed to ensure that the ID and priority is valid. If it isn't,
+\texttt{RTX\_ERROR} is returned. Otherwise, another check is made to see if the
+ID belongs to the currently running process and that there is a running
+process. If this is true, the priority of the running process is simply changed 
+and \texttt{RTX\_SUCCESS} is returned. If it is not the currently running 
+process, the process is first removed from the appropriate queue based on its 
+current priority level. Then the priority is updated to the new one and the 
+process is enqueued onto the queue associated with the new priority with the 
+same queue type as the one it was removed from. Finally, the function returns 
+\texttt{RTX\_SUCCESS} to indicate successful completion.
+
+\lstset{caption={Pseudo code for setting the process priority},
+        label=setplisting}
+\begin{lstlisting}
+int set_process_priority(int pid, int priority) {
+    move pid and priority into separate data registers
+    mode switch to kernel mode
+    
+    retrieve pid and priority from the data registers
+
+    if invalid PID or invalid priority:
+        return RTX_ERROR
+    
+    if running process is the process to change:
+        update running process to the new priority
+    else:
+        dequeue process from appropriate queue
+        update priority of that process
+        enqueue process to its new priority queue
+
+    mode switch to user mode
+
+    return RTX_SUCCESS
+}
+\end{lstlisting}
+
+Compared to setting the priority level, getting a process' priority is straight
+forward as can be seen in Listing~\ref{getplisting}. Similar to setting the
+priority, the process ID is moved into a data register and system is switched 
+into kernel mode. After retrieving the process ID, a check is made to ensure
+that the process id is valid. If it is invalid \texttt{RTX\_ERROR} is returned.
+The calling process should perform a check of its own to ensure that
+the returned value is not a negative which indicates an error. Finally, the
+process is looked up on the process table and the priority is returned from
+that.
+
+\lstset{caption={Pseudo code for getting the process priority},
+        label=getplisting}
+\begin{lstlisting}
+int get_process_priority(int pid) {
+    move pid into a data register
+    mode switch to kernel mode
+
+    retrieve pid from data register
+    
+    if the pid is invalid:
+        return RTX_ERROR
+
+    get process from the process table using pid
+    
+    mode switch to user mode
+
+    return process priority
+}
+\end{lstlisting}
+
+\subsection{Request and Release Memory Block}
+The \texttt{request\_memory\_block()} and \texttt{release\_memory\_block()}
+primitives are used by the operating system to allocate and deallocate memory
+blocks for processes.
+
+Requesting a memory block is shown in pseudo code in
+Listing~\ref{requestmemory}. First a mode switch to kernel mode is made. After
+the mode switch, a check is made to see if any memory blocks are available. If
+there are no available memory blocks, the process is moved to a blocked state
+and the processor is released. If memory is available, the memory block is
+popped off of the free list. The block index is retrieved and the appropriate memory
+allocation bit is set high. Finally, the memory block address is returned.
+
+\lstset{caption={Pseudo code for requesting memory blocks}, label=requestmemory}
+\begin{lstlisting}
+void* request_memory_block(){
+    mode switch to kernel mode
+
+    if no available memory blocks:
+        running process state = blocked on memory
+        release_processor()
+    else:
+        pop block of memory off the free list        
+        get block index
+        set corresponding bit in memory allocation field to 1
+
+    return address of block
+}
+\end{lstlisting}
+
+Releasing a memory block is shown in the pseudo code in
+Listing~\ref{releasememory}. First a system call is made using the address of
+the memory block as a parameter.  After the mode switch is performed, a check
+is made to determine the index in the allocation field of the block. This index
+is used to see if this block is currently allocated. If it is not then the
+system returns \texttt{RTX\_ERROR}. If the block has been allocated then the
+block is pushed back on to the free list and that bit in the memory allocation
+field is set back to 0. Next, a check is made to see if there are any processes
+currently blocked on memory. If any are found, the first blocked process has
+its state set to ready and \texttt{RTX\_SUCCESS} is returned. If there are no
+processes blocked on memory then \texttt{RTX\_SUCCESS} is returned right away.
+
+\lstset{caption={Pseudo code for releasing memory blocks}, label=releasememory}
+\begin{lstlisting}
+int release_memory_block(void* memory_block){
+    mode switch to kernel mode
+
+    if memory block is not allocated:
+        return RTX_ERROR
+    else:
+        push block back on to free list
+        set correct bit in memory allocation field to 0
+
+            if there are processes blocked on memory:
+                set state of first blocked process to ready
+
+        return RTX_SUCCESS        
+}
+\end{lstlisting}
+
+\subsection{Send and Receive Messages}
+
+The primitives \texttt{send\_message(...)} and \texttt{receive\_message(...)}
+are used by processes to send and receive messages between them. Each process
+has its own message queue which is setup upon process initialization.
+When a process sends a message it is enqueued to the message queue of the
+receiving process. When a process attempts to receive a message it polls its
+own message queue.
+
+Listing~\ref{sendmsg} describes the functionality of
+\texttt{send\_message(...)}.  First, a system call is made with the
+process id of the receiver and a pointer to the message envelope. The
+system call then switches into kernel mode. Once the mode switch is
+complete the message is then pushed on the end of the recipient's
+message queue. There is no size limit on the message queue so this
+will never cause an error. A check is then made to see if the
+recipient process is currently blocked on receiving messages. If this
+is the case the state of this process is set to ready. Then
+\texttt{RTX\_SUCCESS} is returned.
+
+\lstset{caption={Pseudo code for sending messages}, label=sendmsg}
+\begin{lstlisting}
+int send_message(int process_id, void* message_envelope){
+    mode switch to kernel mode
+
+    push message on to end of message queue
+
+    if receiving process is blocked on messages:
+        set state of receiving process to ready
+
+    return RTX_SUCCESS
+}
+\end{lstlisting}
+
+
+Pseudo code for \texttt{receive\_message(...)} is shown in
+Listing~\ref{receivemsg}. A system call is made to switch the system
+into kernel mode. In this system call a pointer for storing the
+process id of the sender is passed in as a parameter. Upon switching
+to kernel mode the running process checks to see if its message queue
+is empty. If the message queue is empty the process is now blocked on
+messages. The processes' state is changed to reflect this and release
+processor is called. If the queue is not empty the message is popped
+off the queue, the process id of the sender is written to the
+\texttt{sender\_id} pointer, and the message is returned.
+
+\lstset{caption={Pseudo code for receiving messages}, label=receivemsg}
+\begin{lstlisting}
+void* receive_message(int* sender_id){
+    mode switch to kernel mode
+
+    if message queue for running process is empty:
+        running process state = blocked on messages
+        release_processor()
+    else:
+        pop message off queue
+        *sender_id = process id of the message sender
+        return message      
+}
+\end{lstlisting}
+
+\subsection{Design of Delayed Send} 
+The \texttt{delayed\_send(...)} primitive queues a message to be sent
+after a specified delay. Messages are put onto a internal queue that
+holds all delayed messages regardless of which process they belong to.
+Messages in the queue are ordered by send time, with the soonest at
+the front of the queue. This way, the check to see if a message should
+be sent can be run in $O(1)$ time.
+
+This function takes three parameters: the receiving process ID, a
+pointer to a memory block containing the message, and the delay time
+in milliseconds. After a mode switch to kernel mode, the parameters
+are checked to make sure there is a valid receiver id and delay value;
+invalid parameters return an \texttt{RTX\_ERROR}. If this check passes
+then the message is inserted into the correct spot in the delayed
+message queue.
+
+Each time the timer i-process runs, it checks the head of the delayed
+message queue to see if a message should be sent. If so, the message
+is dequeued and forwarded to the correct process and the head is
+checked again. The pseudo code for the delayed send is in
+Listing~\ref{delay}. The pseudo code and implementation information
+for the timer forwarding is shown below in the timer i-process
+section.
+
+\lstset{caption={Pseudo code for delayed send },label=delay}
+\begin{lstlisting}
+int delayed_send(int process_id, void* message_envelope, int delay):
+    switch to kernel mode
+
+    if (receiver_id is invalid || delay is invalid):
+        return RTX_ERROR
+    else:
+        set message sender id
+        set message receiver id
+        set delay information
+        insert into delay queue
+
+        return RTX_SUCCESS
+\end{lstlisting}
+
+
 
 \section{\textsc{Processes}}
+\subsection{Null Process}
+The null process was implemented to adhere to the project specifications. It
+has a priority of four and a process ID of zero. The process method is defined 
+as an infinite loop that constantly calls \texttt{release\_processor()}. It is 
+added to the process table through a call to \texttt{init\_processes(...)}. As
+this process is required to always be at process ID zero, care should be taken
+to ensure that this is not overwritten by other processes in the initialization
+methods. This process is outlined in Listing~\ref{nullplisting}.
+
+\lstset{caption={Pseudo code for the null process},
+        label=nullplisting}
+\begin{lstlisting}
+void process_null() {
+    while (true):
+        release_processor();
+}
+\end{lstlisting}
+
+\subsection{The KCD Process}
+The \texttt{process\_kcd()} blocks until a message is received. Once it
+receives a message, the message type is checked to see if it is either
+key input or command registration. If it is neither, the message is
+released. 
+
+When the message type is key input, the message is checked to see if
+it matches to a previously registered command. If a match is found the
+message is forwarded to the registered process for that command.
+
+When the message type is a command registration, the PID of the
+registering process is saved along with the command itself. The
+command character is passed in the message body. The pseudo code for
+the KCD can been seen in Listing~\ref{kcd}.
+
+\lstset{caption={Pseudo code for implementing the KCD Processes}, label=kcd}
+\begin{lstlisting}
+void process_kcd():
+    while(1):
+        receive a message
+        if (message type = key input):
+            if (message body = registered command):
+                send message to registered process
+        else if (message type = command registration):
+            save the PID and command to be registered
+        else:
+            release message
+\end{lstlisting}
+
+\subsection{The CRT Process}
+The \texttt{process\_crt\_display()} blocks until a message is
+received. If type is correct, then the message data is sent to the
+UART and the message is released. Pseudo code for the
+process can be found in Listing~\ref{crt}.
+
+\lstset{caption={Pseudo code for the CRT process}, label=crt}
+\begin{lstlisting}
+void process_crt_display():
+    while(1):
+        receive a message
+        if (message type = output || message type = key input):
+            send message data to uart
+        release message
+    }
+}
+\end{lstlisting}
+
+\subsection{The UART I-Process}
+The UART i-process is run in response nice to both transmit ready and
+receive ready UART interrupts. After either of these interrupts fires,
+a context switch is immediately made to the UART i-process. Once it
+runs, the UART status register is checked to determine whether a read
+or a write is to occur.
+
+When reading in data, all characters are appended to a buffer until a carriage
+return is read in. At this point, a null terminating character is appended.  A
+check is made to determine the first value in the string buffer. If it is a
+percent (\texttt{\%}), a message is created with the string buffer copied into its data
+field. This message is sent to the KCD. If it is an exclamation mark (!), the
+string buffer is sent to the UART debug decoder. After this, the character read
+in is echoed out again through a transmit interrupt request and interrupts are
+re-enabled. 
+
+If it is a write, a character is written to serial port and transmit
+ready interrupt is masked. If a carriage return was written, then a
+newline character is also queued to be written. A special case is
+considered for when the message type is specified to not require any
+newlines. Pseudo code for this process is below as Listing
+~\ref{uart}.
+
+\lstset{caption={Pseudo code for the UART I-Process}, label=uart}
+\begin{lstlisting}
+void i_process_uart():
+    while(1):
+        determine uart state
+
+        if(state = read):
+            read in character
+            append character to string buffer
+            if (character = carriage return):
+                append null to string buffer            
+
+                if (buffer[0] = '%'):
+                    create a new message
+                    copy string buffer into message data field
+                    send message to KCD
+                else if (buffer[0] = '!'):
+                    send string buffer to uart debug decoder
+
+            echo the in character by triggering a transmit interrupt
+
+            enable interrupts
+        else if (state = write):
+            write character to serial port
+            mask transmit ready interrupt
+            if (character = carriage return AND requires a new line):
+                print newline
+            
+        release processor
+\end{lstlisting}
+
+\subsection{The Timer I-Process}
+
+The \texttt{i\_process\_timer()} process runs immediately in response
+to timer interrupts. Upon receiving an interrupt, this process
+performs two tasks. First, it increments its internal time
+counter. Next, the delayed messages queue is checked to see if there
+are any messages to send out. All messages that were scheduled to be
+sent at the current time or sooner are sent. At this point, this
+process will relinquish control to the processor. See
+Listing~\ref{timer} for the pseudo code for this process.
+
+\lstset{caption={Pseudo code for the UART I-Process}, label=timer}
+\begin{lstlisting}
+void i_process_timer():
+    timer = 0
+    while(1){
+        release processor
+        increment timer
+
+        if(delayed messages queue is not empty):
+            while (queue head send time <= current time):
+                remove message from delayed messages queue
+                send message to original receiver
+\end{lstlisting}
+
+\subsection{The Wall Clock Process}
+The \texttt{process\_wall\_clock()} is used to display the current OS
+time on UART1. This clock is given an initial time by sending the
+\texttt{\%WS} command and is updated every second. Clock time is printed
+until the \texttt{\%WT}. Internally, the current time is stored in seconds.
+
+The wall clock receives time updates by repeatedly sending delayed
+messages to itself. Every time it receives one of these messages, it
+updates its internal clock, prints out the time, and sends itself
+another delayed message. The delayed messages are sent with a one
+second delay. Once the internal clock reaches 86400 seconds (24 hours)
+it is reset to 0. These messages are only sent if the wall clock has
+been started with the \texttt{\%WS} command.
+
+When the wall clock receives a message from the KCD process it parses
+the command and performs one of two actions. If the command was
+\texttt{\%WS}, it parses the time from the command, sets the internal
+clock, and sends itself a delayed message. The user input is
+validated, and if it does not pass the clock is not changed.
+
+Pseudo code for the wall clock process can be seen at
+Listing~\ref{wallclock}.
+
+\lstset{caption={Pseudo code for the wall clock process}, label=wallclock}
+\begin{lstlisting}
+void process_wall_clock():
+    while (1):
+        receive message
+        if (sender_id = wall clock pid):
+            increment clock
+
+            if (clock = 86400):
+                reset clock
+
+            if (clock is currently on):
+                send a delayed message to itself with a delay of one second
+                convert clock to hours, minutes and seconds
+                convert hours, minutes, seconds to time string
+                send time string as message to CRT
+
+        else if (sender_id = KCD pid):
+            if (%WS):
+                if (clock is currently off):
+                    send a delayed message to itself with delay of one second
+
+                parse string and validate input
+                store hours, minutes and seconds
+            else if (%WT):
+                turn off clock
+        release message
+\end{lstlisting}
+
+\subsection{Set Priority Command Process} 
+The \texttt{process\_set\_priority\_command()} is a process that
+allows the user to change the priority level of any process through a
+command. This process accepts data in the form \texttt{\%C process\_id 
+priority\_level}. When the process is initialized it registers the
+\texttt{\%C} command. It then waits to receive a message.  Upon receiving a
+message it skips the \texttt{\%C} characters and begins parsing the
+data. While parsing, the process id of the process whose priority is
+to be changed and the new priority level are extracted. Checks are
+made to ensure that proper process ids and priority values were
+provided and that nothing else was entered after the priority value. A
+kernel function call of \texttt{set\_process\_priority(...)} is then
+made using the parsed process id and priority value. This function
+call is responsible for the actual changing of the priority level. The
+memory block and the processor are then released.  Pseudo code for
+this process can be seen at Listing \ref{set}.
+
+\lstset{caption={Pseudo code for the set priority command process}, label=set}
+
+\begin{lstlisting}
+void process_set_priority_command():    
+    register %C Command
+
+    while (1):
+        receive a message
+
+        skip %C in message
+
+        parse process id
+        validate process id
+
+        parse priority level
+        validate priority level
+
+        validate line endings
+        
+        call set_process_priority()
+            update the priority level of the specified process
+
+        release memory block;
+        release processor;
+\end{lstlisting}
+
 
 \section{\textsc{Software Interrupt Handlers}}
 
@@ -92,6 +625,90 @@ Section~\ref{sec:memory_map}.
 The last hot key, \texttt{!M}, is the most complicated of the five.
 
 \section{\textsc{Initialization}}
+\subsection{RTX Initialization} 
+The RTX initialization happens in three phases: process, priority queues, 
+and interrupts. Pseudo code for all of these phases can be seen in
+Listing~\ref{initlisting}.
+
+The process initialization happens in \texttt{init\_processes()}. For each test
+process, a PCB is created based on the process table supplied by the test
+cases. This PCB is then added to the kernel's own process list but not added to
+a priority queue yet. Then, for each process in the kernel's process list, a
+stack pointer is setup and a exception frame is added to the process' new
+stack. The format/vector word portion of the exception frame is set to 0x4000
+to represent a 4 byte aligned stack and the SR portion is 0x0000. The program
+counter in this frame is set to the entry point of the process.
+
+Next, priority queues are initialized. The data structures are already
+allocated but are not initialized. To ensure proper operation, the queues are
+put into a consistent empty state. After the queues are setup, the processes
+are added to appropriate queue.
+
+Finally, the interrupts are setup. First, the vector base register (VBR) for the
+interrupts is set to memory location 0x10000000. Next, the soft interrupt for
+\texttt{system\_call()} is installed to the VBR at vector 0.
+
+\lstset{caption={Pseudo code for RTX initialization},label=initlisting}
+\begin{lstlisting}
+void init() {
+    init_processes()
+    init_priority_queues()
+    init_interrupts()
+}
+
+void init_processes() {
+    init_test_processes()
+    add null process to process list
+    for each process in process list:
+        initialize stack pointer
+        push PC portion of exception frame onto the stack
+        push F/V and SR portions of exception frame onto the stack
+}
+
+void init_test_processes() {
+    for each test process: 
+        setup PCB
+        add to process list
+}
+
+void init_priority_queues() {
+    for each process: 
+        add process to correct priority queue
+}
+
+void init_interrupts() {
+    initialize VBR to 0x10000000
+    install system call ISR at vector 0
+}
+\end{lstlisting}
+
+\subsection{RTX Initialization of Memory Management} 
+The final phase of the RTX initialization is the memory management phase.
+Memory blocks are allocated beginning at the start of free memory. The function
+call \texttt{init\_memory(void* memory\_start)}, as seen in
+Listing~\ref{meminit}. A free list is used to implement linking and management
+of the memory blocks. A free list is a singly linked list that stores the
+address of the next free memory in the first four bytes of the current memory
+block. The only pointer required is to the head of this list. Push and pop
+operations can be done in $O(1)$ time. Over-allocation and double deallocation
+prevention is handled by a bit field containing a bit for each memory block.
+When the memory is allocation the associated bit is set to 1 and for when it is
+released it is set back to 0.
+
+\lstset{caption={Pseudo code for RTX initialization of memory
+        management},label=meminit}
+\begin{lstlisting}
+void init_memory(void* memory_start){
+    
+    head of memory = start of free memory + (number of memory blocks - 1)*(size of memory block)
+    
+    for each block in free list:
+        store address of next free memory block in current block
+
+    initialize the memory allocation bit field to 0
+}
+\end{lstlisting}
+
 
 \section{\textsc{Implementation}}
 
