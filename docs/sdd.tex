@@ -25,7 +25,7 @@ David Janssen - dajjanss }
 \section{\textsc{Global Information}}
 
 \section{\textsc{Primitives}}
-\subsection{Release Processor}
+\subsection{\textsc{Release Processor}}
 The release processor primitive is used to make a scheduling decision.
 Currently, this happens when the currently running process calls
 \texttt{release\_processor()}. After making a mode switch, the kernel makes a
@@ -82,7 +82,7 @@ int release_processor() {
 }
 \end{lstlisting}
 
-\subsection{Priority Set and Get}
+\subsection{\textsc{Set Process Priority}}
 The \texttt{set\_process\_priority(...)} and \texttt{get\_process\_priority(...)}
 primitives are used to set and get, respectively, the priorities of the 
 specified process ID. 
@@ -127,6 +127,7 @@ int set_process_priority(int pid, int priority) {
 }
 \end{lstlisting}
 
+\subsection{\textsc{Get Process Priority}}
 Compared to setting the priority level, getting a process' priority is straight
 forward as can be seen in Listing~\ref{getplisting}. Similar to setting the
 priority, the process ID is moved into a data register and system is switched 
@@ -157,7 +158,7 @@ int get_process_priority(int pid) {
 }
 \end{lstlisting}
 
-\subsection{Request and Release Memory Block}
+\subsection{\textsc{Request Memory Block}}
 The \texttt{request\_memory\_block()} and \texttt{release\_memory\_block()}
 primitives are used by the operating system to allocate and deallocate memory
 blocks for processes.
@@ -187,6 +188,7 @@ void* request_memory_block(){
 }
 \end{lstlisting}
 
+\subsection{\textsc{Release Memory Block}}
 Releasing a memory block is shown in the pseudo code in
 Listing~\ref{releasememory}. First a system call is made using the address of
 the memory block as a parameter.  After the mode switch is performed, a check
@@ -217,8 +219,7 @@ int release_memory_block(void* memory_block){
 }
 \end{lstlisting}
 
-\subsection{Send and Receive Messages}
-
+\subsection{\textsc{Send Messages}}
 The primitives \texttt{send\_message(...)} and \texttt{receive\_message(...)}
 are used by processes to send and receive messages between them. Each process
 has its own message queue which is setup upon process initialization.
@@ -251,7 +252,7 @@ int send_message(int process_id, void* message_envelope){
 }
 \end{lstlisting}
 
-
+\subsection{\textsc{Receive Messages}}
 Pseudo code for \texttt{receive\_message(...)} is shown in
 Listing~\ref{receivemsg}. A system call is made to switch the system
 into kernel mode. In this system call a pointer for storing the
@@ -278,7 +279,7 @@ void* receive_message(int* sender_id){
 }
 \end{lstlisting}
 
-\subsection{Design of Delayed Send} 
+\subsection{\textsc{Delayed Send}}
 The \texttt{delayed\_send(...)} primitive queues a message to be sent
 after a specified delay. Messages are put onto a internal queue that
 holds all delayed messages regardless of which process they belong to.
@@ -321,7 +322,7 @@ int delayed_send(int process_id, void* message_envelope, int delay):
 
 
 \section{\textsc{Processes}}
-\subsection{Null Process}
+\subsection{\textsc{Null Process}}
 The null process was implemented to adhere to the project specifications. It
 has a priority of four and a process ID of zero. The process method is defined 
 as an infinite loop that constantly calls \texttt{release\_processor()}. It is 
@@ -339,7 +340,7 @@ void process_null() {
 }
 \end{lstlisting}
 
-\subsection{The KCD Process}
+\subsection{\textsc{KCD Process}}
 The \texttt{process\_kcd()} blocks until a message is received. Once it
 receives a message, the message type is checked to see if it is either
 key input or command registration. If it is neither, the message is
@@ -368,7 +369,7 @@ void process_kcd():
             release message
 \end{lstlisting}
 
-\subsection{The CRT Process}
+\subsection{\textsc{CRT Process}}
 The \texttt{process\_crt\_display()} blocks until a message is
 received. If type is correct, then the message data is sent to the
 UART and the message is released. Pseudo code for the
@@ -386,7 +387,7 @@ void process_crt_display():
 }
 \end{lstlisting}
 
-\subsection{The UART I-Process}
+\subsection{\textsc{UART I-Process}}
 The UART i-process is run in response nice to both transmit ready and
 receive ready UART interrupts. After either of these interrupts fires,
 a context switch is immediately made to the UART i-process. Once it
@@ -440,8 +441,7 @@ void i_process_uart():
         release processor
 \end{lstlisting}
 
-\subsection{The Timer I-Process}
-
+\subsection{\textsc{Timer I-Process}}
 The \texttt{i\_process\_timer()} process runs immediately in response
 to timer interrupts. Upon receiving an interrupt, this process
 performs two tasks. First, it increments its internal time
@@ -465,7 +465,7 @@ void i_process_timer():
                 send message to original receiver
 \end{lstlisting}
 
-\subsection{The Wall Clock Process}
+\subsection{\textsc{Wall Clock Process}}
 The \texttt{process\_wall\_clock()} is used to display the current OS
 time on UART1. This clock is given an initial time by sending the
 \texttt{\%WS} command and is updated every second. Clock time is printed
@@ -517,7 +517,7 @@ void process_wall_clock():
         release message
 \end{lstlisting}
 
-\subsection{Set Priority Command Process} 
+\subsection{\textsc{Set Priority Command Process}}
 The \texttt{process\_set\_priority\_command()} is a process that
 allows the user to change the priority level of any process through a
 command. This process accepts data in the form \texttt{\%C process\_id 
@@ -560,6 +560,18 @@ void process_set_priority_command():
         release processor;
 \end{lstlisting}
 
+\subsection{\textsc{Test Processes A, B, C}}
+The system also has three test processes implemented. These processes are used 
+to stress test our system by depleting memory blocks. \texttt{Process A} 
+requests a memory block and on receiving one sends a message to 
+\texttt{Process B}. \texttt{Process B} receives the message and then sends the 
+message to \texttt{Process C}. \texttt{Process C} then gets a message and checks 
+if the number of messages it has received is divisible by 20. If it is it prints 
+out "Process C" to the UART1. Then the process hibernates for 10 seconds. All 
+of these processes loop forever inorder to deplete memory. In order to have 
+these processes work properly within our system \texttt{Process C} was assigned 
+a priority of 1 and the other two processes were assigned a 
+priority of 2.
 
 \section{\textsc{Software Interrupt Handlers}}
 
@@ -568,7 +580,7 @@ void process_set_priority_command():
 \section{\textsc{Hot Keys}}
 
 \section{\textsc{Initialization}}
-\subsection{RTX Initialization} 
+\subsection{\textsc{RTX Initialization}}
 The RTX initialization happens in three phases: process, priority queues, 
 and interrupts. Pseudo code for all of these phases can be seen in
 Listing~\ref{initlisting}.
@@ -625,7 +637,7 @@ void init_interrupts() {
 }
 \end{lstlisting}
 
-\subsection{RTX Initialization of Memory Management} 
+\subsection{\textsc{RTX Initialization of Memory Management}}
 The final phase of the RTX initialization is the memory management phase.
 Memory blocks are allocated beginning at the start of free memory. The function
 call \texttt{init\_memory(void* memory\_start)}, as seen in
