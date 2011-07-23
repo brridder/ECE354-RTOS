@@ -537,9 +537,10 @@ kernel function call of \texttt{set\_process\_priority(...)} is then
 made using the parsed process id and priority value. This function
 call is responsible for the actual changing of the priority level. The
 memory block and the processor are then released.  Pseudo code for
-this process can be seen at Listing \ref{set}.
+this process can be seen at Listing \ref{lst_set_prio_cmd_proc}.
 
-\lstset{caption={Pseudo code for the set priority command process}, label=set}
+\lstset{caption={Pseudo code for the set priority command process}, 
+        label=lst_set_prio_cmd_proc}
 
 \begin{lstlisting}
 void process_set_priority_command():    
@@ -566,24 +567,58 @@ void process_set_priority_command():
 \end{lstlisting}
 
 \subsection{\textsc{Test Processes A, B, C}}
-The system also has three test processes implemented. These processes are used 
-to stress test our system by depleting memory blocks. \texttt{Process A} 
-requests a memory block and on receiving one sends a message to 
-\texttt{Process B}. \texttt{Process B} receives the message and then sends the 
-message to \texttt{Process C}. \texttt{Process C} then gets a message and checks 
-if the number of messages it has received is divisible by 20. If it is it prints 
-out "Process C" to the UART1. Then the process hibernates for 10 seconds. All 
-of these processes loop forever inorder to deplete memory. In order to have 
-these processes work properly within our system \texttt{Process C} was assigned 
-a priority of 1 and the other two processes were assigned a 
-priority of 2.
+The system also has three test processes implemented. These processes are used
+to stress test our system by depleting memory blocks. \texttt{Process A}
+requests a memory block and on receiving one sends a message to \texttt{Process
+B}. \texttt{Process B} receives the message and then sends the message to
+\texttt{Process C}. \texttt{Process C} then gets a message and checks if the
+number of messages it has received is divisible by 20. If it is it prints out
+"Process C" to the UART1. Then the process hibernates for 10 seconds. All of
+these processes loop forever inorder to deplete memory. In order to have these
+processes work properly within our system \texttt{Process C} was assigned a
+priority of 1 and the other two processes were assigned a priority of 2.
 
 \section{\textsc{Software Interrupt Handlers}}
 
 \section{\textsc{Hardware Interrupt Handlers}}
+% data structures, functional outline, pseudocode
+Two hardware interrupt handlers were implemented. The first is for the timer
+interrupts and the second is for the UART for keyboard input from the user.
+They both use very similar logic. All of the data and address registers are
+moved onto the stack after interrupts are disabled. Then the processor is
+preempted with the the respective interrupt process selected as the next
+running process. In the case of the timer interrupt, the interrupt event is
+acknowledge to prevent the interrupt from firing multiple times for the same
+event. After the interrupt process releases the processor, and the processor
+returns back to the interrupted process, the data and address registers are
+restored from the stack and the interrupt handler returns from the exception.
+See Listing~\ref{listing_hwi_handler} for the pseudo code description of the
+two interrupt handlers.
+
+\lstset{caption={Hardware Interrupt Handler Pseudo Code},
+        label=listing_hwi_handler}
+\begin{lstlisting}
+void interrupt_handler() {
+    disable interrupts
+    move data and address registers onto the stack
+
+    acknowledge the interrupt
+    preempt processor with the appropriate interrupt process
+
+    restore data and address registers from the stack
+
+    return from exception
+}
+\end{lstlisting}
+
+Interrupt service routines are loaded into the interrupt vector table and
+initialized with the required settings in the initialization period of the
+system startup.
 
 \section{\textsc{Hot Keys}}
-% What they are, their functionality, pseudocode
+% What they are, their functionality, pseudocode 
+
+% TODO: Edit this for tense
 A total of five hot key commands were implemented to assist in debugging and
 testing of the system and user processes. A hot key decoder function was used to
 interpret the inputted command from the UART interrupt process. The interrupt
@@ -632,7 +667,7 @@ int queue_debug_print(process_queue queue[]) {
 
 The hot key, \texttt{!FM}, simply outputs the number of free blocks and the
 allocation bit field. The allocation bit field is described in
-Section~\ref{sec:memory_map}.
+Section~\ref{sec:mem_management}.
 
 The last hot key, \texttt{!M}, is the most complicated of the five. In each of
 the kernel functions related to message sending and receiving, a copy of each
@@ -704,6 +739,7 @@ void init_interrupts() {
 \end{lstlisting}
 
 \subsection{\textsc{RTX Initialization of Memory Management}}
+\label{sec:mem_management}
 The final phase of the RTX initialization is the memory management phase.
 Memory blocks are allocated beginning at the start of free memory. The function
 call \texttt{init\_memory(void* memory\_start)}, as seen in
