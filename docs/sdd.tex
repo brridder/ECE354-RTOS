@@ -340,12 +340,10 @@ void* request_memory_block() {
     if running process is not an i-process:
         if there are no unreserved memory blocks free:
             set the state of the running process to blocked on memory
-            enqueue running process to blocked memory priority queue
             call release processor
     else:
         if there are no memory blocks free:
             set the state of the running process to blocked on memory
-            enqueue running process to blocked memory priority queue
             call release processor
 
     pop block of memory off the free list        
@@ -380,7 +378,6 @@ int release_memory_block(void* memory_block) {
 
         if there are processes blocked on memory:
             set state of the highest priority blocked process to ready
-            enqueue unblocked process on ready queue
             if priority of the unblocked is higher than the running process:
                  call release processor
 
@@ -411,7 +408,6 @@ int send_message(int pid, void* message_envelope){
 
     if receiving process is blocked on messages:
         set state of receiving process to ready
-        enqueue receiving process to ready queue
 
     if priority of receiving process is higher than the running process:
         call release processor
@@ -420,30 +416,27 @@ int send_message(int pid, void* message_envelope){
 }
 \end{lstlisting}
 
-\subsection{\textsc{Receive Messages}}
-Pseudo code for \texttt{receive\_message(...)} is shown in
-Listing~\ref{receivemsg}. A system call is made to switch the system
-into kernel mode. In this system call a pointer for storing the
-process id of the sender is passed in as a parameter. Upon switching
-to kernel mode the running process checks to see if its message queue
-is empty. If the message queue is empty the process is now blocked on
-messages. The processes' state is changed to reflect this and release
-processor is called. If the queue is not empty the message is popped
-off the queue, the process id of the sender is written to the
-\texttt{sender\_id} pointer, and the message is returned.
+\subsection{\textsc{Receive Message}}
+
+\listtt{receive\_message()} is used by processes to receive a message
+from a process. If a message is available on the running processes
+message queue, it is immediately dequeued and returned. Otherwise, the
+state of the running process is set to blocked and it is
+preempted. Pseudo code for this primitive can be found in
+Listing~\ref{receivemsg}.
 
 \lstset{caption={Pseudo code for receiving messages}, label=receivemsg}
 \begin{lstlisting}
 void* receive_message(int* sender_id){
-    mode switch to kernel mode
+    mode switch to kernel mode using system call exception
 
-    if message queue for running process is empty:
-        running process state = blocked on messages
-        release_processor()
-    else:
-        pop message off queue
-        *sender_id = process id of the message sender
-        return message      
+    while message queue for running process is empty:
+        set state of running process to blocked on messages
+        call release processor
+
+    dequeue message from message queue of running process
+    set sender_id parameter to sender pid found in message envelope
+    return message
 }
 \end{lstlisting}
 
