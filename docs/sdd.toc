@@ -19,13 +19,13 @@
 \contentsline {subsection}{\numberline {1.4.6}\textsc {Wall Clock Process}}{9}
 \contentsline {subsection}{\numberline {1.4.7}\textsc {Set Priority Command Process}}{10}
 \contentsline {subsection}{\numberline {1.4.8}\textsc {Test Processes A, B, C}}{10}
-\contentsline {section}{\numberline {1.5}\textsc {Software Interrupt Handlers}}{10}
-\contentsline {section}{\numberline {1.6}\textsc {Hardware Interrupt Handlers}}{10}
-\contentsline {section}{\numberline {1.7}\textsc {Hot Keys}}{11}
+\contentsline {section}{\numberline {1.5}\textsc {Software Interrupt Handler}}{10}
+\contentsline {section}{\numberline {1.6}\textsc {Hardware Interrupt Handlers}}{11}
+\contentsline {section}{\numberline {1.7}\textsc {Hot Keys}}{12}
 \contentsline {section}{\numberline {1.8}\textsc {Initialization}}{12}
 \contentsline {subsection}{\numberline {1.8.1}\textsc {RTX Initialization}}{12}
 \contentsline {subsection}{\numberline {1.8.2}\textsc {RTX Initialization of Memory Management}}{13}
-\contentsline {section}{\numberline {1.9}\textsc {Implementation}}{13}
-\contentsline {chapter}{\numberline {2}\textsc {Major Design Changes}}{14}
-\contentsline {chapter}{\numberline {3}\textsc {Measurements}}{15}
-\contentsline {chapter}{\numberline {4}\textsc {Leasons Learned}}{16}
+\contentsline {section}{\numberline {1.9}\textsc {Implementation}}{14}
+\contentsline {chapter}{\numberline {2}\textsc {Major Design Changes}}{15}
+\contentsline {chapter}{\numberline {3}\textsc {Measurements}}{16}
+\contentsline {chapter}{\numberline {4}\textsc {Leasons Learned}}{17}
