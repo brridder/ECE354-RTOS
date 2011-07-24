@@ -3,7 +3,7 @@
 \usepackage[hmargin=1.4in,vmargin=1.0in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
-
+\usepackage{float}
 \begin{document}
 \lstset{language=C, 
         frame=single, 
@@ -22,14 +22,151 @@ David Janssen - dajjanss }
 \maketitle
 
 \tableofcontents
+\listoftables
+\lstlistoflistings
 
 \chapter{\textsc{Software Design}}
 
 \section{\textsc{Introduction}}
 
 \section{\textsc{Global Information}}
+% Data structures (queues, PCB, message formats, tracebuffer, etc)
+% Variables
+% Constants (PIDS, msgID, return codes, status codes, msg types, etc)
+% Stacks
+% Memory map
+% Priority Queue
+
+% TODO :: priority queues
+
+Within the RTX system, there are several pieces of information available
+globally within all contexts and several that are exposed only within kernel
+mode. Certain data structures, such as the message envelope, are used by
+user processes. Other structures are used strictly by the kernel. Several
+global variables are available for certain use cases. Constants are used to
+define priority levels, IDs, and more. Stack usage is limited to standard
+function uses, storing states before switching contexts, and for process
+switching. Memory mapping is handled with a free list paired with an allocation
+bit field for control.
+
+\subsection{\textsc{Data Structures}}
+The global data structures available have been split up into two categories:
+user mode and kernel mode structures. This has been done to differentiate
+between what is normally accessible in each context.
+
+\subsubsection{\textsc{User Level}}
+In user level mode there is one data structure available to the programmer
+which is also available in kernel mode. This is the message envelope used to
+send and receive messages between processes. It contains sender and receiver
+process ids, the message type, pointers to the next and previous messages when
+it is enqueued, values to control delay sending, and a data field defined at
+the last 64 bytes of the envelope. The message type is defined in
+Section~\ref{sec:global_constants}. To the user the only fields that are
+modifiable in any meaningful way are the message type and data. All of the
+other fields are modified by the kernel when the message is sent to another
+process. If the user does not need to set the message type then this data
+structure is not necessary as the only knowledge required for message sending
+is that the data resides at an offset of 64 bits. In this case, the message
+envelope is strictly used by the kernel. The message envelope definition can be
+seen in Table~\ref{user_data_structs}.
+
+\begin{table}[H]
+    \caption{User Level Data Structure}
+    \label{user_data_structs}
+    \center{
+    \begin{tabular}{| l | p{8cm} |}
+        \hline
+        Structure & Definition \\
+        \hline
+        Message Envelope &
+\begin{verbatim}
+int sender_pid
+int receiver_pid
+enum message_type type
+struct message_envelope* next
+struct message_envelope* previous
+int delay
+int delay_start
+unsigned char padding[36]
+unsigned char data[64]
+\end{verbatim} \\
+        \hline
+    \end{tabular}
+    } % Center
+\end{table}
+
+\subsubsection{\textsc{Kernel Level}}
+There are several kernel level data structures which includes the process
+control block, two queues, and a debug message envelope. The process control
+block contains all the information required by the system to manage and
+schedule the process. Both queues are implemented with a double linked list to
+ensure $O(1)$ operation for both popping off the head and pushing to the tail.
+Message queue is used for storing message envelopes associated with a specific
+process. The process queue is used for the priority queues. The structures are
+defined in Table~\ref{kernel_data_structs}
+\begin{table}[H]
+    \caption{Kernel Level Data Structures}
+    \label{kernel_data_structs}
+    \center{
+    \begin{tabular}{| l | p{8cm} |}
+    \hline
+    Structure & Definition \\
+    \hline
+    Process Control Block &
+\begin{verbatim}
+int pid
+int priority
+void* stack
+int stack_size
+void (*entry)()
+bool is_i_process
+enum process_state state
+enum queue_type queue
+message_queue messages
+struct process_control_block* next
+struct process_control_block* previous
+\end{verbatim} \\
+
+    \hline
+    Message Queue & 
+\begin{verbatim}
+message_envelope* head
+message_envelope* tail
+\end{verbatim} \\
+    \hline
+
+    Process Queue &
+\begin{verbatim}
+process_control_block* head 
+process_control_block* tail 
+\end{verbatim} \\
+    \hline
+
+    Debug Message Envelope &
+\begin{verbatim}
+int sender_pid
+int receiver_pid
+enum message_type type
+unsigned char data[16]
+int time_stamp
+\end{verbatim} \\
+    \hline
+
+    \end{tabular}
+    } % Center
+\end{table}
+
+
+\subsection{\textsc{Constants}}
+\label{sec:global_constants}
+
+
+\subsection{\textsc{Memory}}
+\label{sec:mem_management}
 
 \section{\textsc{Primitives}}
+% TODO :: words here
+
 \subsection{\textsc{Release Processor}}
 The release processor primitive is used to make a scheduling decision.
 Currently, this happens when the currently running process calls
@@ -580,7 +717,7 @@ priority of 1 and the other two processes were assigned a priority of 2.
 
 \section{\textsc{Software Interrupt Handler}}
 
-% TODO: MAY ADD MORE?
+% TODO: ADD MORE?
 
 The system uses a single software interrupt handler for performing context
 switches into kernel mode for kernel functions. It is initialized in the 0th
@@ -713,38 +850,40 @@ Section~\ref{sec:mem_management}.
 
 The last hot key, \texttt{!M}, is the most complicated of the five. In each of
 the kernel functions related to message sending and receiving, a copy of each
-message is stored on a circular buffer that contains a record of the sender ID,
-receiver ID, message type, the first chunk of data, and the time stamp of the
-message. Seperate circular buffers are used for the sent messages and received
-messages to assist in debugging if a message has been sent but not received.
-When the hot key is called, it goes through every message in both queues and 
-outputs first all the sent messages and then all of the received messages. The
-number of messages store in the two queues can be changed by modifying the
-\texttt{DEBUG\_MESSAGE\_LOG\_SIZE} definition.
+message is stored on a circular buffer that contains a data structure that
+maintains a record of the sender ID, receiver ID, message type, the first 16
+bytes of data, and the time stamp of the message. Seperate circular buffers are
+used for the sent messages and received messages to assist in debugging if a
+message has been sent but not received.  When the hot key is called, it goes
+through every message in both queues and outputs first all the sent messages
+and then all of the received messages. The number of messages store in the two
+queues can be changed by modifying the \texttt{DEBUG\_MESSAGE\_LOG\_SIZE}
+definition. 
 
 \section{\textsc{Initialization}}
-
-\subsection{\textsc{RTX Initialization}}
 \label{sec:rtx_init}
-The RTX initialization happens in three phases: process, priority queues, 
-and interrupts. Pseudo code for all of these phases can be seen in
-Listing~\ref{initlisting}.
+The RTX initialization happens in four phases: process, priority queues, 
+interrupts, and the memory management system. Pseudo code for everything except 
+memory management can be seen in Listing~\ref{initlisting} while the pseudo code 
+for memory management is located in Listing~\ref{meminit}.
 
-The process initialization happens in \texttt{init\_processes()}. For each test
-process, a PCB is created based on the process table supplied by the test
-cases. This PCB is then added to the kernel's own process list but not added to
-a priority queue yet. Then, for each process in the kernel's process list, a
-stack pointer is setup and a exception frame is added to the process' new
-stack. The format/vector word portion of the exception frame is set to 0x4000
-to represent a 4 byte aligned stack and the SR portion is 0x0000. The program
-counter in this frame is set to the entry point of the process.
+The process initialization occurs in \texttt{init\_processes()} and is done in 
+two stages. The first is an initialization of the test processes and the second 
+is the initialization of the null and user processes. For each process, a PCB is 
+created on the process table. This PCB is then added to the kernel's own process 
+list but not yet added to a priority queue. Then, for each process in the 
+kernel's process list, a stack pointer is setup and an exception frame is added 
+to the process' new stack. The format/vector word portion of the exception frame 
+is set to 0x4000 to represent a 4 byte aligned stack and the SR portion is 
+0x0000. The program counter in this frame is set to the entry point of 
+the process.
 
 Next, priority queues are initialized. The data structures are already
 allocated but are not initialized. To ensure proper operation, the queues are
 put into a consistent empty state. After the queues are setup, the processes
 are added to appropriate queue.
 
-Finally, the interrupts are setup. First, the vector base register (VBR) for the
+Then, the interrupts are setup. First, the vector base register (VBR) for the
 interrupts is set to memory location 0x10000000. Next, the soft interrupt for
 \texttt{system\_call()} is installed to the VBR at vector 0.
 
@@ -758,7 +897,7 @@ void init() {
 
 void init_processes() {
     init_test_processes()
-    add null process to process list
+    init_user_processes()
     for each process in process list:
         initialize stack pointer
         push PC portion of exception frame onto the stack
@@ -767,6 +906,24 @@ void init_processes() {
 
 void init_test_processes() {
     for each test process: 
+        setup PCB
+        add to process list
+}
+
+void init_user_processes() {
+    user process list:
+        null process
+        Process A
+        Process B
+        Process C
+        Uart
+        Timer
+        CRT
+        KCD
+        Wall Clock Display
+        Set Priority Process
+
+    for each process in user process list:
         setup PCB
         add to process list
 }
@@ -782,19 +939,14 @@ void init_interrupts() {
 }
 \end{lstlisting}
 
-\subsection{\textsc{RTX Initialization of Memory Management}}
-\label{sec:mem_management}
 The final phase of the RTX initialization is the memory management phase.
 Memory blocks are allocated beginning at the start of free memory. The function
 call \texttt{init\_memory(void* memory\_start)}, as seen in
 Listing~\ref{meminit}. A free list is used to implement linking and management
-of the memory blocks. A free list is a singly linked list that stores the
-address of the next free memory in the first four bytes of the current memory
-block. The only pointer required is to the head of this list. Push and pop
-operations can be done in $O(1)$ time. Over-allocation and double deallocation
-prevention is handled by a bit field containing a bit for each memory block.
-When the memory is allocation the associated bit is set to 1 and for when it is
-released it is set back to 0.
+of the memory blocks. Over-allocation and double deallocation prevention is 
+handled by a bit field containing a bit for each memory block. When the memory 
+is allocation the associated bit is set to 1 and for when it is released it is 
+set back to 0.
 
 \lstset{caption={Pseudo code for RTX initialization of memory
         management},label=meminit}
