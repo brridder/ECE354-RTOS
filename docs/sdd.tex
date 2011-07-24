@@ -175,33 +175,56 @@ timing is incremented by the timer ISR and read by various kernel functions.
 \subsection{\textsc{Constants}}
 % Constants (PIDS, msgID, return codes, status codes, msg types, etc)
 \label{sec:global_constants}
+All of the processes have a predefined process ID as outlined in
+Table~\ref{table_proc_ids}. There is a total of 15 unique processes and there
+is no capability to add extra processes while executing. 
 
 \begin{table}
     \caption{Process IDs}    
-    \label{tab:constants}
+    \label{table_proc_ids}
     \center{
-    \begin{tabular}{| r | r |}
+    \begin{tabular}{| r | c || r | c |}
     \hline
-    Process ID & Value \\
+    Process & Process ID & Process & Process ID \\
     \hline
-    \texttt{PROC\_A} & 7 \\
-    \texttt{PROC\_B} & 8 \\
-    \texttt{PROC\_C} & 9 \\
-    \texttt{UART\_PID} & 10 \\
-    \texttt{TIMER\_PID} & 11 \\
-    \texttt{CRT\_DISPLAY\_PID} & 12 \\
-    \texttt{KCD\_PID} & 13 \\
-    \texttt{WALL\_CLOCK\_PID} & 14 \\
-    \texttt{SET\_PRIORITY\_PID} & 15 \\
+    \hline 
+    \texttt{Null Process} & 0 & \texttt{User Process B} & 8 \\
+    \texttt{Test Process 1} & 1 & \texttt{User Process C} & 9 \\
+    \texttt{Test Process 2} & 2 & \texttt{UART Interrupt Process} & 10 \\
+    \texttt{Test Process 3} & 3 & \texttt{Timer Interrupt Process} & 11 \\ 
+    \texttt{Test Process 4} & 4 & \texttt{CRT Display Process} & 12 \\
+    \texttt{Test Process 5} & 5 & \texttt{KCD Process} & 13 \\
+    \texttt{Test Process 6} & 6 & \texttt{Wall Clock Process} & 14 \\
+    \texttt{User Process A} & 7 & \texttt{Set Priority Process} & 15 \\
     \hline
     \end{tabular}
-    } % center
+    } % Center
 \end{table}
 
+There are six message types defined using an enumerator available to the
+processes for specific duties. See Table~\ref{table_msg_types} for the type
+name, process, and description of each type.
 
-The header file \texttt{globals.h} is used as a central storage of all
-definitions that are required globally. It contains the process ID of all the
-system and user processes
+\begin{table}
+    \caption{Message Types}
+    \label{table_msg_types}
+    \center{
+    \begin{tabular}{| r | r | p{5cm} |}
+    \hline
+    Message Type & Receiving Process & Description \\
+    \hline
+    \hline
+    \texttt{MESSAGE\_CMD\_REG} & KCD Process & \\
+    \texttt{MESSAGE\_KEY\_INPUT} & KCD Process & \\
+    \texttt{MESSAGE\_OUTPUT} & CRT Display Process & \\ 
+    \texttt{MESSAGE\_OUTPUT\_NO\_NEWLINE} & CRT Display Process & \\
+    \texttt{MESSAGE\_COUNT\_REPORT} & User Process C & \\
+    \texttt{MESSAGE\_WAKE\_UP\_10} & User Process C & \\
+    \hline
+    \end{tabular}
+    } % Center
+
+\end{table}
 
 \subsection{\textsc{Stacks}}
 
