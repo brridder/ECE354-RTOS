@@ -1,7 +1,7 @@
 \contentsline {chapter}{\numberline {1}\textsc {Software Design}}{2}
 \contentsline {section}{\numberline {1.1}\textsc {Introduction}}{2}
 \contentsline {section}{\numberline {1.2}\textsc {Global Information}}{2}
-\contentsline {subsection}{\numberline {1.2.1}\textsc {Data Structures}}{3}
+\contentsline {subsection}{\numberline {1.2.1}\textsc {Data Structures}}{2}
 \contentsline {subsubsection}{\textsc {User Level}}{3}
 \contentsline {subsubsection}{\textsc {Kernel Level}}{3}
 \contentsline {section}{\numberline {1.3}\textsc {Primitives}}{3}
@@ -26,8 +26,6 @@
 \contentsline {section}{\numberline {1.6}\textsc {Hardware Interrupt Handlers}}{12}
 \contentsline {section}{\numberline {1.7}\textsc {Hot Keys}}{13}
 \contentsline {section}{\numberline {1.8}\textsc {Initialization}}{14}
-\contentsline {subsection}{\numberline {1.8.1}\textsc {RTX Initialization}}{14}
-\contentsline {subsection}{\numberline {1.8.2}\textsc {RTX Initialization of Memory Management}}{15}
 \contentsline {section}{\numberline {1.9}\textsc {Implementation}}{15}
 \contentsline {chapter}{\numberline {2}\textsc {Major Design Changes}}{16}
 \contentsline {chapter}{\numberline {3}\textsc {Measurements}}{17}
