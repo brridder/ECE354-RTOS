@@ -410,14 +410,14 @@ int send_message(int pid, void* message_envelope){
 
 \subsection{\textsc{Receive Message}}
 
-\listtt{receive\_message()} is used by processes to receive a message
-from a process. If a message is available on the running processes
-message queue, it is immediately dequeued and returned. Otherwise, the
-state of the running process is set to blocked and it is
-preempted. Pseudo code for this primitive can be found in
-Listing~\ref{receivemsg}.
+The \texttt{receive\_message()} primitive is used by processes to
+receive a message from a process. If a message is available on the
+running processes message queue, it is immediately dequeued and
+returned. Otherwise, the state of the running process is set to
+blocked and it is preempted. Pseudo code for this primitive can be
+found in Listing~\ref{receivemsg}.
 
-\lstset{caption={Pseudo code for receiving messages}, label=receivemsg}
+\lstset{caption={Pseudo code for receive\_message()}, label=receivemsg}
 \begin{lstlisting}
 void* receive_message(int* sender_id){
     mode switch to kernel mode using system call exception
