@@ -3,7 +3,7 @@
 \usepackage[hmargin=1.4in,vmargin=1.0in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
-
+\usepackage{float}
 \begin{document}
 \lstset{language=C, 
         frame=single, 
@@ -28,8 +28,79 @@ David Janssen - dajjanss }
 \section{\textsc{Introduction}}
 
 \section{\textsc{Global Information}}
+% Data structures (queues, PCB, message formats, tracebuffer, etc)
+% Variables
+% Constants (PIDS, msgID, return codes, status codes, msg types, etc)
+% Stacks
+% Memory map
+% Priority Queue
+
+% TODO :: priority queues
+
+Within the RTX system, there are several pieces of information available
+globally within all contexts and several that are exposed only within kernel
+mode. Certain data structures, such as the message envelope, are used by
+user processes. Other structures are used strictly by the kernel. Several
+global variables are available for certain use cases. Constants are used to
+define priority levels, IDs, and more. Stack usage is limited to standard
+function uses, storing states before switching contexts, and for process
+switching. Memory mapping is handled with a free list paired with an allocation
+bit field for control.
+
+\subsection{\textsc{Data Structures}}
+The global data structures available have been split up into two categories:
+user mode and kernel mode structures. This has been done to differentiate
+between what is normally accessible in each context.
+
+\subsubsection{\textsc{User Level}}
+\begin{table}[H]
+    \caption{User Level Data Structures}
+    \label{user_data_structs}
+    \begin{tabular}{| l | p{8cm} |}
+        \hline
+        Structure & Definition \\
+        \hline
+        Process Control Block &
+        \begin{verbatim}
+int pid
+int priority
+void* stack
+int stack_size
+void (*entry)()
+bool is_i_process
+enum process_state state
+enum queue_type queue
+message_queue queue
+struct process_control_block* next
+struct process_control_block* previous
+\end{verbatim} \\ 
+        \hline
+        Message Queue &
+\begin{verbatim}
+message_envelope* head
+message_envelope* tail
+\end{verbatim} \\
+        \hline
+        Message Envelope &
+\begin{verbatim}
+int sender_pid
+int receiver_pid
+enum message_type type
+struct message_envelope* next
+struct message_envelope* previous
+int delay
+int delay_start
+unsigned char padding[36]
+unsigned char data[64]
+\end{verbatim} \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{\textsc{Kernel Level}}
 
 \section{\textsc{Primitives}}
+% TODO :: words here
+
 \subsection{\textsc{Release Processor}}
 The release processor primitive is used to make a scheduling decision.
 Currently, this happens when the currently running process calls
@@ -580,7 +651,7 @@ priority of 1 and the other two processes were assigned a priority of 2.
 
 \section{\textsc{Software Interrupt Handler}}
 
-% TODO: MAY ADD MORE?
+% TODO: ADD MORE?
 
 The system uses a single software interrupt handler for performing context
 switches into kernel mode for kernel functions. It is initialized in the 0th
@@ -713,14 +784,15 @@ Section~\ref{sec:mem_management}.
 
 The last hot key, \texttt{!M}, is the most complicated of the five. In each of
 the kernel functions related to message sending and receiving, a copy of each
-message is stored on a circular buffer that contains a record of the sender ID,
-receiver ID, message type, the first chunk of data, and the time stamp of the
-message. Seperate circular buffers are used for the sent messages and received
-messages to assist in debugging if a message has been sent but not received.
-When the hot key is called, it goes through every message in both queues and 
-outputs first all the sent messages and then all of the received messages. The
-number of messages store in the two queues can be changed by modifying the
-\texttt{DEBUG\_MESSAGE\_LOG\_SIZE} definition.
+message is stored on a circular buffer that contains a data structure that
+maintains a record of the sender ID, receiver ID, message type, the first 16
+bytes of data, and the time stamp of the message. Seperate circular buffers are
+used for the sent messages and received messages to assist in debugging if a
+message has been sent but not received.  When the hot key is called, it goes
+through every message in both queues and outputs first all the sent messages
+and then all of the received messages. The number of messages store in the two
+queues can be changed by modifying the \texttt{DEBUG\_MESSAGE\_LOG\_SIZE}
+definition. 
 
 \section{\textsc{Initialization}}
 
