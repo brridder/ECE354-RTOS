@@ -22,6 +22,8 @@ David Janssen - dajjanss }
 \maketitle
 
 \tableofcontents
+\listoftables
+\lstlistoflistings
 
 \chapter{\textsc{Software Design}}
 
@@ -65,10 +67,11 @@ other fields are modified by the kernel when the message is sent to another
 process. If the user does not need to set the message type then this data
 structure is not necessary as the only knowledge required for message sending
 is that the data resides at an offset of 64 bits. In this case, the message
-envelope is strictly used by the kernel.
+envelope is strictly used by the kernel. The message envelope definition can be
+seen in Table~\ref{user_data_structs}.
 
 \begin{table}[H]
-    \caption{User Level Data Structures}
+    \caption{User Level Data Structure}
     \label{user_data_structs}
     \begin{tabular}{| l | p{8cm} |}
         \hline
@@ -92,6 +95,53 @@ unsigned char data[64]
 
 \subsubsection{\textsc{Kernel Level}}
 
+\begin{table}[h]
+    \caption{Kernel Level Data Structures}
+    \label{kernel_data_structs}
+    \begin{tabular}{| l | p{8cm} |}
+    \hline
+    Structure & Definition \\
+    \hline
+    Process Control Block &
+\begin{verbatim}
+int pid
+int priority
+void* stack
+int stack_size
+void (*entry)()
+bool is_i_process
+enum process_state state
+enum queue_type queue
+message_queue messages
+struct process_control_block* next
+struct process_control_block* previous
+\end{verbatim} \\
+    \hline
+    Message Queue & 
+\begin{verbatim}
+message_envelope* head
+message_envelope* tail
+\end{verbatim} \\
+    \hline
+    Process Queue &
+\begin{verbatim}
+process_control_block* head 
+process_control_block* tail 
+\end{verbatim} \\
+    \hline
+    Debug Message Envelope &
+\begin{verbatim}
+int sender_pid
+int receiver_pid
+enum message_type type
+unsigned char data[16]
+int time_stamp
+\end{verbatim} \\
+    \hline
+    \end{tabular}
+\end{table}
+
+
 
 \subsection{\textsc{Constants}}
 \label{sec:global_constants}
@@ -99,6 +149,7 @@ unsigned char data[64]
 
 \subsection{\textsc{Memory}}
 \label{sec:mem_management}
+
 \section{\textsc{Primitives}}
 % TODO :: words here
 

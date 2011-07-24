@@ -6,6 +6,8 @@ all: sdd
 sdd:
 	$(ECHO) Making sdd.pdf
 	$(LATEX) sdd.tex
+	$(ECHO) Running again for references
+	$(LATEX) sdd.tex
 	$(ECHO) Done
 
 p1:

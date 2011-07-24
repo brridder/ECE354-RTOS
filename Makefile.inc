@@ -11,4 +11,4 @@ OBJDUMP=m68k-elf-objdump
 RM=rm
 ECHO=@echo
 MERGE=python2 tools/merge.py
-LATEX=pdflatex
+LATEX=pdflatex -halt-on-error
