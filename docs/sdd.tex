@@ -179,7 +179,7 @@ All of the processes have a predefined process ID as outlined in
 Table~\ref{table_proc_ids}. There is a total of 15 unique processes and there
 is no capability to add extra processes while executing. 
 
-\begin{table}
+\begin{table}[H]
     \caption{Process IDs}    
     \label{table_proc_ids}
     \center{
@@ -205,7 +205,7 @@ There are six message types defined using an enumerator available to the
 processes for specific duties. See Table~\ref{table_msg_types} for the type
 name, process, and description of each type.
 
-\begin{table}
+\begin{table}[H]
     \caption{Message Types}
     \label{table_msg_types}
     \center{
@@ -214,12 +214,20 @@ name, process, and description of each type.
     Message Type & Receiving Process & Description \\
     \hline
     \hline
-    \texttt{MESSAGE\_CMD\_REG} & KCD Process & \\
-    \texttt{MESSAGE\_KEY\_INPUT} & KCD Process & \\
-    \texttt{MESSAGE\_OUTPUT} & CRT Display Process & \\ 
-    \texttt{MESSAGE\_OUTPUT\_NO\_NEWLINE} & CRT Display Process & \\
-    \texttt{MESSAGE\_COUNT\_REPORT} & User Process C & \\
-    \texttt{MESSAGE\_WAKE\_UP\_10} & User Process C & \\
+    \texttt{MESSAGE\_CMD\_REG} & KCD Process & Used to register the command
+    sequence in the data field. \\
+    \texttt{MESSAGE\_KEY\_INPUT} & KCD Process & The data field contains a
+    command string that is interpretted and forwarded to the registered
+    process. \\
+    \texttt{MESSAGE\_OUTPUT} & CRT Display Process & The data field contains
+    a string to output to the display. \\ 
+    \texttt{MESSAGE\_OUTPUT\_NO\_NEWLINE} & CRT Display Process & The data
+    field contains a string to output to the display but does not include a
+    newline. Used by the wall clock process. \\
+    \texttt{MESSAGE\_COUNT\_REPORT} & User Process C & The data field contains
+    the current count from User Process A. \\
+    \texttt{MESSAGE\_WAKE\_UP\_10} & User Process C & Sent on a delay of 10
+    seconds to alert User Process C to wake up and continue. \\
     \hline
     \end{tabular}
     } % Center
