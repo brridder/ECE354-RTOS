@@ -723,12 +723,10 @@ number of messages store in the two queues can be changed by modifying the
 \texttt{DEBUG\_MESSAGE\_LOG\_SIZE} definition.
 
 \section{\textsc{Initialization}}
-
-\subsection{\textsc{RTX Initialization}}
 The RTX initialization happens in four phases: process, priority queues, 
 interrupts, and the memory management system. Pseudo code for everything except 
-memory management can be seen in Listing~\ref{initlisting}. The pseudo code for 
-memory management is located in Listing~\ref{meminit}.
+memory management can be seen in Listing~\ref{initlisting} while the pseudo code 
+for memory management is located in Listing~\ref{meminit}.
 
 The process initialization occurs in \texttt{init\_processes()} and is done in 
 two stages. The first is an initialization of the test processes and the second 
@@ -802,11 +800,6 @@ void init_interrupts() {
 }
 \end{lstlisting}
 
-<<<<<<< HEAD
-=======
-\subsection{\textsc{RTX Initialization of Memory Management}}
-\label{sec:mem_management}
->>>>>>> 567f2866c140965f62585674a0ee36a24804df06
 The final phase of the RTX initialization is the memory management phase.
 Memory blocks are allocated beginning at the start of free memory. The function
 call \texttt{init\_memory(void* memory\_start)}, as seen in
