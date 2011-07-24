@@ -188,7 +188,8 @@ The release processor primitive allows the operating system to make a
 scheduling decision. Depending on its state, the currently running is
 enqueued to either the \texttt{READY}, \texttt{BLOCKED\_MESSAGE}, or
 \texttt{BLOCKED\_MEMORY} priority queue. Finally, the unblocked process
-of highest priority is dequeued and a context switch is made to it.
+of highest priority is dequeued and a context switch is made to it. Pseudo code 
+for this primitive is shown in Listing~\ref{releaseproclisting}.
 
 \lstset{caption={Pseudo code for \texttt{release\_processor()}},
         label=releaseproclisting}
