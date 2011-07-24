@@ -219,23 +219,13 @@ Execution continues at the same it left off.
 int release_processor() {
     mode switch to kernel mode using system call exception
 
-    if all queues are empty:
-        move DONE queues to READY queues
+    if currently running process is not an i-process:
+        enqueue currently running process to appropriate queue
 
     dequeue next process from highest non-empty priority queue
 
-    if there is a currently running process:
-        save all of the registers on to the process stack
-        save stack pointer to PCB
-        set state to STATE_READY
-
-    restore next process stack pointer
-    if next process state is STOPPED:
-        return from exception using the next process exception frame
-    else if state is READY: 
-        restore registers from stack
+    context switch to dequeued process
     
-    mode switch to user mode using system call exception frame
     return RTX_SUCCESS
 }
 \end{lstlisting}
