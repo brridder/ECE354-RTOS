@@ -186,8 +186,8 @@ memory.
 \subsection{\textsc{Release Processor}}
 The release processor primitive allows the operating system to make a
 scheduling decision. Depending on its state, the currently running is
-enqueued to either the \texttt{READY}, \texttt{BLOCKED_MESSAGE}, or
-\texttt{BLOCKED_MEMORY} priority queue. Finally, the unblocked process
+enqueued to either the \texttt{READY}, \texttt{BLOCKED\_MESSAGE}, or
+\texttt{BLOCKED\_MEMORY} priority queue. Finally, the unblocked process
 of highest priority is dequeued and a context switch is made to it.
 
 \lstset{caption={Pseudo code for \texttt{release\_processor()}},
