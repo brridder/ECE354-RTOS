@@ -193,7 +193,6 @@ of highest priority is dequeued and a context switch is made to it.
 \lstset{caption={Pseudo code for \texttt{release\_processor()}},
         label=releaseproclisting}
 \begin{lstlisting}
-
 int release_processor() {
     mode switch to kernel mode using system call exception
 
@@ -209,34 +208,19 @@ int release_processor() {
 \end{lstlisting}
 
 \subsection{\textsc{Set Process Priority}}
-The \texttt{set\_process\_priority(...)} and \texttt{get\_process\_priority(...)}
-primitives are used to set and get, respectively, the priorities of the 
-specified process ID. 
 
-Setting the process priority is shown as pseudo code in
-Listing~\ref{setplisting}. First, the values of the process ID and the priority
-are saved to registers as a mode switch to kernel mode needs to be performed.
-These values are retrieved after the mode switch. After the mode switch, a
-check is performed to ensure that the ID and priority is valid. If it isn't,
-\texttt{RTX\_ERROR} is returned. Otherwise, another check is made to see if the
-ID belongs to the currently running process and that there is a running
-process. If this is true, the priority of the running process is simply changed 
-and \texttt{RTX\_SUCCESS} is returned. If it is not the currently running 
-process, the process is first removed from the appropriate queue based on its 
-current priority level. Then the priority is updated to the new one and the 
-process is enqueued onto the queue associated with the new priority with the 
-same queue type as the one it was removed from. Finally, the function returns 
-\texttt{RTX\_SUCCESS} to indicate successful completion.
+The set process priority primitive modifies the priority of a process
+in the system. This primitive only accepts valid PIDs and priority
+levels. If the updated process is unblocked and has a higher priority
+running, then the running is preempted. Listing~\ref{setplisting}
+contains pseudo code for this primitive.
 
-\lstset{caption={Pseudo code for setting the process priority},
+\lstset{caption={Pseudo code for \texttt{set\_process\_priority()}},
         label=setplisting}
 \begin{lstlisting}
 int set_process_priority(int pid, int priority) {
-    move pid and priority into separate data registers
-    mode switch to kernel mode
+    mode switch to kernel using system call exception
     
-    retrieve pid and priority from the data registers
-
     if invalid PID or invalid priority:
         return RTX_ERROR
     
@@ -247,7 +231,8 @@ int set_process_priority(int pid, int priority) {
         update priority of that process
         enqueue process to its new priority queue
 
-    mode switch to user mode
+    if the priority of the updated is greater than the running processes priority:
+        call release processor
 
     return RTX_SUCCESS
 }
