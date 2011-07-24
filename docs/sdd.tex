@@ -647,25 +647,28 @@ number of messages store in the two queues can be changed by modifying the
 
 \section{\textsc{Initialization}}
 \subsection{\textsc{RTX Initialization}}
-The RTX initialization happens in three phases: process, priority queues, 
-and interrupts. Pseudo code for all of these phases can be seen in
-Listing~\ref{initlisting}.
+The RTX initialization happens in four phases: process, priority queues, 
+interrupts, and the memory management system. Pseudo code for everything except 
+memory management can be seen in Listing~\ref{initlisting}. The pseudo code for 
+memory management is located in Listing~\ref{meminit}.
 
-The process initialization happens in \texttt{init\_processes()}. For each test
-process, a PCB is created based on the process table supplied by the test
-cases. This PCB is then added to the kernel's own process list but not added to
-a priority queue yet. Then, for each process in the kernel's process list, a
-stack pointer is setup and a exception frame is added to the process' new
-stack. The format/vector word portion of the exception frame is set to 0x4000
-to represent a 4 byte aligned stack and the SR portion is 0x0000. The program
-counter in this frame is set to the entry point of the process.
+The process initialization occurs in \texttt{init\_processes()} and is done in 
+two stages. The first is an initialization of the test processes and the second 
+is the initialization of the null and user processes. For each process, a PCB is 
+created on the process table. This PCB is then added to the kernel's own process 
+list but not yet added to a priority queue. Then, for each process in the 
+kernel's process list, a stack pointer is setup and an exception frame is added 
+to the process' new stack. The format/vector word portion of the exception frame 
+is set to 0x4000 to represent a 4 byte aligned stack and the SR portion is 
+0x0000. The program counter in this frame is set to the entry point of 
+the process.
 
 Next, priority queues are initialized. The data structures are already
 allocated but are not initialized. To ensure proper operation, the queues are
 put into a consistent empty state. After the queues are setup, the processes
 are added to appropriate queue.
 
-Finally, the interrupts are setup. First, the vector base register (VBR) for the
+Then, the interrupts are setup. First, the vector base register (VBR) for the
 interrupts is set to memory location 0x10000000. Next, the soft interrupt for
 \texttt{system\_call()} is installed to the VBR at vector 0.
 
@@ -679,7 +682,7 @@ void init() {
 
 void init_processes() {
     init_test_processes()
-    add null process to process list
+    init_user_processes()
     for each process in process list:
         initialize stack pointer
         push PC portion of exception frame onto the stack
@@ -688,6 +691,24 @@ void init_processes() {
 
 void init_test_processes() {
     for each test process: 
+        setup PCB
+        add to process list
+}
+
+void init_user_processes() {
+    user process list:
+        null process
+        Process A
+        Process B
+        Process C
+        Uart
+        Timer
+        CRT
+        KCD
+        Wall Clock Display
+        Set Priority Process
+
+    for each process in user process list:
         setup PCB
         add to process list
 }
@@ -703,18 +724,14 @@ void init_interrupts() {
 }
 \end{lstlisting}
 
-\subsection{\textsc{RTX Initialization of Memory Management}}
 The final phase of the RTX initialization is the memory management phase.
 Memory blocks are allocated beginning at the start of free memory. The function
 call \texttt{init\_memory(void* memory\_start)}, as seen in
 Listing~\ref{meminit}. A free list is used to implement linking and management
-of the memory blocks. A free list is a singly linked list that stores the
-address of the next free memory in the first four bytes of the current memory
-block. The only pointer required is to the head of this list. Push and pop
-operations can be done in $O(1)$ time. Over-allocation and double deallocation
-prevention is handled by a bit field containing a bit for each memory block.
-When the memory is allocation the associated bit is set to 1 and for when it is
-released it is set back to 0.
+of the memory blocks. Over-allocation and double deallocation prevention is 
+handled by a bit field containing a bit for each memory block. When the memory 
+is allocation the associated bit is set to 1 and for when it is released it is 
+set back to 0.
 
 \lstset{caption={Pseudo code for RTX initialization of memory
         management},label=meminit}
