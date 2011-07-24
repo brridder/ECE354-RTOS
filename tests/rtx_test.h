@@ -40,11 +40,15 @@ typedef struct test_fixture
 /* global data structure for test proc initialization info */
 typedef struct test_proc
 {
-  UINT8  pid;           /* pid of a test process */
-  UINT8  priority;      /* initial priority of a test process */
-  UINT32 sz_stack;      /* stack size of a test process */
-  VOID   (*entry)();    /* entry point of a test process */
+    UINT8  pid;           /* pid of a test process */
+    UINT8  priority;      /* initial priority of a test process */
+    UINT32 sz_stack;      /* stack size of a test process */
+    VOID   (*entry)();    /* entry point of a test process */
 } test_proc_t; 
+
+typedef struct _test_profiler_t {
+    int* timer;
+} test_profiler_t;
 
 /* global variable shared b/w test suite and rtx 
    in section __RTX_TEST_DATA__, see linker script
@@ -53,5 +57,7 @@ typedef struct test_proc
 test_fixture_t __attribute__ ((section("__RTX_TEST_DATA__"))) g_test_fixture;
 
 test_proc_t __attribute__ ((section("__RTX_TEST_DATA__"))) g_test_proc[NUM_TEST_PROCS];
+
+test_profiler_t __attribute__ ((section("__RTX_PROFILER_DATA__"))) g_profiler;
 
 #endif /* _RTX_TEST_H_ */
