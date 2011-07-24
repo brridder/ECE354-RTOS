@@ -104,6 +104,7 @@ ensure $O(1)$ operation for both popping off the head and pushing to the tail.
 Message queue is used for storing message envelopes associated with a specific
 process. The process queue is used for the priority queues. The structures are
 defined in Table~\ref{kernel_data_structs}
+
 \begin{table}[H]
     \caption{Kernel Level Data Structures}
     \label{kernel_data_structs}
@@ -155,14 +156,29 @@ int time_stamp
     \end{tabular}
     } % Center
 \end{table}
+% Variables
+% Constants (PIDS, msgID, return codes, status codes, msg types, etc)
+% Stacks
+% Memory map
+% Priority Queue
+
+\subsection{\textsc{Variables}}
+Within the kernel, there are several variables that are used for various
+components. For memory, there is a pointer to the head of the free list, a bit
+field for determining memory allocations, and a pointer to the end of free
+memory. 
+%Several process queues are  
 
 
 \subsection{\textsc{Constants}}
 \label{sec:global_constants}
 
+\subsection{\textsc{Stacks}}
 
 \subsection{\textsc{Memory}}
 \label{sec:mem_management}
+
+\subsection{\textsc{Priority Queues}}
 
 \section{\textsc{Primitives}}
 % TODO :: words here
