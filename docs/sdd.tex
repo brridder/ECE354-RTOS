@@ -53,33 +53,26 @@ user mode and kernel mode structures. This has been done to differentiate
 between what is normally accessible in each context.
 
 \subsubsection{\textsc{User Level}}
+In user level mode there is one data structure available to the programmer
+which is also available in kernel mode. This is the message envelope used to
+send and receive messages between processes. It contains sender and receiver
+process ids, the message type, pointers to the next and previous messages when
+it is enqueued, values to control delay sending, and a data field defined at
+the last 64 bytes of the envelope. The message type is defined in
+Section~\ref{sec:global_constants}. To the user the only fields that are
+modifiable in any meaningful way are the message type and data. All of the
+other fields are modified by the kernel when the message is sent to another
+process. If the user does not need to set the message type then this data
+structure is not necessary as the only knowledge required for message sending
+is that the data resides at an offset of 64 bits. In this case, the message
+envelope is strictly used by the kernel.
+
 \begin{table}[H]
     \caption{User Level Data Structures}
     \label{user_data_structs}
     \begin{tabular}{| l | p{8cm} |}
         \hline
         Structure & Definition \\
-        \hline
-        Process Control Block &
-        \begin{verbatim}
-int pid
-int priority
-void* stack
-int stack_size
-void (*entry)()
-bool is_i_process
-enum process_state state
-enum queue_type queue
-message_queue queue
-struct process_control_block* next
-struct process_control_block* previous
-\end{verbatim} \\ 
-        \hline
-        Message Queue &
-\begin{verbatim}
-message_envelope* head
-message_envelope* tail
-\end{verbatim} \\
         \hline
         Message Envelope &
 \begin{verbatim}
@@ -96,8 +89,16 @@ unsigned char data[64]
         \hline
     \end{tabular}
 \end{table}
+
 \subsubsection{\textsc{Kernel Level}}
 
+
+\subsection{\textsc{Constants}}
+\label{sec:global_constants}
+
+
+\subsection{\textsc{Memory}}
+\label{sec:mem_management}
 \section{\textsc{Primitives}}
 % TODO :: words here
 
@@ -795,6 +796,7 @@ queues can be changed by modifying the \texttt{DEBUG\_MESSAGE\_LOG\_SIZE}
 definition. 
 
 \section{\textsc{Initialization}}
+\label{sec:rtx_init}
 The RTX initialization happens in four phases: process, priority queues, 
 interrupts, and the memory management system. Pseudo code for everything except 
 memory management can be seen in Listing~\ref{initlisting} while the pseudo code 
