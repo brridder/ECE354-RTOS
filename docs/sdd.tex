@@ -279,10 +279,12 @@ void* request_memory_block() {
     if running process is not an i-process:
         if there are no unreserved memory blocks free:
             set the state of the running process to blocked on memory
+            enqueue running process to blocked memory priority queue
             call release processor
     else:
         if there are no memory blocks free:
             set the state of the running process to blocked on memory
+            enqueue running process to blocked memory priority queue
             call release processor
 
     pop block of memory off the free list        
@@ -325,34 +327,33 @@ int release_memory_block(void* memory_block) {
 }
 \end{lstlisting}
 
-\subsection{\textsc{Send Messages}}
-The primitives \texttt{send\_message(...)} and \texttt{receive\_message(...)}
-are used by processes to send and receive messages between them. Each process
-has its own message queue which is setup upon process initialization.
-When a process sends a message it is enqueued to the message queue of the
-receiving process. When a process attempts to receive a message it polls its
-own message queue.
+\subsection{\textsc{Send Message}}
 
-Listing~\ref{sendmsg} describes the functionality of
-\texttt{send\_message(...)}.  First, a system call is made with the
-process id of the receiver and a pointer to the message envelope. The
-system call then switches into kernel mode. Once the mode switch is
-complete the message is then pushed on the end of the recipient's
-message queue. There is no size limit on the message queue so this
-will never cause an error. A check is then made to see if the
-recipient process is currently blocked on receiving messages. If this
-is the case the state of this process is set to ready. Then
-\texttt{RTX\_SUCCESS} is returned.
+The \texttt{send\_message()} primitive is used to send a message to a
+process in the system. Messages are enqueued onto a message queue in
+the receiving process' PCB. If the receiving process is currently
+blocked on messages, it is unblocked and enqueued to the ready
+queue. If the receiving process is a higher priority than the running
+process, the running is preempted. Listing~\ref{sendmsg} contains
+pseudo code for this primitive.
 
 \lstset{caption={Pseudo code for sending messages}, label=sendmsg}
 \begin{lstlisting}
-int send_message(int process_id, void* message_envelope){
-    mode switch to kernel mode
+int send_message(int pid, void* message_envelope){
+    mode switch to kernel mode using system call exception
 
-    push message on to end of message queue
+    if pid is invalid:
+        return RTX_ERROR
+
+    update sender and receiver fields in message envelope
+    enqueue message to message queue of receiving process
 
     if receiving process is blocked on messages:
         set state of receiving process to ready
+        enqueue receiving process to ready queue
+
+    if priority of receiving process is higher than the running process:
+        call release processor
 
     return RTX_SUCCESS
 }
