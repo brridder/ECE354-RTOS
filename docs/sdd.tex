@@ -73,6 +73,7 @@ seen in Table~\ref{user_data_structs}.
 \begin{table}[H]
     \caption{User Level Data Structure}
     \label{user_data_structs}
+    \center{
     \begin{tabular}{| l | p{8cm} |}
         \hline
         Structure & Definition \\
@@ -91,13 +92,22 @@ unsigned char data[64]
 \end{verbatim} \\
         \hline
     \end{tabular}
+    } % Center
 \end{table}
 
 \subsubsection{\textsc{Kernel Level}}
-
-\begin{table}[h]
+There are several kernel level data structures which includes the process
+control block, two queues, and a debug message envelope. The process control
+block contains all the information required by the system to manage and
+schedule the process. Both queues are implemented with a double linked list to
+ensure $O(1)$ operation for both popping off the head and pushing to the tail.
+Message queue is used for storing message envelopes associated with a specific
+process. The process queue is used for the priority queues. The structures are
+defined in Table~\ref{kernel_data_structs}
+\begin{table}[H]
     \caption{Kernel Level Data Structures}
     \label{kernel_data_structs}
+    \center{
     \begin{tabular}{| l | p{8cm} |}
     \hline
     Structure & Definition \\
@@ -116,6 +126,7 @@ message_queue messages
 struct process_control_block* next
 struct process_control_block* previous
 \end{verbatim} \\
+
     \hline
     Message Queue & 
 \begin{verbatim}
@@ -123,12 +134,14 @@ message_envelope* head
 message_envelope* tail
 \end{verbatim} \\
     \hline
+
     Process Queue &
 \begin{verbatim}
 process_control_block* head 
 process_control_block* tail 
 \end{verbatim} \\
     \hline
+
     Debug Message Envelope &
 \begin{verbatim}
 int sender_pid
@@ -138,9 +151,10 @@ unsigned char data[16]
 int time_stamp
 \end{verbatim} \\
     \hline
-    \end{tabular}
-\end{table}
 
+    \end{tabular}
+    } % Center
+\end{table}
 
 
 \subsection{\textsc{Constants}}

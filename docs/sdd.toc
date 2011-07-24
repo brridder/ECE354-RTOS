@@ -9,25 +9,25 @@
 \contentsline {section}{\numberline {1.3}\textsc {Primitives}}{6}
 \contentsline {subsection}{\numberline {1.3.1}\textsc {Release Processor}}{6}
 \contentsline {subsection}{\numberline {1.3.2}\textsc {Set Process Priority}}{7}
-\contentsline {subsection}{\numberline {1.3.3}\textsc {Get Process Priority}}{7}
+\contentsline {subsection}{\numberline {1.3.3}\textsc {Get Process Priority}}{8}
 \contentsline {subsection}{\numberline {1.3.4}\textsc {Request Memory Block}}{8}
-\contentsline {subsection}{\numberline {1.3.5}\textsc {Release Memory Block}}{8}
+\contentsline {subsection}{\numberline {1.3.5}\textsc {Release Memory Block}}{9}
 \contentsline {subsection}{\numberline {1.3.6}\textsc {Send Messages}}{9}
-\contentsline {subsection}{\numberline {1.3.7}\textsc {Receive Messages}}{9}
+\contentsline {subsection}{\numberline {1.3.7}\textsc {Receive Messages}}{10}
 \contentsline {subsection}{\numberline {1.3.8}\textsc {Delayed Send}}{10}
-\contentsline {section}{\numberline {1.4}\textsc {Processes}}{10}
-\contentsline {subsection}{\numberline {1.4.1}\textsc {Null Process}}{10}
+\contentsline {section}{\numberline {1.4}\textsc {Processes}}{11}
+\contentsline {subsection}{\numberline {1.4.1}\textsc {Null Process}}{11}
 \contentsline {subsection}{\numberline {1.4.2}\textsc {KCD Process}}{11}
-\contentsline {subsection}{\numberline {1.4.3}\textsc {CRT Process}}{11}
-\contentsline {subsection}{\numberline {1.4.4}\textsc {UART I-Process}}{11}
-\contentsline {subsection}{\numberline {1.4.5}\textsc {Timer I-Process}}{12}
-\contentsline {subsection}{\numberline {1.4.6}\textsc {Wall Clock Process}}{12}
-\contentsline {subsection}{\numberline {1.4.7}\textsc {Set Priority Command Process}}{13}
+\contentsline {subsection}{\numberline {1.4.3}\textsc {CRT Process}}{12}
+\contentsline {subsection}{\numberline {1.4.4}\textsc {UART I-Process}}{12}
+\contentsline {subsection}{\numberline {1.4.5}\textsc {Timer I-Process}}{13}
+\contentsline {subsection}{\numberline {1.4.6}\textsc {Wall Clock Process}}{13}
+\contentsline {subsection}{\numberline {1.4.7}\textsc {Set Priority Command Process}}{14}
 \contentsline {subsection}{\numberline {1.4.8}\textsc {Test Processes A, B, C}}{14}
-\contentsline {section}{\numberline {1.5}\textsc {Software Interrupt Handler}}{14}
+\contentsline {section}{\numberline {1.5}\textsc {Software Interrupt Handler}}{15}
 \contentsline {section}{\numberline {1.6}\textsc {Hardware Interrupt Handlers}}{15}
-\contentsline {section}{\numberline {1.7}\textsc {Hot Keys}}{15}
-\contentsline {section}{\numberline {1.8}\textsc {Initialization}}{16}
+\contentsline {section}{\numberline {1.7}\textsc {Hot Keys}}{16}
+\contentsline {section}{\numberline {1.8}\textsc {Initialization}}{17}
 \contentsline {section}{\numberline {1.9}\textsc {Implementation}}{18}
 \contentsline {chapter}{\numberline {2}\textsc {Major Design Changes}}{19}
 \contentsline {chapter}{\numberline {3}\textsc {Measurements}}{20}
