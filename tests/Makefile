@@ -16,9 +16,11 @@ DELAY_TESTS_OBJS= delay_tests.o $(OBJS)
 CRT_DISPLAY_TESTS_OBJS = crt_display_tests.o $(OBJS)
 KCD_TESTS_OBJS = kcd_tests.o $(OBJS)
 FINAL_TESTS_OBJS = final_tests.o ../lib/dbug.o
+PROFILER_TESTS_OBJS = profiler_tests.o $(OBJS)
 
 all: rtx_test_dummy.s19 mem_tests.s19 priority_tests.s19 message_tests.s19 \
-	crt_display_tests.s19 delay_tests.s19 kcd_tests.s19 final_tests.s19
+	crt_display_tests.s19 delay_tests.s19 kcd_tests.s19 final_tests.s19 \
+	profiler_tests.s19
 
 final_tests.s19: $(FINAL_TESTS_OBJS) final_tests.o
 	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o final_tests.bin $(ASM) $(FINAL_TESTS_OBJS)
@@ -52,6 +54,10 @@ crt_display_tests.s19: $(CRT_DISPLAY_TESTS_OBJS) crt_display_tests.o
 kcd_tests.s19: $(KCD_TESTS_OBJS) kcd_tests.o
 	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o kcd_tests.bin $(ASM) $(KCD_TESTS_OBJS)
 	$(OBJCPY) --output-format=srec kcd_tests.bin kcd_tests.s19
+
+profiler_tests.s19: $(PROFILER_TESTS_OBJS) profiler_tests.o
+	$(CC) $(CFLAGS) $(LDFLAGS_RTX_TEST) -o profiler_tests.bin $(ASM) $(PROFILER_TESTS_OBJS)
+	$(OBJCPY) --output-format=srec profiler_tests.bin profiler_tests.s19
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $*.c -o $*.o

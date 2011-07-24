@@ -145,4 +145,9 @@ SECTIONS
   {
       *(__RTX_TEST_DATA__)
   }
+
+  __RTX_PROFILER_DATA__ 0x10600000:
+  {
+      *(__RTX_PROFILER_DATA__)
+  }
 }

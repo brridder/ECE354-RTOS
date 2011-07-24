@@ -23,6 +23,7 @@
 extern void* memory_head;
 extern unsigned long int memory_alloc_field;
 extern void* mem_end;
+extern int timer;
 
 //#define INIT_DEBUG
 
@@ -62,6 +63,8 @@ void init(void* memory_start) {
 #endif
 
     init_interrupts();
+
+    g_profiler.timer = &timer;
 
 #ifdef INIT_DEBUG
     rtx_dbug_outs(" done\r\n");
@@ -187,7 +190,7 @@ void init_interrupts() {
     // Setup the timer to use auto-vectored interrupt level 6, priority 3, at 1ms
     //
 
-    TIMER0_ICR = 0x9B;    
+    TIMER0_ICR = 0x9B;
     TIMER0_TRR = 180;
     TIMER0_TMR = 0xF93B;
 
@@ -209,7 +212,12 @@ void init_interrupts() {
     uart1_set_interrupts(&uart1_int_config); 
 
     mask = SIM_IMR;
+
+    // Timer 0 interrupt enabled
     mask &= 0x0003ddff;
+
+    // Timer 0 interrupt disabled (for profiling)
+    //mask &= 0x0003dfff;
     SIM_IMR = mask;
     
     asm("move.l (%a7)+, %d0");
