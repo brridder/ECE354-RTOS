@@ -184,33 +184,11 @@ memory.
 % TODO :: words here
 
 \subsection{\textsc{Release Processor}}
-The release processor primitive is used to make a scheduling decision.
-Currently, this happens when the currently running process calls
-\texttt{release\_processor()}. After making a mode switch, the kernel makes a
-decision on the next process to execute. When this decision is made, a context
-switch is made to the selected process. See Listing~\ref{releaseproclisting}
-for a high level pseudo code representation of this primitive
-
-The kernel process decision currently uses several priority queues, four
-priority levels with two sub-queues. Every priority level has a \texttt{READY} and a
-\texttt{DONE} queue. Initially, all process in a priority level are in the
-priority level's \texttt{READY} queue and after execution they are moved to the
-\texttt{DONE} queue. In order to decide which process next, the kernel dequeues
-the next process on the highest non-empty \texttt{READY} priority queue. If all
-\texttt{READY} queues are empty, the \texttt{DONE} queues are moved to the
-\texttt{READY} queues and the kernel tries to select a process again.
-
-A context switch is made after the kernel selects the next process. If there is
-a process running, the registers are saved on the stack and it's stack pointer
-is moved to the PCB. It's state is marked as \texttt{STATE\_READY} to indicate
-it's state has been saved and is capable of executing again. Next, the selected
-process' stack pointer is restored. If the process is in the state
-\texttt{STATE\_STOPPED}, meaning it has never been run before, the kernel
-changes the state to \texttt{STATE\_RUNNING} and executes the process by
-returning from the exception. On the other hand, if the process has been run
-before, meaning that it is in the ready state, the data and address registers
-are restored from the stack. In this case, the method returns normally.
-Execution continues at the same it left off.
+The release processor primitive allows the operating system to make a
+scheduling decision. Depending on its state, the currently running is
+enqueued to either the \texttt{READY}, \texttt{BLOCKED_MESSAGE}, or
+\texttt{BLOCKED_MEMORY} priority queue. Finally, the unblocked process
+of highest priority is dequeued and a context switch is made to it.
 
 \lstset{caption={Pseudo code for \texttt{release\_processor()}},
         label=releaseproclisting}
