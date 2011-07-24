@@ -262,30 +262,32 @@ int get_process_priority(int pid) {
 \end{lstlisting}
 
 \subsection{\textsc{Request Memory Block}}
-The \texttt{request\_memory\_block()} and \texttt{release\_memory\_block()}
-primitives are used by the operating system to allocate and deallocate memory
-blocks for processes.
 
-Requesting a memory block is shown in pseudo code in
-Listing~\ref{requestmemory}. First a mode switch to kernel mode is made. After
-the mode switch, a check is made to see if any memory blocks are available. If
-there are no available memory blocks, the process is moved to a blocked state
-and the processor is released. If memory is available, the memory block is
-popped off of the free list. The block index is retrieved and the appropriate memory
-allocation bit is set high. Finally, the memory block address is returned.
+The \texttt{request\_memory\_block()} is used by processes to
+allocated one of the thirty two memory blocks in the system. All
+processes have access to thirty of these blocks, while two are
+reserved for usage by i-processes. If no memory blocks are available
+to the running process, it becomes blocked on memory and is
+preempted. Pseudo code for this primitive is in
+Listing~\ref{requestmemory}.
 
-\lstset{caption={Pseudo code for requesting memory blocks}, label=requestmemory}
+\lstset{caption={Pseudo code for request\_memory\_block()}, label=requestmemory}
 \begin{lstlisting}
-void* request_memory_block(){
-    mode switch to kernel mode
+void* request_memory_block() {
+    mode switch to kernel mode using system call exception
 
-    if no available memory blocks:
-        running process state = blocked on memory
-        release_processor()
+    if running process is not an i-process:
+        if there are no unreserved memory blocks free:
+            set the state of the running process to blocked on memory
+            call release processor
     else:
-        pop block of memory off the free list        
-        get block index
-        set corresponding bit in memory allocation field to 1
+        if there are no memory blocks free:
+            set the state of the running process to blocked on memory
+            call release processor
+
+    pop block of memory off the free list        
+    get block index
+    set corresponding bit in memory allocation field to 1
 
     return address of block
 }
