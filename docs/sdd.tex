@@ -660,55 +660,48 @@ void i_process_timer():
 \end{lstlisting}
 
 \subsection{\textsc{Wall Clock Process}}
-The \texttt{process\_wall\_clock()} is used to display the current OS
-time on UART1. This clock is given an initial time by sending the
-\texttt{\%WS} command and is updated every second. Clock time is printed
-until the \texttt{\%WT}. Internally, the current time is stored in seconds.
+The \texttt{process\_wall\_clock()} is used to display the current
+system time on the CRT. The clock is given an initial time when the
+\texttt{\%WS} command is received and is updated every second. The
+clock is printed until the \texttt{\%WT} command is received.
 
-The wall clock receives time updates by repeatedly sending delayed
-messages to itself. Every time it receives one of these messages, it
-updates its internal clock, prints out the time, and sends itself
-another delayed message. The delayed messages are sent with a one
-second delay. Once the internal clock reaches 86400 seconds (24 hours)
-it is reset to 0. These messages are only sent if the wall clock has
-been started with the \texttt{\%WS} command.
-
-When the wall clock receives a message from the KCD process it parses
-the command and performs one of two actions. If the command was
-\texttt{\%WS}, it parses the time from the command, sets the internal
-clock, and sends itself a delayed message. The user input is
-validated, and if it does not pass the clock is not changed.
-
-Pseudo code for the wall clock process can be seen at
+The clock is updated by repeatedly sending itself messages delayed by
+one second. When the clock reaches a time of 24:00:00 it is reset to
+00:00:00. Pseudo code for the wall clock process can be found in
 Listing~\ref{wallclock}.
 
 \lstset{caption={Pseudo code for the wall clock process}, label=wallclock}
 \begin{lstlisting}
 void process_wall_clock():
-    while (1):
+    set the clock to 0
+
+    in an infinite loop:
         receive message
-        if (sender_id = wall clock pid):
+
+        if the message sender id is the wall clock pid:
             increment clock
 
-            if (clock = 86400):
-                reset clock
+            if the clock value is 24 hours:
+                reset clock to 0
 
-            if (clock is currently on):
-                send a delayed message to itself with a delay of one second
+            if the clock is currently running:
+                send ourself a delayed message with a delay of one second
                 convert clock to hours, minutes and seconds
                 convert hours, minutes, seconds to time string
                 send time string as message to CRT
 
-        else if (sender_id = KCD pid):
-            if (%WS):
-                if (clock is currently off):
-                    send a delayed message to itself with delay of one second
+        else if the message sender id is the KCD pid:
+            if the command was '%WS':
+                if the clock is currently off:
+                    send ourself a delayed message with a delay of one second
 
                 parse string and validate input
-                store hours, minutes and seconds
-            else if (%WT):
+                set the clock to corresponding input value
+                turn clock on
+            else if the command was '%WT':
                 turn off clock
-        release message
+
+        release memory block of message
 \end{lstlisting}
 
 \subsection{\textsc{Set Priority Command Process}}
