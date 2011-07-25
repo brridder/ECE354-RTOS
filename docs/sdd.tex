@@ -543,11 +543,11 @@ process can be found in Listing~\ref{crt}.
 \lstset{caption={Pseudo code for the CRT process}, label=crt}
 \begin{lstlisting}
 void process_crt_display():
-    while(1):
+    in an infinite loop:
         receive a message
-        if (message type = output || message type = key input):
+        if message type is keyboard input or output:
             send message data to uart
-        release message
+        release memory block of message
     }
 }
 \end{lstlisting}
