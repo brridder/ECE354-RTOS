@@ -246,10 +246,17 @@ readable for checking return conditions.
 
 \subsection{\textsc{Stacks}}
 
+The only stacks used in the system are the process stacks. These are used for
+storing and restoring the process state when making a mode switch and for
+switching processes. The stacks are also used for allocation of local variables
+and function calls as determined by the compiler.
+
 \subsection{\textsc{Memory}}
 \label{sec:mem_management}
+% TODO 
 
 \subsection{\textsc{Priority Queues}}
+% TODO 
 
 \section{\textsc{Primitives}}
 This section describes the implemenation of major system primitives. These 
@@ -888,20 +895,20 @@ definition.
 \section{\textsc{Initialization}}
 \label{sec:rtx_init}
 The RTX initialization happens in four phases: process, priority queues, 
-interrupts, and the memory management system. Pseudo code for everything except 
-memory management can be seen in Listing~\ref{initlisting} while the pseudo code 
-for memory management is located in Listing~\ref{meminit}.
+interrupts, and the memory management system. Pseudo code for everything except
+memory management can be seen in Listing~\ref{initlisting} while the pseudo
+code for memory management is located in Listing~\ref{meminit}.
 
-The process initialization occurs in \texttt{init\_processes()} and is done in 
-two stages. The first is an initialization of the test processes and the second 
-is the initialization of the null and user processes. For each process, a PCB is 
-created on the process table. This PCB is then added to the kernel's own process 
-list but not yet added to a priority queue. Then, for each process in the 
-kernel's process list, a stack pointer is setup and an exception frame is added 
-to the process' new stack. The format/vector word portion of the exception frame 
-is set to 0x4000 to represent a 4 byte aligned stack and the SR portion is 
-0x0000. The program counter in this frame is set to the entry point of 
-the process.
+The process initialization occurs in \texttt{init\_processes()} and is done in
+two stages. The first is an initialization of the test processes and the second
+is the initialization of the null and user processes. For each process, a PCB
+is created on the process table. This PCB is then added to the kernel's own
+process list but not yet added to a priority queue. Then, for each process in
+the kernel's process list, a stack pointer is setup and an exception frame is
+added to the process' new stack. The format/vector word portion of the
+exception frame is set to 0x4000 to represent a 4 byte aligned stack and the SR
+portion is 0x0000. The program counter in this frame is set to the entry point
+of the process.
 
 Next, priority queues are initialized. The data structures are already
 allocated but are not initialized. To ensure proper operation, the queues are
@@ -989,6 +996,12 @@ void init_memory(void* memory_start){
 
 
 \section{\textsc{Implementation}}
+
+\subsection{\textsc{Responsibilities}}
+
+\subsection{\textsc{Test Plan}}
+
+\subsection{\textsc{Measurement Plan}}
 
 \chapter{\textsc{Major Design Changes}}
 
