@@ -1051,6 +1051,31 @@ separate test program written to test its functionality. The user process A, B,
 and C were used to stress test our operating system and verify its behaviour 
 under load. 
 \subsection{\textsc{Measurement Plan}}
+Three methods were considered for profiling the system call
+primitives: stopwatch, system millisecond timer, and using a second
+hardware timer. In each of these cases, the primitive was run several
+thousands times in a loop in order to find an average execution time.
+
+The first method involved manually timing the execution of ten
+thousand runs of a particular primitive. A message was printed at the
+beginning and the end of the loop and stopwatch was used to measure
+the total time elapsed. This method proved ineffective do to inherent
+delays in printing.
+
+Second, the system millisecond timer was used to measure the execution
+time of the function. This method was not effective because the
+millisecond timer did not provide enough granularity in order to get
+an accurate result; the average runtime for all primitives was under a
+millisecond.
+
+Finally, the second hardware timer was used to measure execution time
+of the primitives. By setting the timer to increment its internal
+counter at a rate of 180kHz, this profiling method was able to achieve
+5.555 microsecond granularity. Using this timer a process was
+developed that reset the timer counter register before running a
+primitive, and checked its value after the primitive finished
+executing. In this fashion the primitive execution time could be
+accurately measured.
 
 \chapter{\textsc{Major Design Changes}}
 
