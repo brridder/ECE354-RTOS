@@ -1054,7 +1054,7 @@ under load.
 Three methods were considered for profiling the system call
 primitives: stopwatch, system millisecond timer, and using a second
 hardware timer. In each of these cases, the primitive was run several
-thousands times in a loop in order to find an average execution time.
+thousand times in a loop in order to find an average execution time.
 
 The first method involved manually timing the execution of ten
 thousand runs of a particular primitive. A message was printed at the
@@ -1075,12 +1075,17 @@ counter at a rate of 180kHz, this profiling method was able to achieve
 developed that reset the timer counter register before running a
 primitive, and checked its value after the primitive finished
 executing. In this fashion the primitive execution time could be
-accurately measured.
+accurately measured. Due to the shortcomings of the first two methods,
+this method was used to complete the measurements.
 
 \chapter{\textsc{Major Design Changes}}
 
 \chapter{\textsc{Measurements}}
 
+
+
 \chapter{\textsc{Lessons Learned}}
+
+
 
 \end{document}
