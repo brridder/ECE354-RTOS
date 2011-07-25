@@ -253,10 +253,33 @@ and function calls as determined by the compiler.
 
 \subsection{\textsc{Memory}}
 \label{sec:mem_management}
-% TODO 
+The memory system consists of two components that are managed by the request
+and release memory block primitives. The first is a free list containing a
+total of 32 128-byte memory blocks. Each memory block is linked together using
+the first word as the pointer to the next block of memory. When a block is
+requested, the head is sent to the requestor and the new head becomes the
+memory location that the old one pointed to. Putting a block back onto the free
+list requires setting the first word of the block to the pointer of the current
+head and the new head is now that block. The benefit to this approach is that
+the blocks can be returned onto the free list in any order without affecting
+the operation of this data structure. All free list operations are done in
+$O(1)$ time.
+
+The other component is a bit field. Since only 32 blocks of memory are
+allocated by the system, a bit field of length 32 bits is used to represent
+each block one to one. If the value of the bit for the corresponding block is a
+$1$, then this indicates that the block has been requested by a process. When
+the bit is $0$, then the block is somewhere on the free list and can be freely
+allocated to a requestor. The enables over-allocation and double-deallocation
+checks to be done in $O(1)$ time.
 
 \subsection{\textsc{Priority Queues}}
-% TODO 
+Priority queues are done using a standard queue data structure. The only
+difference is that there is a queue for every level of priority. Hence, for the
+ready and blocked queues an array of queues is used with the index of the queue
+as the priority level. As described earlier, every queue is implemented using a
+double-linked list so that nearly every operation occurs in $O(1)$ time.
+
 
 \section{\textsc{Primitives}}
 This section describes the implemenation of major system primitives. These 
