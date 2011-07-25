@@ -257,7 +257,10 @@ and function calls as determined by the compiler.
 \subsection{\textsc{Priority Queues}}
 
 \section{\textsc{Primitives}}
-% TODO :: words here
+This section describes the implemenation of major system primitives. These 
+primitives are used by the processes for various types of functionality. All 
+primitives are implemented as system calls which switch to kernel mode using a 
+software interrupt.
 
 \subsection{\textsc{Release Processor}}
 The release processor primitive allows the operating system to make a
