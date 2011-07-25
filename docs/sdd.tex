@@ -634,28 +634,29 @@ void i_process_uart():
 \end{lstlisting}
 
 \subsection{\textsc{Timer I-Process}}
-The \texttt{i\_process\_timer()} process runs immediately in response
-to timer interrupts. Upon receiving an interrupt, this process
-performs two tasks. First, it increments its internal time
-counter. Next, the delayed messages queue is checked to see if there
-are any messages to send out. All messages that were scheduled to be
-sent at the current time or sooner are sent. At this point, this
-process will relinquish control to the processor. See
-Listing~\ref{timer} for the pseudo code for this process.
 
-\lstset{caption={Pseudo code for the UART I-Process}, label=timer}
+The \texttt{i\_process\_timer()} process runs in response to timer
+interrupts, specifically the counter overflow interrupt. Internally,
+the process keeps track of the number of milliseconds elapsed since
+its start. Whenever the process runs, it is known that a millisecond
+has elapsed and the system clock is incremented. Next, any delayed
+messages that are ready to be sent are sent to their respective
+receiver processes. Pseudo code for this process can be found in
+Listing~\ref{timer}.
+
+\lstset{caption={Pseudo code for the Timer I-Process}, label=timer}
 \begin{lstlisting}
 void i_process_timer():
     set system clock to 0
 
-    in an infinite loop:    
-        release processor
-        increment timer
+    in an infinite loop:
+        call release processor
+        increment system clock
 
-        if(delayed messages queue is not empty):
-            while (queue head send time <= current time):
-                remove message from delayed messages queue
-                send message to original receiver
+        if delayed messages queue is not empty:
+            while the first message in the queue is ready to be sent:
+                dequeue the first message
+                send message to specified receiver        
 \end{lstlisting}
 
 \subsection{\textsc{Wall Clock Process}}
