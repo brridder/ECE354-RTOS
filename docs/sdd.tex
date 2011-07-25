@@ -498,20 +498,15 @@ system. In order to be implemented properly these processes make use of the
 primitives described above. Processes are assigned different priority levels 
 which are used to enforce what process should be running.
 \subsection{\textsc{Null Process}}
-The null process was implemented to adhere to the project specifications. It
-has a priority of four and a process ID of zero. The process method is defined 
-as an infinite loop that constantly calls \texttt{release\_processor()}. It is 
-added to the process table through a call to \texttt{init\_processes(...)}. As
-this process is required to always be at process ID zero, care should be taken
-to ensure that this is not overwritten by other processes in the initialization
-methods. This process is outlined in Listing~\ref{nullplisting}.
+The process method is defined as an infinite loop that constantly calls 
+\texttt{release\_processor()}. It has a priority of four and a process ID of 
+zero. This process is outlined in Listing~\ref{nullplisting}.
 
 \lstset{caption={Pseudo code for the null process},
         label=nullplisting}
 \begin{lstlisting}
 void process_null() {
-    while (true):
-        release_processor();
+        repeatedly call release processor
 }
 \end{lstlisting}
 
