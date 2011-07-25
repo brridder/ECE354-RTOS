@@ -1052,6 +1052,28 @@ scheduler would have been ineffective in the requirements of the system for the
 last portion of the project. It would have worked better in an environment that
 employed time slicing to select the next process periodically.
 
+\section{\textsc{Memory Management}}
+Two changes where made to both the implementation of memory and how the
+processes used memory blocks. The stress test processes A, B, and C clearly
+indicated issues with the original memory system. To ensure consistancy with
+the interrupt processes, two memory blocks were set aside just for the UART and
+timer processes. Memory management within the system processes also became an
+important consideration.
+
+Reserving a couple blocks of memory just for the interrupt processes limited
+how often the two interrupt processes became blocked on memory. Blocking the
+UART on memory will result in the system appearing like it locked up since
+nothing could be inputted from the keyboard or outputted to the display.
+Preventing this process from blocking increases the responsiveness of the
+system.
+
+From the perspective of the system processes, the initial usage of memory blocks was
+naively assuming that a memory block could be requested whenever needed without
+worrying about blocking. This was not the case. As a result of this, system processes
+would block and create deadlocks for a new memory block as often the process
+already had a memory block allocated to it. By reusing memory blocks, processes
+would deadlock less often and memory waste was reduced.
+
 \chapter{\textsc{Measurements}}
 
 \chapter{\textsc{Lessons Learned}}
