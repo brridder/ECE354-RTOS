@@ -560,7 +560,7 @@ void process_kcd():
 \subsection{\textsc{CRT Process}}
 The \texttt{process\_crt\_display()} blocks until a message is
 received. If the type is correct, then the for each character in the message 
-data it is sent to the uart shared memory and uart transmit interrupt is 
+data it is sent to the UART shared memory and UART transmit interrupt is 
 triggered. Then, the memory of the message is released and released processor is 
 called. Pseudo code for the process can be found in Listing~\ref{crt}.
 
@@ -580,55 +580,54 @@ void process_crt_display():
 \end{lstlisting}
 
 \subsection{\textsc{UART I-Process}}
-The UART i-process is run in response nice to both transmit ready and
-receive ready UART interrupts. After either of these interrupts fires,
-a context switch is immediately made to the UART i-process. Once it
-runs, the UART status register is checked to determine whether a read
-or a write is to occur.
 
-When reading in data, all characters are appended to a buffer until a carriage
-return is read in. At this point, a null terminating character is appended.  A
-check is made to determine the first value in the string buffer. If it is a
-percent (\texttt{\%}), a message is created with the string buffer copied into its data
-field. This message is sent to the KCD. If it is an exclamation mark (!), the
-string buffer is sent to the UART debug decoder. After this, the character read
-in is echoed out again through a transmit interrupt request and interrupts are
-re-enabled. 
-
-If it is a write, a character is written to serial port and transmit
-ready interrupt is masked. If a carriage return was written, then a
-newline character is also queued to be written. A special case is
-considered for when the message type is specified to not require any
-newlines. Pseudo code for this process is below as Listing
-~\ref{uart}.
+The UART i-process is responsible for handling all UART interrupts,
+both receive ready and transmit ready. When the process is run, it
+checks which of these interrupts fired. If the interrupt was receive
+ready, the input character is appended to a string buffer. When a
+keyboard command is detected, it is forwared in a message to the KCD
+process. When a hotkey command is detected, the relevant hotkey
+command is run. When a transmit interrupt is received, a character is
+printed out the UART from a location in shared memory. Pseudo code for
+this process can be found in Listing~\ref{uart}.
 
 \lstset{caption={Pseudo code for the UART I-Process}, label=uart}
 \begin{lstlisting}
 void i_process_uart():
-    while(1):
-        determine uart state
+    in an infinite loop:
+        determine if the interrupt was receive or transmit
 
-        if(state = read):
+        if the interrupt is receive ready
             read in character
+
+            if the character was a null
+                restart loop
+
             append character to string buffer
-            if (character = carriage return):
-                append null to string buffer            
-
-                if (buffer[0] = '%'):
-                    create a new message
+            
+            if the character was a carriage return:
+                append null to string buffer
+                
+                if the first character in the buffer is '%':
+                    request a memory block for a new message
                     copy string buffer into message data field
+                    set message type to keyboard input
                     send message to KCD
-                else if (buffer[0] = '!'):
-                    send string buffer to uart debug decoder
+                else if the first character in the buffer is '!':
+                    call uart debug decoder function with string buffer        
 
-            echo the in character by triggering a transmit interrupt
+            else:
+                write the character to uart shared memory
+                echo the character by triggering a transmit interrupt
 
-            enable interrupts
-        else if (state = write):
-            write character to serial port
+        else if the interrupt is transmit ready:
+            write character from uart shared memory to serial port
             mask transmit ready interrupt
-            if (character = carriage return AND requires a new line):
-                print newline
+            
+            if the character is a carriage return:
+                print carriage return
+                write newline character to uart shared memory
+                unmask transmit ready interrupt
             
         release processor
 \end{lstlisting}
@@ -646,8 +645,9 @@ Listing~\ref{timer} for the pseudo code for this process.
 \lstset{caption={Pseudo code for the UART I-Process}, label=timer}
 \begin{lstlisting}
 void i_process_timer():
-    timer = 0
-    while(1){
+    set system clock to 0
+
+    in an infinite loop:    
         release processor
         increment timer
 
