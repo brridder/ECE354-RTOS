@@ -246,6 +246,11 @@ readable for checking return conditions.
 
 \subsection{\textsc{Stacks}}
 
+The only stacks used in the system are the process stacks. These are used for
+storing and restoring the process state when making a mode switch and for
+switching processes. The stacks are also used for allocation of local variables
+and function calls as determined by the compiler.
+
 \subsection{\textsc{Memory}}
 \label{sec:mem_management}
 
