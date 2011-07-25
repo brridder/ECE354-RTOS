@@ -559,9 +559,10 @@ void process_kcd():
 
 \subsection{\textsc{CRT Process}}
 The \texttt{process\_crt\_display()} blocks until a message is
-received. If type is correct, then the message data is sent to the
-UART and the message is released. Pseudo code for the
-process can be found in Listing~\ref{crt}.
+received. If the type is correct, then the for each character in the message 
+data it is sent to the uart shared memory and uart transmit interrupt is 
+triggered. Then, the memory of the message is released and released processor is 
+called. Pseudo code for the process can be found in Listing~\ref{crt}.
 
 \lstset{caption={Pseudo code for the CRT process}, label=crt}
 \begin{lstlisting}
@@ -569,8 +570,11 @@ void process_crt_display():
     in an infinite loop:
         receive a message
         if message type is keyboard input or output:
-            send message data to uart
+            for each character in the message body:
+                write character to uart shared memory
+                trigger a uart transmit interrupt
         release memory block of message
+        call release processor
     }
 }
 \end{lstlisting}
