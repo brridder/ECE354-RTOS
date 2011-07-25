@@ -485,6 +485,10 @@ int delayed_send(int process_id, void* message_envelope, int delay):
 
 
 \section{\textsc{Processes}}
+The operating system consists of several system, user-level, and test processes. 
+These processes make up the main functionality of the operating system. In order 
+to be implemented properly these processes make use of the primitives described 
+above.
 \subsection{\textsc{Null Process}}
 The null process was implemented to adhere to the project specifications. It
 has a priority of four and a process ID of zero. The process method is defined 
