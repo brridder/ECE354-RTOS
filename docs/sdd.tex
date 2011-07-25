@@ -441,41 +441,28 @@ void* receive_message(int* sender_id){
 \end{lstlisting}
 
 \subsection{\textsc{Delayed Send}}
-The \texttt{delayed\_send(...)} primitive queues a message to be sent
-after a specified delay. Messages are put onto a internal queue that
-holds all delayed messages regardless of which process they belong to.
-Messages in the queue are ordered by send time, with the soonest at
-the front of the queue. This way, the check to see if a message should
-be sent can be run in $O(1)$ time.
 
-This function takes three parameters: the receiving process ID, a
-pointer to a memory block containing the message, and the delay time
-in milliseconds. After a mode switch to kernel mode, the parameters
-are checked to make sure there is a valid receiver id and delay value;
-invalid parameters return an \texttt{RTX\_ERROR}. If this check passes
-then the message is inserted into the correct spot in the delayed
-message queue.
+The \texttt{delayed\_send()} primitive allows processes to send a
+message which will not be delivered until a specified time has
+elapsed. The current system time and the delay amount are stored in
+the message envelope. The message is then inserted into the delayed
+message queue; this queue is ordered such the next to be sent is at
+the front. There is only queue for delayed messages, which is shared
+between all processes. Sending of the delayed message is handled by the timer i-process. Pseudo code for this primitive can be found in Listing~\ref{delay}.
 
-Each time the timer i-process runs, it checks the head of the delayed
-message queue to see if a message should be sent. If so, the message
-is dequeued and forwarded to the correct process and the head is
-checked again. The pseudo code for the delayed send is in
-Listing~\ref{delay}. The pseudo code and implementation information
-for the timer forwarding is shown below in the timer i-process
-section.
-
-\lstset{caption={Pseudo code for delayed send },label=delay}
+\lstset{caption={Pseudo code for delayed send }, label=delay}
 \begin{lstlisting}
 int delayed_send(int process_id, void* message_envelope, int delay):
-    switch to kernel mode
+    switch to kernel mode using system call exception
 
-    if (receiver_id is invalid || delay is invalid):
+    if receiver pid or delay value is invalid:
         return RTX_ERROR
     else:
-        set message sender id
-        set message receiver id
-        set delay information
-        insert into delay queue
+        set sender id field of message_envelope
+        set receiver id field of message_envelope
+        set the delay amount field of message_envelope
+        set the send time field of message_envelope
+        insert into delayed messages queue
 
         return RTX_SUCCESS
 \end{lstlisting}
