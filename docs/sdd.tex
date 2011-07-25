@@ -511,32 +511,27 @@ void process_null() {
 \end{lstlisting}
 
 \subsection{\textsc{KCD Process}}
-The \texttt{process\_kcd()} blocks until a message is received. Once it
-receives a message, the message type is checked to see if it is either
-key input or command registration. If it is neither, the message is
-released. 
-
-When the message type is key input, the message is checked to see if
-it matches to a previously registered command. If a match is found the
-message is forwarded to the registered process for that command.
-
-When the message type is a command registration, the PID of the
-registering process is saved along with the command itself. The
-command character is passed in the message body. The pseudo code for
-the KCD can been seen in Listing~\ref{kcd}.
+The \texttt{process\_kcd()} handles keyboard input and delegation of keyboard 
+commands. Processes can register for commands by sending the 
+\texttt{process\_kcd()} a message of a specific type. If a keyboard input 
+message is received and a matching command is found the message is forwarded to 
+the registered process. The pseudo code for the KCD can been seen in 
+Listing~\ref{kcd}.
 
 \lstset{caption={Pseudo code for implementing the KCD Processes}, label=kcd}
 \begin{lstlisting}
 void process_kcd():
-    while(1):
+    in an infinite loop:
         receive a message
-        if (message type = key input):
-            if (message body = registered command):
+        if the message type is a keyboard input message:
+            if the message body is a registed command:
                 send message to registered process
-        else if (message type = command registration):
+            else:
+                release memory block of message
+        else if it is a command registration message:
             save the PID and command to be registered
         else:
-            release message
+            release memory block of message
 \end{lstlisting}
 
 \subsection{\textsc{CRT Process}}
