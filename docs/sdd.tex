@@ -1007,7 +1007,6 @@ This section is responsible for outlining some basic implementation techniques
 regarding the testing of our operating system and the measurement of certain 
 primitives. It also includes a basic discussion of the role of each group member. 
  
-
 \subsection{\textsc{Responsibilities}}
 The majority of the kernel was written as the whole group. The queues, context
 switching, and most of the primitives were developed together to ensure that
@@ -1032,8 +1031,51 @@ session to limit the amount of time spent as a group on it.
 \subsubsection{\textsc{David Janssen}}
 
 \subsection{\textsc{Test Plan}}
+Testing for the operating system was done in a consistent fashion throughout all
+parts of the project. After coding a new process or primitive a new test case 
+was written in order to verify its functionality. This test case was then 
+implemented using a set of processes which would in turn run these tests. This 
+would include tests specifically for memory, messages, the changing of priority, 
+etc. Once it was determined that a new addition to the operating was running as 
+per specification, the entire test suite was run to verify no negative impact on 
+the system. 
 
+To ease the task of debugging, a very basic \texttt{printf} function 
+was created which allowed decimal and hexidecimal data to be displayed. This 
+was very useful as it allowed us to print the contents of certain registers and 
+variables when we were unable easily discover issues when a test case failed or 
+functionality was not as expected. 
+
+This testing strategy was not used in part one of the project as it had a 
+separate test program written to test its functionality. The user process A, B, 
+and C were used to stress test our operating system and verify its behaviour 
+under load. 
 \subsection{\textsc{Measurement Plan}}
+Three methods were considered for profiling the system call
+primitives: stopwatch, system millisecond timer, and using a second
+hardware timer. In each of these cases, the primitive was run several
+thousands times in a loop in order to find an average execution time.
+
+The first method involved manually timing the execution of ten
+thousand runs of a particular primitive. A message was printed at the
+beginning and the end of the loop and stopwatch was used to measure
+the total time elapsed. This method proved ineffective do to inherent
+delays in printing.
+
+Second, the system millisecond timer was used to measure the execution
+time of the function. This method was not effective because the
+millisecond timer did not provide enough granularity in order to get
+an accurate result; the average runtime for all primitives was under a
+millisecond.
+
+Finally, the second hardware timer was used to measure execution time
+of the primitives. By setting the timer to increment its internal
+counter at a rate of 180kHz, this profiling method was able to achieve
+5.555 microsecond granularity. Using this timer a process was
+developed that reset the timer counter register before running a
+primitive, and checked its value after the primitive finished
+executing. In this fashion the primitive execution time could be
+accurately measured.
 
 \chapter{\textsc{Major Design Changes}}
 
