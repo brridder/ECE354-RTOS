@@ -705,33 +705,26 @@ void process_wall_clock():
 \end{lstlisting}
 
 \subsection{\textsc{Set Priority Command Process}}
-The \texttt{process\_set\_priority\_command()} is a process that
-allows the user to change the priority level of any process through a
-command. This process accepts data in the form \texttt{\%C process\_id 
-priority\_level}. When the process is initialized it registers the
-\texttt{\%C} command. It then waits to receive a message.  Upon receiving a
-message it skips the \texttt{\%C} characters and begins parsing the
-data. While parsing, the process id of the process whose priority is
-to be changed and the new priority level are extracted. Checks are
-made to ensure that proper process ids and priority values were
-provided and that nothing else was entered after the priority value. A
-kernel function call of \texttt{set\_process\_priority(...)} is then
-made using the parsed process id and priority value. This function
-call is responsible for the actual changing of the priority level. The
-memory block and the processor are then released.  Pseudo code for
-this process can be seen at Listing \ref{lst_set_prio_cmd_proc}.
+
+The \texttt{process\_set\_priority\_command()} process allows a user
+to change the priority of any process in the system directly from
+terminal. The process registers the '\%C' keyboard command which takes
+the form '\%C pid priority'. When this command is received, the
+process parses the arguments, validates them, and if they are correct
+it changes the priority of the selected process. Pseudo code for this
+process can be found in Listing~\ref{lst_set_prio_cmd_proc}.
 
 \lstset{caption={Pseudo code for the set priority command process}, 
         label=lst_set_prio_cmd_proc}
 
 \begin{lstlisting}
 void process_set_priority_command():    
-    register %C Command
-
-    while (1):
+    register '%C' command with KCD process
+    
+    in an infinite loop:
         receive a message
 
-        skip %C in message
+        skip '%C' in message
 
         parse process id
         validate process id
@@ -741,11 +734,11 @@ void process_set_priority_command():
 
         validate line endings
         
-        call set_process_priority()
-            update the priority level of the specified process
+        call set_process_priority with the provided arguments
 
-        release memory block;
-        release processor;
+        release memory block
+        release processor
+
 \end{lstlisting}
 
 \subsection{\textsc{Test Processes A, B, C}}
