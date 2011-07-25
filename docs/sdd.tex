@@ -1050,11 +1050,19 @@ This testing strategy was not used in part one of the project as it had a
 separate test program written to test its functionality. The user process A, B, 
 and C were used to stress test our operating system and verify its behaviour 
 under load. 
+
 \subsection{\textsc{Measurement Plan}}
+\label{measurementplan}
+
 Three methods were considered for profiling the system call
 primitives: stopwatch, system millisecond timer, and using a second
 hardware timer. In each of these cases, the primitive was run several
-thousand times in a loop in order to find an average execution time.
+thousand times in a loop in order to find an average execution
+time. In order to avoid blocking during the test run, any relevant
+cleanup was done within the loop, but was excluded from the
+measurement. For example, when \texttt{request\_memory\_block()} was
+profiled, the memory block was immediately released; however, the time
+to release the memory block was not added to the total.
 
 The first method involved manually timing the execution of ten
 thousand runs of a particular primitive. A message was printed at the
@@ -1119,10 +1127,36 @@ would deadlock less often and memory waste was reduced.
 
 \chapter{\textsc{Measurements}}
 
+\section{\textsc{Measurement Data}}
+
+Using the hardware timer method described in
+Section~\ref{measurementplan} execution times for the
+\texttt{send\_message()}, \texttt{receive\_message()}, and
+\texttt{request\_memory\_block()} primitives were collected. This data can be found in Table~\ref{measurementdata}.
+
+\begin{table}[H]
+    \caption{Execution time of primitives}
+    \label{measurementdata}
+    \center{
+        \begin{tabular}{| l | c |}
+          \hline
+          {\bf Primitive Name} & {\bf Average Execution Time ($\mu$s)} \\
+          \hline
+          \texttt{send\_message()} & 255.55 \\
+          \hline
+          \texttt{receive\_message()} & 244.44 \\
+          \hline
+          \texttt{request\_memory\_block()} & 327.77 \\
+          \hline
+        \end{tabular}
+    }
+\end{table}
+
+\section{\textsc{Measurement Analysis}}
+
 
 
 \chapter{\textsc{Lessons Learned}}
-
 
 
 \end{document}
