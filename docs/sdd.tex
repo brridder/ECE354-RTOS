@@ -173,8 +173,12 @@ received messages are available in the kernel. Finally, a counter used for
 timing is incremented by the timer ISR and read by various kernel functions.
 
 \subsection{\textsc{Constants}}
-% Constants (PIDS, msgID, return codes, status codes, msg types, etc)
 \label{sec:global_constants}
+
+% TODO :: Add more?
+
+% Constants (PIDS, msgID, return codes, status codes, msg types, etc)
+
 All of the processes have a predefined process ID as outlined in
 Table~\ref{table_proc_ids}. There is a total of 15 unique processes and there
 is no capability to add extra processes while executing. 
@@ -233,6 +237,12 @@ name, process, and description of each type.
     } % Center
 
 \end{table}
+
+Two return codes are used by functions in the system. The first,
+\texttt{RTX\_SUCCESS}, and is defined as $0$ is used for indicating sucess. The
+other, \texttt{RTX\_ERROR}, is defined as $-1$ and is used for indicating failure.
+This maintains consistency between different functions and makes the code more
+readable for checking return conditions.
 
 \subsection{\textsc{Stacks}}
 
