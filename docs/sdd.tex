@@ -833,6 +833,7 @@ initialized with the required settings in the initialization period of the
 system startup. This is described in Section~\ref{sec:rtx_init}.
 
 \section{\textsc{Hot Keys}}
+\label{sec:hot_keys}
 % What they are, their functionality, pseudocode 
 
 % TODO: Edit this for tense
@@ -1007,7 +1008,23 @@ regarding the testing of our operating system and the measurement of certain
 primitives. It also includes a basic discussion of the role of each group member. 
  
 \subsection{\textsc{Responsibilities}}
+The majority of the kernel was written as the whole group. The queues, context
+switching, and most of the primitives were developed together to ensure that
+every group member would have a solid understanding of the operation of the
+system. Memory management and message handling was also designed in this
+manner. As a result, there were less bugs not only in the primitives but also
+in the processes implemented later on by individual members.
+
 \subsubsection{\textsc{Ben Ridder}}
+The majority of the processes were implemented by Ben Ridder. He wrote the
+hardware interrupt and interrupt process for UART1 paired with the two system
+processes, KCD and CRT display, that are associated with it. Hot keys was also
+a part of this, with additional changes made to the kernel to create the
+desired functionality of the hot keys described in Section~\ref{sec:hot_keys}.
+The other system process implemented by Ben was the set priority command
+process. User processes A, B, and C were written by Ben as described in the
+project documentation. Finally, he wrote boilerplate prior to the next group
+session to limit the amount of time spent as a group on it.
 
 \subsubsection{\textsc{Casey Banner}}
 
@@ -1035,5 +1052,6 @@ operating system and verify its behaviour under load.
 
 \chapter{\textsc{Measurements}}
 
-\chapter{\textsc{Leasons Learned}}
+\chapter{\textsc{Lessons Learned}}
+
 \end{document}
