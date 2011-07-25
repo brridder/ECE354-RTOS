@@ -1037,6 +1037,21 @@ session to limit the amount of time spent as a group on it.
 
 \chapter{\textsc{Major Design Changes}}
 
+\section{\textsc{Done Queues}}
+Initially, the priority queueing system was implemented using several different
+queues for various process states and this included a done queue. The purpose
+behind the done queue was to ensure that every process would execute in order
+from highest to lowest priority. As a result of this system, the demo test
+cases failed due to differing expectations of how the scheduling system
+operates. These were not clear in the documentation but was clarified at the
+demo.
+
+After the demo, the system was changed such that the scheduler would only run
+processes in the highest non-empty priority queue. In hindsight, the previous
+scheduler would have been ineffective in the requirements of the system for the
+last portion of the project. It would have worked better in an environment that
+employed time slicing to select the next process periodically.
+
 \chapter{\textsc{Measurements}}
 
 \chapter{\textsc{Lessons Learned}}
