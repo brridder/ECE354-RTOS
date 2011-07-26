@@ -58,16 +58,16 @@ In user level mode there is one data structure available to the programmer
 which is also available in kernel mode. This is the message envelope used to
 send and receive messages between processes. It contains sender and receiver
 process ids, the message type, pointers to the next and previous messages when
-it is enqueued, values to control delay sending, and a data field defined at
-the last 64 bytes of the envelope. The message type is defined in
+it is enqueued, values used to control delay sending, and a data field defined 
+at the last 64 bytes of the envelope. The message type is defined in
 Section~\ref{sec:global_constants}. To the user the only fields that are
-modifiable in any meaningful way are the message type and data. All of the
-other fields are modified by the kernel when the message is sent to another
-process. If the user does not need to set the message type then this data
-structure is not necessary as the only knowledge required for message sending
-is that the data resides at an offset of 64 bits. In this case, the message
-envelope is strictly used by the kernel. The message envelope definition can be
-seen in Table~\ref{user_data_structs}.
+modifiable in any meaningful way are the message type and the message data. All 
+of the other fields are modified by the kernel when the message is sent to 
+another process. If the user does not need to set the message type then this 
+data structure is not necessary as the only knowledge required for message 
+sending is that the data resides at an offset of 64 bits. In this case, the 
+message envelope is used strictly by the kernel. The message envelope definition 
+can be seen in Table~\ref{user_data_structs}.
 
 \begin{table}[H]
     \caption{User Level Data Structure}
