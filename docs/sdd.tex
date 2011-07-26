@@ -1167,6 +1167,12 @@ would deadlock less often and memory waste was reduced.
 
 \chapter{\textsc{Measurements}}
 
+Three primitives were measured for time of execution. Kernel primitives
+\texttt{receive\_message()}, \texttt{send\_message()}, and
+\texttt{request\_memory\_block()} were all profiled. The purpose of this
+profiling is to ensure that these key kernel level functions perform quickly,
+thus ensuring a responsive system.
+
 \section{\textsc{Measurement Data}}
 
 Using the hardware timer method described in
