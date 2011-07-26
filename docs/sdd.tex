@@ -760,7 +760,7 @@ switches into kernel mode for kernel functions. It is initialized in the 0th
 location on the trap table. The trap is only called from the function
 \texttt{do\_system\_call(int call\_id, int* args, int num\_args)} which is used
 to abstract common code used by all the primitives. The software handler itself
-that is called by the trap mnemonic is \texttt{system\_call()} which retrieves
+is called by the trap mnemonic is \texttt{system\_call()} which retrieves
 the parameters from data registers 1 to 4. It calls the appropriate kernel
 level function based on the call id parameter. The call ids are defined in an
 enumerator. 
@@ -769,10 +769,10 @@ The software interrupt handler, as described in Listing~\ref{lst_system_call},
 is installed in vector 0 of the trap table. The operation of this interrupt
 handler retrieves the parameters from the data registers, saves the rest of
 the user process state into the stack, and calls the appropriate kernel level
-function. The parameters retrieved are passed in as arguments for the function.
-The function return value is stored in one of the data registers to be passed
-back to the function that called the trap. Finally, the function returns from
-exception to switch back from kernel mode into user mode.
+function. The parameters that have been retrieved are passed in as arguments for 
+the function. The function return value is stored in one of the data registers 
+that is to be passed back to the function that called the trap. Finally, the 
+function returns from exception to switch back from kernel mode into user mode.
 
 \lstset{caption={Software interrupt handler},
         label=lst_system_call}
@@ -842,8 +842,8 @@ process checks the first character for an exclamation mark ('!') and calls the
 hot key function directly with the input string as a parameter. See
 Table~\ref{hot_keys_table} for a summary of the hot key strings and
 descriptions. All of the code related to the debug hot keys are wrapped in
-\texttt{\#ifdef \_DEBUG\_HOTKEYS} and \texttt{\#endif} to ensure that in normal
-operation of the system that this code will not interfere.
+\texttt{\#ifdef \_DEBUG\_HOTKEYS} and \texttt{\#endif} to ensure that during 
+normal operation of the system that this code will not interfere.
 
 \begin{table}[h]
     \caption{Hot Keys and Descriptions}
