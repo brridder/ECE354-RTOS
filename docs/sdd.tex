@@ -1184,11 +1184,13 @@ iterations involving a bit shift need to be performed.
 \subsection{\textsc{Technical}}
 
 Overall, we were very pleased with our implementation of the operating
-system. However, during the part four lab demo, two issues were
+system. However, during the part four lab demo, three issues were
 highlighted which should be fixed if future revision was to be
 made. First, it was discovered that some user processes are running in
-supervisor mode. Secondly, the current UART I-process implemention has
-a possibilty of blocking on memory.
+supervisor mode. Second, the current UART I-process implemention has a
+possibilty of blocking on memory. Third, our check for the number of
+memory allocated runs in $O(n)$ time, where $n$ is the total number of
+memory blocks in the system.
 
 During the lab demo, a priveleged instruction was inserted into a
 process that should have been running in user mode. When executed, the
@@ -1204,6 +1206,12 @@ memory and a user enters such a keyboard command, the I-process will
 be come blocked. Obviously, this is not desired as this will cause all
 user input to block which will in turn cause hotkeys to no longer
 function.
+
+Our memory manager implementation includes an allocation bitfield
+which needs to be checked each time a memory block is requested in
+order to determine how many blocks are free. This check could be
+improved to run in $O(1)$ time by keeping a count of the allocated
+memory blocks alongside the bitfield.
 
 Finally, there are some implementation details that could be improved
 upon. Shared memory is used for IPC between the CRT process and the
@@ -1227,6 +1235,31 @@ tool in informing members of the group that could not attend meetings
 about the project's current status.
 
 \section{\textsc{Things Done Well}}
+
+\subsection{\textsc{Technical}}
+
+Two particular parts of our operating system were implemented in a
+particular effective way. First of all, the memory manager is
+particularly robust. Secondly, almost all operations within system
+calls run in $O(1)$ time.
+
+The memory manager implementation uses an allocation bitfield to keep
+track of which memory blocks have been allocated. This is used during
+deallocation to prevent against double deallocation and deallocating
+blocks that have not been allocated. The check for double deallocation
+runs in $O(1)$ time. Also, the memory manager includes out of range
+checks to avoid deallocating invalid blocks of memory.
+
+With the exception of counting the allocated memory blocks, inserting
+messages into the delayed message queue, and checking which process is
+first in a priority queue, all system functions run in $O(1)$ time. Due to
+the design of the data structures in the operating system, operations
+such as removing a process from the middle of a queue do not need to
+search the queue for the process.
+
+\subsection{\textsc{Organization}}
+
+
 
 % What was done well:
 %   Time management - Working around 3 different schedules.
