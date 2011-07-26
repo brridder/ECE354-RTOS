@@ -1062,7 +1062,7 @@ under load.
 \label{measurementplan}
 
 Three methods were considered for profiling the system call
-primitives: stopwatch, system millisecond timer, and using a second
+primitives: a stopwatch, a system millisecond timer, and using a second
 hardware timer. In each of these cases, the primitive was run several
 thousand times in a loop in order to find an average execution
 time. In order to avoid blocking during the test run, any relevant
@@ -1074,13 +1074,13 @@ to release the memory block was not added to the total.
 The first method involved manually timing the execution of ten
 thousand runs of a particular primitive. A message was printed at the
 beginning and the end of the loop and stopwatch was used to measure
-the total time elapsed. This method proved ineffective do to inherent
-delays in printing.
+the total time elapsed. This method proved ineffective due to inherent
+delays in printing and human response time.
 
 Second, the system millisecond timer was used to measure the execution
 time of the function. This method was not effective because the
 millisecond timer did not provide enough granularity in order to get
-an accurate result; the average runtime for all primitives was under a
+an accurate result; the average runtime for all primitives was less than a
 millisecond.
 
 Finally, the second hardware timer was used to measure execution time
