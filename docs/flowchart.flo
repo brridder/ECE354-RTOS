@@ -1,0 +1,86 @@
+Oval 5 1
+  Main entry point
+Box 5 3
+  Init Memory
+  Init Processes
+  Init Priority queues
+  Init Interrupts
+Box 4 1
+  Release Processor
+Box
+  Schedule Process
+Box
+  Run Process
+Tag
+Down 1 
+Left 1
+Up 1 *
+Left
+ToTag
+Tag
+Oval 4 2
+  Hardware
+  interrupt
+  handler
+Down
+Tilt 6 1
+  Run relevant I-Process
+Oval 5 2
+  Return from
+  hardware interrupt
+  handler
+Down 1
+Left 4
+Up 9
+Right 7 *
+ToTag
+Right
+Oval
+  System call
+  interrupt
+  handler
+Down
+Box 6 1
+  Switch to kernel mode
+Tilt 5 1
+  Handle system call
+Choice . N Y .
+  Is running
+  process
+  now
+  blocked?
+Tag
+Right 2
+Up 10
+Left 7.5 *
+ToTag
+Tag
+Left 2
+Up 7.5 *
+Down
+ToTag
+Choice . N Y .
+  Is running
+  process
+  preempted?
+Tag
+Right 2
+Up 5
+ToTag
+Tag
+Left 2
+Up 5
+Down
+ToTag
+Choice . N Y .
+  Was
+  processor
+  released?
+Tag
+Right 2
+Up 5
+ToTag
+Left 2
+Up 5
+
+
