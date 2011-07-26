@@ -26,8 +26,10 @@ David Janssen - dajjanss }
 \lstlistoflistings
 
 \chapter{\textsc{Software Design}}
+% TODO :: Little blurb here
 
 \section{\textsc{Introduction}}
+% TODO :: Everything in here
 
 \section{\textsc{Global Information}}
 % Data structures (queues, PCB, message formats, tracebuffer, etc)
@@ -752,7 +754,6 @@ priority of 1 and the other two processes were assigned a priority of 2.
 
 \section{\textsc{Software Interrupt Handler}}
 \label{sec:soft_isr}
-% TODO: ADD MORE?
 
 The system uses a single software interrupt handler for performing context
 switches into kernel mode for kernel functions. It is initialized in the 0th
@@ -1024,8 +1025,10 @@ project documentation. Finally, he wrote boilerplate prior to the next group
 session to limit the amount of time spent as a group on it.
 
 \subsubsection{\textsc{Casey Banner}}
+% TODO 
 
 \subsubsection{\textsc{David Janssen}}
+% TODO 
 
 \subsection{\textsc{Test Plan}}
 Testing for the operating system was done in a consistent fashion throughout all
@@ -1084,6 +1087,11 @@ accurately measured. Due to the shortcomings of the first two methods,
 this method was used to complete the measurements.
 
 \chapter{\textsc{Major Design Changes}}
+All in all, there were only two design changes that needed to be done. The
+first was related to the initial implementation of the scheduling system. The
+other was how the processes managed their memory blocks as allocated by the
+system and preventing key interrupt processes from blocking on whilst waiting
+for memory.
 
 \section{\textsc{Done Queues}}
 Initially, the priority queueing system was implemented using several different
@@ -1178,111 +1186,97 @@ allocation field need to be counted. This operation is expensive; 32
 iterations involving a bit shift need to be performed.
 
 \chapter{\textsc{Lessons Learned}}
+Several lessons were learned as a result of undertaking this project as a group
+of three. In hindsight, there are several areas in which we could improve both
+technically and organizationally. On the technical side, the majority of these
+areas were related to the processes. Organizationally, we excelled as a result
+of planning and time management.
 
 \section{\textsc{Things to Improve}}
 
 \subsection{\textsc{Technical}}
 
-Overall, we were very pleased with our implementation of the operating
-system. However, during the part four lab demo, three issues were
-highlighted which should be fixed if future revision was to be
-made. First, it was discovered that some user processes are running in
-supervisor mode. Second, the current UART I-process implemention has a
-possibilty of blocking on memory. Third, our check for the number of
-memory allocated runs in $O(n)$ time, where $n$ is the total number of
-memory blocks in the system.
+Overall, we were very pleased with our implementation of the operating system.
+However, during the part four lab demo, three issues were highlighted which
+should be fixed if future revision was to be made. First, it was discovered
+that some user processes are running in supervisor mode. Second, the current
+UART I-process implemention has a possibilty of blocking on memory. Third, our
+check for the number of memory allocated runs in $O(n)$ time, where $n$ is the
+total number of memory blocks in the system.
 
-During the lab demo, a priveleged instruction was inserted into a
-process that should have been running in user mode. When executed, the
-instruction did not raise a priveleged instruction execption as it
-should have. This is due to the user process erroneously running in
-supervisor mode. The suspected cause for this is an incorrect initial
-exception on the user processes stack.
+During the lab demo, a priveleged instruction was inserted into a process that
+should have been running in user mode. When executed, the instruction did not
+raise a priveleged instruction execption as it should have. This is due to the
+user process erroneously running in supervisor mode. The suspected cause for
+this is an incorrect initial exception on the user processes stack.
 
-The UART I-process contains a call to
-\texttt{request\_memory\_block()} inside the code path that handles
-keyboard commands that begin with '\%'. If the system is starved for
-memory and a user enters such a keyboard command, the I-process will
-be come blocked. Obviously, this is not desired as this will cause all
-user input to block which will in turn cause hotkeys to no longer
+The UART I-process contains a call to \texttt{request\_memory\_block()} inside
+the code path that handles keyboard commands that begin with '\%'. If the
+system is starved for memory and a user enters such a keyboard command, the
+I-process will be come blocked. Obviously, this is not desired as this will
+cause all user input to block which will in turn cause hotkeys to no longer
 function.
 
-Our memory manager implementation includes an allocation bitfield
-which needs to be checked each time a memory block is requested in
-order to determine how many blocks are free. This check could be
-improved to run in $O(1)$ time by keeping a count of the allocated
-memory blocks alongside the bitfield.
+Our memory manager implementation includes an allocation bitfield which needs
+to be checked each time a memory block is requested in order to determine how
+many blocks are free. This check could be improved to run in $O(1)$ time by
+keeping a count of the allocated memory blocks alongside the bitfield.
 
-Finally, there are some implementation details that could be improved
-upon. Shared memory is used for IPC between the CRT process and the
-UART I-process when message passing would likely be a more robust
-choice. 
+Finally, there are some implementation details that could be improved upon.
+Shared memory is used for IPC between the CRT process and the UART I-process
+when message passing would likely be a more robust choice. 
 
 \subsection{\textsc{Organization}}
 
-Intially we used issue tracking software to manage tasks for entire
-project including documentation, programming, and project
-milestones. However, after the part two demo we stopped adding new
-issues to the tracking software and neglected it. This was due to the
-fact that we were meeting quite often and no longer felt the need to
-formally log all the issues. This did not have a large negative on our
-groups success with project. Despite this, we were able to complete
-all the milestones on time and deliver part 4 ahead of the
-deadline. However, if we had not been meeting in person frequently, it
-is likely that productivity would not have been the same. If we were
-required to do this again, issue tracking software would be a critical
-tool in informing members of the group that could not attend meetings
-about the project's current status.
+Intially we used issue tracking software to manage tasks for entire project
+including documentation, programming, and project milestones. However, after
+the part two demo we stopped adding new issues to the tracking software and
+neglected it. This was due to the fact that we were meeting quite often and no
+longer felt the need to formally log all the issues. This did not have a large
+negative on our groups success with project. Despite this, we were able to
+complete all the milestones on time and deliver part 4 ahead of the deadline.
+However, if we had not been meeting in person frequently, it is likely that
+productivity would not have been the same. If we were required to do this
+again, issue tracking software would be a critical tool in informing members of
+the group that could not attend meetings about the project's current status.
 
 \section{\textsc{Things Done Well}}
 
 \subsection{\textsc{Technical}}
 
-Two particular parts of our operating system were implemented in a
-particular effective way. First of all, the memory manager is
-particularly robust. Secondly, almost all operations within system
-calls run in $O(1)$ time.
+Two particular parts of our operating system were implemented in a particular
+effective way. First of all, the memory manager is particularly robust.
+Secondly, almost all operations within system calls run in $O(1)$ time.
 
-The memory manager implementation uses an allocation bitfield to keep
-track of which memory blocks have been allocated. This is used during
-deallocation to prevent against double deallocation and deallocating
-blocks that have not been allocated. The check for double deallocation
-runs in $O(1)$ time. Also, the memory manager includes out of range
-checks to avoid deallocating invalid blocks of memory.
+The memory manager implementation uses an allocation bitfield to keep track of
+which memory blocks have been allocated. This is used during deallocation to
+prevent against double deallocation and deallocating blocks that have not been
+allocated. The check for double deallocation runs in $O(1)$ time. Also, the
+memory manager includes out of range checks to avoid deallocating invalid
+blocks of memory.
 
-With the exception of counting the allocated memory blocks, inserting
-messages into the delayed message queue, and checking which process is
-first in a priority queue, all system functions run in $O(1)$ time. Due to
-the design of the data structures in the operating system, operations
-such as removing a process from the middle of a queue do not need to
-search the queue for the process.
+With the exception of counting the allocated memory blocks, inserting messages
+into the delayed message queue, and checking which process is first in a
+priority queue, all system functions run in $O(1)$ time. Due to the design of
+the data structures in the operating system, operations such as removing a
+process from the middle of a queue do not need to search the queue for the
+process.
 
 \subsection{\textsc{Organization}}
 
-Our time management skills were very effective throughout this
-project. We had three extremely busy schedules which we had to
-coordinate in order to work on the project as a group. Due to our
-planning of group work sessions far ahead of the milestone deadlines,
-we were to complete the required work without any late night lab
-sessions. Because of our organizational skills, we did not require
-access to the hardware near the due date of the final submission. This
-was fortuitus, as access to a coldfire board became extremely diffcult
-as the due date approached.
+Our time management skills were very effective throughout this project. We had
+three extremely busy schedules which we had to coordinate in order to work on
+the project as a group. Due to our planning of group work sessions far ahead of
+the milestone deadlines, we were to complete the required work without any late
+night lab sessions. Because of our organizational skills, we did not require
+access to the hardware near the due date of the final submission. This was
+fortuitus, as access to a coldfire board became extremely diffcult as the due
+date approached.
 
-Also, during the course of the project, no major rewrites or
-architectural changes were required. This was due to the fact that
-significant planning was done before any code was written. By having
-group discussions and utilizing pair programming techniques, code
-quality was high and human error was minimized.
-
-% What was done well:
-%   Time management - Working around 3 different schedules.
-%   Software architecture - Planning and developing software as a group
-%
-
-% Things to change next time:
-%   Plan out the project better - although time wasn't wasted, somethings would
-%       have gone better with a little bit of fore thought.
-%
+Also, during the course of the project, no major rewrites or architectural
+changes were required. This was due to the fact that significant planning was
+done before any code was written. By having group discussions and utilizing
+pair programming techniques, code quality was high and human error was
+minimized.
 
 \end{document}
