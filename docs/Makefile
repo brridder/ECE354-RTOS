@@ -4,6 +4,8 @@ SOURCE=p1.tex p2a.tex p2b.tex p3.tex p4.tex sdd.tex
 all: sdd
 
 sdd:
+	rm flowchart.tex
+	flow < flowchart.flo > flowchart.tex
 	$(ECHO) Making sdd.pdf
 	$(LATEX) sdd.tex
 	$(ECHO) Running again for references
@@ -36,11 +38,11 @@ p4:
 	$(ECHO) Done
 
 everything: p1 p2a p2b p3 p4 sdd
-	
-	
+
+
 .PHONY: clean
 
 clean:
 	rm -f *.aux *.log *.pdf
 
-	
+
