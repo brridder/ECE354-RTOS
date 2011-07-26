@@ -238,15 +238,15 @@ name, process, and description of each type.
 \end{table}
 
 Two return codes are used by functions in the system. The first,
-\texttt{RTX\_SUCCESS}, and is defined as $0$ is used for indicating sucess. The
-other, \texttt{RTX\_ERROR}, is defined as $-1$ and is used for indicating failure.
-This maintains consistency between different functions and makes the code more
-readable for checking return conditions.
+\texttt{RTX\_SUCCESS}, is defined as $0$ and is used for indicating a sucess 
+within the system. The other, \texttt{RTX\_ERROR}, is defined as $-1$ and is 
+used for indicating a failure. This maintains consistency between different 
+functions and makes the code more readable for checking return conditions.
 
 \subsection{\textsc{Stacks}}
 
 The only stacks used in the system are the process stacks. These are used for
-storing and restoring the process state when making a mode switch and for
+saving and restoring the process state when making a mode switch and for
 switching processes. The stacks are also used for allocation of local variables
 and function calls as determined by the compiler.
 
@@ -255,7 +255,7 @@ and function calls as determined by the compiler.
 The memory system consists of two components that are managed by the request
 and release memory block primitives. The first is a free list containing a
 total of 32 128-byte memory blocks. Each memory block is linked together using
-the first word as the pointer to the next block of memory. When a block is
+the first word as the pointer to the next block of free memory. When a block is
 requested, the head is sent to the requestor and the new head becomes the
 memory location that the old one pointed to. Putting a block back onto the free
 list requires setting the first word of the block to the pointer of the current
@@ -267,15 +267,15 @@ $O(1)$ time.
 The other component is a bit field. Since only 32 blocks of memory are
 allocated by the system, a bit field of length 32 bits is used to represent
 each block one to one. If the value of the bit for the corresponding block is a
-$1$, then this indicates that the block has been requested by a process. When
-the bit is $0$, then the block is somewhere on the free list and can be freely
-allocated to a requestor. The enables over-allocation and double-deallocation
-checks to be done in $O(1)$ time. The bit is set high (1) when allocated and
-set low (0) when released.
+$1$, then this indicates that the block has been already been requested by a 
+process. When the bit is $0$, then the block is somewhere on the free list and 
+can be freely allocated to a requestor. The enables over-allocation and 
+double-deallocation checks to be done in $O(1)$ time. The bit is set high (1) 
+when allocated and set low (0) when released.
 
 \subsection{\textsc{Priority Queues}}
 Priority queues are done using a standard queue data structure. The only
-difference is that there is a queue for every level of priority. Hence, for the
+difference is that there is a queue for each priority level. Hence, for the
 ready and blocked queues an array of queues is used with the index of the queue
 as the priority level. As described earlier, every queue is implemented using a
 double-linked list so that nearly every operation occurs in $O(1)$ time.
