@@ -1128,8 +1128,9 @@ would deadlock less often and memory waste was reduced.
 
 Using the hardware timer method described in
 Section~\ref{measurementplan} execution times for the
-\texttt{send\_message()}, \texttt{receive\_message()}, and
-\texttt{request\_memory\_block()} primitives were collected. This data can be found in Table~\ref{measurementdata}.
+\texttt{receive\_message()}, \texttt{send\_message()}, and
+\texttt{request\_memory\_block()} primitives were collected. This data
+can be found in Table~\ref{measurementdata}.
 
 \begin{table}[H]
     \caption{Execution time of primitives}
@@ -1139,9 +1140,9 @@ Section~\ref{measurementplan} execution times for the
           \hline
           {\bf Primitive Name} & {\bf Average Execution Time ($\mu$s)} \\
           \hline
-          \texttt{send\_message()} & 255.55 \\
-          \hline
           \texttt{receive\_message()} & 244.44 \\
+          \hline
+          \texttt{send\_message()} & 255.55 \\
           \hline
           \texttt{request\_memory\_block()} & 327.77 \\
           \hline
@@ -1151,7 +1152,30 @@ Section~\ref{measurementplan} execution times for the
 
 \section{\textsc{Measurement Analysis}}
 
+In general, the execution time for the primitives was on the order of
+hundreds of microseconds. Given that these primitives perform system
+functions which are called often, it is important that are responsive.
 
+Of the three primitives that were profiled,
+\texttt{receive\_message()} was the fastest. When the running is not
+blocked, all that this primitive is required to do is dequeue a
+message, update the sender ID value, and then return. Dequeuing a
+message is a simple operation, and updating the sender ID is trivial.
+
+Next is the \texttt{send\_message()} primitive. It is very similar in
+complexity to the \texttt{receive\_message()} primitive; however, it
+performs the additional steps of looking up the receiving process'
+PCB, and updating fields on the message envelope. Additional, it needs
+to check if a process was unblocked and possibly preempt the running
+process.
+
+Finally, \texttt{request\_memory\_block()} is the slowest of the three
+primitives profiled. The increased execution time can be attributed to
+the math that is required to calculate the allocated block's index in
+the memory allocation field. Also, when checking to see if there is
+any free memory blocks, the number of set bits in the memory
+allocation field need to be counted. This operation is expensive; 32
+iterations involving a bit shift need to be performed.
 
 \chapter{\textsc{Lessons Learned}}
 
