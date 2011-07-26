@@ -1179,15 +1179,63 @@ iterations involving a bit shift need to be performed.
 
 \chapter{\textsc{Lessons Learned}}
 
+\section{\textsc{Things to Improve}}
+
+\subsection{\textsc{Technical}}
+
+Overall, we were very pleased with our implementation of the operating
+system. However, during the part four lab demo, two issues were
+highlighted which should be fixed if future revision was to be
+made. First, it was discovered that some user processes are running in
+supervisor mode. Secondly, the current UART I-process implemention has
+a possibilty of blocking on memory.
+
+During the lab demo, a priveleged instruction was inserted into a
+process that should have been running in user mode. When executed, the
+instruction did not raise a priveleged instruction execption as it
+should have. This is due to the user process erroneously running in
+supervisor mode. The suspected cause for this is an incorrect initial
+exception on the user processes stack.
+
+The UART I-process contains a call to
+\texttt{request\_memory\_block()} inside the code path that handles
+keyboard commands that begin with '\%'. If the system is starved for
+memory and a user enters such a keyboard command, the I-process will
+be come blocked. Obviously, this is not desired as this will cause all
+user input to block which will in turn cause hotkeys to no longer
+function.
+
+Finally, there are some implementation details that could be improved
+upon. Shared memory is used for IPC between the CRT process and the
+UART I-process when message passing would likely be a more robust
+choice. 
+
+\subsection{\textsc{Organization}}
+
+Intially we used issue tracking software to manage tasks for entire
+project including documentation, programming, and project
+milestones. However, after the part two demo we stopped adding new
+issues to the tracking software and neglected it. This was due to the
+fact that we were meeting quite often and no longer felt the need to
+formally log all the issues. This did not have a large negative on our
+groups success with project. Despite this, we were able to complete
+all the milestones on time and deliver part 4 ahead of the
+deadline. However, if we had not been meeting in person frequently, it
+is likely that productivity would not have been the same. If we were
+required to do this again, issue tracking software would be a critical
+tool in informing members of the group that could not attend meetings
+about the project's current status.
+
+\section{\textsc{Things Done Well}}
+
 % What was done well:
 %   Time management - Working around 3 different schedules.
 %   Software architecture - Planning and developing software as a group
-%   
+%
 
 % Things to change next time:
 %   Plan out the project better - although time wasn't wasted, somethings would
 %       have gone better with a little bit of fore thought.
-%   
-
+%
 
 \end{document}
