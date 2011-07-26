@@ -1263,7 +1263,8 @@ the group that could not attend meetings about the project's current status.
 
 Two particular parts of our operating system were implemented in a particular
 effective way. First of all, the memory manager is particularly robust.
-Secondly, almost all operations within system calls run in $O(1)$ time.
+Secondly, great effort was used to ensure as many operations would occur in 
+$O(1)$ time as possible.
 
 The memory manager implementation uses an allocation bitfield to keep track of
 which memory blocks have been allocated. This is used during deallocation to
@@ -1277,7 +1278,9 @@ into the delayed message queue, and checking which process is first in a
 priority queue, all system functions run in $O(1)$ time. Due to the design of
 the data structures in the operating system, operations such as removing a
 process from the middle of a queue do not need to search the queue for the
-process.
+process. Additionally, the design decision to use a free list for our memory 
+management system, instead of a basic linked list, was made so that finding the 
+next free memory block could be done without having to traverse the whole list.
 
 \subsection{\textsc{Organization}}
 
