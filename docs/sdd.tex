@@ -1,6 +1,6 @@
 \documentclass[oneside]{report}
 \usepackage{listings}
-\usepackage[hmargin=1.4in,vmargin=1.0in]{geometry}
+\usepackage[hmargin=1.4in,vmargin=1.5in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
 \usepackage{float}
@@ -35,9 +35,6 @@ David Janssen - dajjanss }
 % Constants (PIDS, msgID, return codes, status codes, msg types, etc)
 % Stacks
 % Memory map
-% Priority Queue
-
-% TODO :: priority queues
 
 Within the RTX system, there are several pieces of information available
 globally within all contexts and several that are exposed only within kernel
@@ -321,7 +318,7 @@ levels. If the updated process is unblocked and has a higher priority
 running, then the running is preempted. Listing~\ref{setplisting}
 contains pseudo code for this primitive.
 
-\lstset{caption={Pseudo code for \texttt{set\_process\_priority()}},
+\lstset{caption={Pseudo code for \texttt{set\_process\_priority(...)}},
         label=setplisting}
 \begin{lstlisting}
 int set_process_priority(int pid, int priority) {
@@ -351,7 +348,7 @@ priority of any process in the system. If an invalid PID is specified,
 the process table and the priority of the process is returned. Pseudo
 code for this primitive can be found in Listing~\ref{getplisting}.
 
-\lstset{caption={Pseudo code for getting the process priority},
+\lstset{caption={Pseudo code for \texttt{get\_process\_priority(...)}},
         label=getplisting}
 \begin{lstlisting}
 int get_process_priority(int pid) {
@@ -376,7 +373,7 @@ to the running process, it becomes blocked on memory and is
 preempted. Pseudo code for this primitive is in
 Listing~\ref{requestmemory}.
 
-\lstset{caption={Pseudo code for request\_memory\_block()}, label=requestmemory}
+\lstset{caption={Pseudo code for \texttt{request\_memory\_block()}}, label=requestmemory}
 \begin{lstlisting}
 void* request_memory_block() {
     mode switch to kernel mode using system call exception
@@ -409,7 +406,7 @@ of the unblocked process is higher than the running process, the
 running process is preempted. Pseudo code for this primitive can be
 found in Listing~\ref{releasememory}.
 
-\lstset{caption={Pseudo code for releasing memory blocks}, label=releasememory}
+\lstset{caption={Pseudo code for \texttt{release\_memory\_block(...)}}, label=releasememory}
 \begin{lstlisting}
 int release_memory_block(void* memory_block) {
     mode switch to kernel mode using system call exception
@@ -439,7 +436,7 @@ queue. If the receiving process is a higher priority than the running
 process, the running is preempted. Listing~\ref{sendmsg} contains
 pseudo code for this primitive.
 
-\lstset{caption={Pseudo code for sending messages}, label=sendmsg}
+\lstset{caption={Pseudo code for \texttt{send\_message(...)}}, label=sendmsg}
 \begin{lstlisting}
 int send_message(int pid, void* message_envelope){
     mode switch to kernel mode using system call exception
@@ -469,7 +466,7 @@ returned. Otherwise, the state of the running process is set to
 blocked and it is preempted. Pseudo code for this primitive can be
 found in Listing~\ref{receivemsg}.
 
-\lstset{caption={Pseudo code for receive\_message()}, label=receivemsg}
+\lstset{caption={Pseudo code for \texttt{receive\_message(...)}}, label=receivemsg}
 \begin{lstlisting}
 void* receive_message(int* sender_id){
     mode switch to kernel mode using system call exception
@@ -496,7 +493,7 @@ between all processes. Sending of the delayed message is handled by
 the timer i-process. Pseudo code for this primitive can be found in
 Listing~\ref{delay}.
 
-\lstset{caption={Pseudo code for delayed send }, label=delay}
+\lstset{caption={Pseudo code for \texttt{delayed\_send(...)} }, label=delay}
 \begin{lstlisting}
 int delayed_send(int process_id, void* message_envelope, int delay):
     switch to kernel mode using system call exception
@@ -542,7 +539,7 @@ message is received and a matching command is found the message is forwarded to
 the registered process. The pseudo code for the KCD can been seen in 
 Listing~\ref{kcd}.
 
-\lstset{caption={Pseudo code for implementing the KCD Processes}, label=kcd}
+\lstset{caption={Pseudo code for KCD process}, label=kcd}
 \begin{lstlisting}
 void process_kcd():
     in an infinite loop:
@@ -565,7 +562,7 @@ data it is sent to the UART shared memory and UART transmit interrupt is
 triggered. Then, the memory of the message is released and released processor is 
 called. Pseudo code for the process can be found in Listing~\ref{crt}.
 
-\lstset{caption={Pseudo code for the CRT process}, label=crt}
+\lstset{caption={Pseudo code for CRT display process}, label=crt}
 \begin{lstlisting}
 void process_crt_display():
     in an infinite loop:
@@ -644,7 +641,7 @@ messages that are ready to be sent are sent to their respective
 receiver processes. Pseudo code for this process can be found in
 Listing~\ref{timer}.
 
-\lstset{caption={Pseudo code for the Timer I-Process}, label=timer}
+\lstset{caption={Pseudo code for the timer I-Process}, label=timer}
 \begin{lstlisting}
 void i_process_timer():
     set system clock to 0
@@ -776,7 +773,7 @@ The function return value is stored in one of the data registers to be passed
 back to the function that called the trap. Finally, the function returns from
 exception to switch back from kernel mode into user mode.
 
-\lstset{caption={Software Interrupt Handler description},
+\lstset{caption={Software interrupt handler},
         label=lst_system_call}
 \begin{lstlisting}
 void system_call() {
@@ -812,7 +809,7 @@ restored from the stack and the interrupt handler returns from the exception.
 See Listing~\ref{listing_hwi_handler} for the pseudo code description of the
 two interrupt handlers.
 
-\lstset{caption={Hardware Interrupt Handler Pseudo Code},
+\lstset{caption={Hardware interrupt handler},
         label=listing_hwi_handler}
 \begin{lstlisting}
 void interrupt_handler() {
@@ -873,7 +870,7 @@ ready queues and blocked queues use the kernel print queue function as
 described in Listing~\ref{lsting_k_print_queue}. The specific queue debugging 
 function simply passes in the relavent queue into the queue print function.
 
-\lstset{caption={Kernel Print Queue Psuedo Code}, 
+\lstset{caption={Kernel print queue psuedo code}, 
         label=lsting_k_print_queue}
 \begin{lstlisting}
 int queue_debug_print(process_queue queue[]) {
