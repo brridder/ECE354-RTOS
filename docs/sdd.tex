@@ -95,10 +95,10 @@ unsigned char data[64]
 \end{table}
 
 \subsubsection{\textsc{Kernel Level}}
-There are several kernel level data structures which includes the process
+The system includes several kernel level data structures such as: the process
 control block, two queues, and a debug message envelope. The process control
 block contains all the information required by the system to manage and
-schedule the process. Both queues are implemented with a double linked list to
+schedule the process. Both queues are implemented with a doubly linked list to
 ensure $O(1)$ operation for both popping off the head and pushing to the tail.
 Message queue is used for storing message envelopes associated with a specific
 process. The process queue is used for the priority queues. The structures are
@@ -166,9 +166,9 @@ components. For memory, there is a pointer to the head of the free list, a bit
 field for determining memory allocations, and a pointer to the end of free
 memory. Several process queues are used for containing the ready, blocked on
 message, and blocked on memory processes in FIFO order. These are stored in an
-array of process queues to generalize queue operations. If debugging hot keys
-are enabled, then two circular buffers for the last ten recently sent and
-received messages are available in the kernel. Finally, a counter used for
+array of process queues in order to generalize queue operations. If debugging 
+hot keys are enabled, then two circular buffers for the ten most recently sent 
+and received messages are available in the kernel. Finally, a counter used for
 timing is incremented by the timer ISR and read by various kernel functions.
 
 \subsection{\textsc{Constants}}
