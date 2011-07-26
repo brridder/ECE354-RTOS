@@ -489,8 +489,8 @@ The \texttt{delayed\_send()} primitive allows processes to send a
 message which will not be delivered until a specified time has
 elapsed. The current system time and the delay amount are stored in
 the message envelope. The message is then inserted into the delayed
-message queue; this queue is ordered such the next to be sent is at
-the front. There is only queue for delayed messages, which is shared
+message queue; this queue is ordered such the next message to be sent is at
+the front. There is only one queue for delayed messages, which is shared
 between all processes. Sending of the delayed message is handled by
 the timer i-process. Pseudo code for this primitive can be found in
 Listing~\ref{delay}.
