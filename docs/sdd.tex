@@ -561,7 +561,7 @@ void process_kcd():
 The \texttt{process\_crt\_display()} blocks until a message is
 received. If the type is correct, then the for each character in the message 
 data it is sent to the UART shared memory and UART transmit interrupt is 
-triggered. Then, the memory of the message is released and released processor is 
+triggered. Then, the memory of the message is released and release processor is 
 called. Pseudo code for the process can be found in Listing~\ref{crt}.
 
 \lstset{caption={Pseudo code for CRT display process}, label=crt}
@@ -639,7 +639,7 @@ interrupts, specifically the counter overflow interrupt. Internally,
 the process keeps track of the number of milliseconds elapsed since
 its start. Whenever the process runs, it is known that a millisecond
 has elapsed and the system clock is incremented. Next, any delayed
-messages that are ready to be sent are sent to their respective
+messages that are ready to be sent are forwarded to the specified
 receiver processes. Pseudo code for this process can be found in
 Listing~\ref{timer}.
 
