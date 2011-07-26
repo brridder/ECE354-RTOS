@@ -1280,8 +1280,11 @@ the data structures in the operating system, operations such as removing a
 process from the middle of a queue do not need to search the queue for the
 process. Additionally, the design decision to use a free list for our memory 
 management system, instead of a basic linked list, was made so that finding the 
-next free memory block could be done without having to traverse the whole list.
-
+next free memory block could be done without having to traverse the whole list. 
+The free list also saves memory, as a counter or pointer could be kept to the 
+next available memory block, but with a free list this is not necessary as the 
+block it self stores the next pointer.
+s
 \subsection{\textsc{Organization}}
 
 Our time management skills were very effective throughout this project. We had
