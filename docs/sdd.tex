@@ -26,12 +26,26 @@ David Janssen - dajjanss }
 \lstlistoflistings
 
 \chapter{\textsc{Software Design}}
-% TODO :: Little blurb here
+The following chapter is concerned with the specific software design of the
+RTX operating system. The first section, Section~\ref{sec:overview}, covers an
+overview of the system. Next, in Section~\ref{sec:global_info}, all of the data
+structures, global variables, constants, and more is covered as background for
+the primitives and processes. Each kernel primitive is discussed with pseudo
+code within Section~\ref{sec:primitives}. Processes, both system and user, are
+covered next in Section~\ref{sec:processes}. Next, software and hardware
+interrupt handlers are covered in Section~\ref{sec:soft_isr} and
+Section~\ref{sec:hard_isr} respectively. Section~\ref{sec:hot_keys} deals with
+the implementation of the system hot keys and the functionality of each hot
+key. Finally, after initalization in Section~\ref{sec:rtx_init}, the implementation
+details of the entire system is explained in Section~\ref{sec:implementation}.
 
-\section{\textsc{Introduction}}
+
+\section{\textsc{Overview}}
+\label{sec:overview}
 % TODO :: Everything in here
 
 \section{\textsc{Global Information}}
+\label{sec:global_info}
 % Data structures (queues, PCB, message formats, tracebuffer, etc)
 % Variables
 % Constants (PIDS, msgID, return codes, status codes, msg types, etc)
@@ -282,6 +296,7 @@ double-linked list so that nearly every operation occurs in $O(1)$ time.
 
 
 \section{\textsc{Primitives}}
+\label{sec:primitives}
 This section describes the implemenation of major system primitives. These 
 primitives are used by the processes for various types of functionality. All 
 primitives are implemented as system calls which switch to kernel mode using a 
@@ -515,6 +530,7 @@ int delayed_send(int process_id, void* message_envelope, int delay):
 
 
 \section{\textsc{Processes}}
+\label{sec:processes}
 The operating system consists of several system, user, interrupt, and test 
 processes. These processes make up the main functionality of the operating 
 system. In order to be implemented properly these processes make use of the 
@@ -796,6 +812,7 @@ void system_call() {
 \end{lstlisting}
 
 \section{\textsc{Hardware Interrupt Handlers}}
+\label{sec:hard_isr}
 % data structures, functional outline, pseudocode
 Two hardware interrupt handlers were implemented. The first is for the timer
 interrupts and the second is for the UART for keyboard input from the user.
@@ -1001,6 +1018,7 @@ void init_memory(void* memory_start){
 
 
 \section{\textsc{Implementation}}
+\label{sec:implementation}
 This section is responsible for outlining some basic implementation techniques 
 regarding the testing of our operating system and the measurement of certain 
 primitives. It also includes a basic discussion of the role of each group member. 
