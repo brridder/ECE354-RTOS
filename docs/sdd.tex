@@ -1034,14 +1034,15 @@ void init_interrupts() {
 }
 \end{lstlisting}
 
-The final phase of the RTX initialization is memory management.  Memory blocks
-are allocated beginning at the start of free memory as defined by the linker.
-The function call \texttt{init\_memory(void* memory\_start)}, as seen in
-Listing~\ref{meminit}. A free list is used to implement linking and management
-of the memory blocks. Over-allocation and double deallocation prevention is
-handled by a bit field containing a bit for each memory block. When the memory
-is allocated the associated bit is set to 1 and for when it is released it is
-set back to 0.
+The final phase of the RTX initialization is memory management.
+Memory blocks are allocated beginning at the start of free memory as
+defined by the linker.  The function call that handles this is
+\texttt{init\_memory(void* memory\_start)}, as seen in
+Listing~\ref{meminit}. A free list is used to implement linking and
+management of the memory blocks. Over-allocation and double
+deallocation prevention is handled by a bit field containing a bit for
+each memory block. When the memory is allocated the associated bit is
+set to 1 and for when it is released it is set back to 0.
 
 \lstset{caption={Pseudo code for RTX initialization of memory
         management},label=meminit}
