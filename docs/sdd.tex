@@ -39,12 +39,24 @@ the implementation of the system hot keys and the functionality of each hot
 key. Finally, after initialization in Section~\ref{sec:rtx_init}, the implementation
 details of the entire system is explained in Section~\ref{sec:implementation}.
 
-
 \section{\textsc{Overview}}
 \label{sec:overview}
-% TODO :: Everything in here
+
+At a high level, the operating system consists of two main parts:
+initialization, and running processes. When executing begins, the
+operating system initializes memory, processes, priority queues, and
+interrupts. Once the initialization is complete, the operating system
+is in a state where it can run processes and respond to system calls
+as well as hardware interrupts. System call services are provided to
+processes running within the operating system in the form of a
+software interrupt handler. After initialization, a process is
+scheduled and then run. Whenever a system call occurs or a hardware
+interrupt is handled, the operating system may decide to schedule a
+new process. The overall flow diagram of the operating system can be
+found in Figure~\ref{flowchart}.
 
 \begin{figure}[H]
+    \label{flowchart}
     \center {
       \caption{Operating system flow diagram}
       \scriptsize
