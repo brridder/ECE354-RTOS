@@ -76,15 +76,16 @@ found in Figure~\ref{flowchart}.
 % Stacks
 % Memory map
 
-Within the RTX system, there are several pieces of information available
-globally within all contexts and several that are exposed only within kernel
-mode. Certain data structures, such as the message envelope, are used by user
-processes whereas other structures are used strictly by the kernel. Several
-global variables are available for certain use cases. Constants are used to
-define priority levels, IDs, and more. Stack usage is limited to standard
-function uses, storing states before switching contexts, and for process
-switching. Memory mapping is handled with a free list paired with an allocation
-bit field for control.
+Within the RTX system, there are several pieces of information
+available globally within all contexts and several that are exposed
+only within kernel mode. Certain data structures, such as the message
+envelope, are used by user processes whereas other structures are used
+strictly by the kernel. Several global variables are available for
+certain use cases. Constants are used to define priority levels, IDs,
+and more. Stack usage is limited to standard function uses, storing
+states before switching contexts, and for process switching. Memory
+management is handled with a free list paired with an allocation bit
+field for control.
 
 \subsection{\textsc{Data Structures}}
 The global data structures available have been split up into two categories:
@@ -240,9 +241,9 @@ is no capability to add extra processes during system execution.
     } % Center
 \end{table}
 
-There are six message types defined using an enumerator available to the
-processes for specific duties. See Table~\ref{table_msg_types} for the type
-name, process, and description of each type.
+There are six message types defined using an enumerated type available
+to the processes for specific duties. See Table~\ref{table_m/sg_types}
+for the type name, process, and description of each type.
 
 \begin{table}[H]
 \small
@@ -279,7 +280,7 @@ Two return codes are used by functions in the system. The first,
 \texttt{RTX\_SUCCESS}, is defined as $0$ and is used for indicating a success 
 within the system. The other, \texttt{RTX\_ERROR}, is defined as $-1$ and is 
 used for indicating a failure. This maintains consistency between different 
-functions and makes the code more readable for checking return conditions.
+functions and makes the code more readable when checking return conditions.
 
 \subsection{\textsc{Stacks}}
 
@@ -293,10 +294,10 @@ and function calls as determined by the compiler.
 The memory system consists of two components that are managed by the request
 and release memory block primitives. The first is a free list containing a
 total of 32 128-byte memory blocks. Each memory block is linked together using
-the first word as the pointer to the next block of free memory. When a block is
+the first longword as the pointer to the next block of free memory. When a block is
 requested, the head is sent to the requester and the new head becomes the
 memory location that the old one pointed to. Putting a block back onto the free
-list requires setting the first word of the block to the pointer of the current
+list requires setting the first longword of the block to the pointer of the current
 head and the new head is now that block. The benefit to this approach is that
 the blocks can be returned onto the free list in any order without affecting
 the operation of this data structure. All free list operations are done in
