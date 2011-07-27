@@ -790,14 +790,14 @@ void process_set_priority_command() {
 
 \subsection{\textsc{Test Processes A, B, C}}
 The system also has three test processes implemented. These processes are used
-to stress test our system by depleting memory blocks. \texttt{Process A}
+to stress test the system by depleting memory blocks. \texttt{Process A}
 requests a memory block and on receiving one sends a message to \texttt{Process
 B}. \texttt{Process B} receives the message and then sends the message to
 \texttt{Process C}. \texttt{Process C} then gets a message and checks if the
 number of messages it has received is divisible by 20. If it is it prints out
 "Process C" to the UART1. Then the process hibernates for 10 seconds. All of
 these processes loop forever in order to deplete memory. In order to have these
-processes work properly within our system \texttt{Process C} was assigned a
+processes work properly within the system \texttt{Process C} was assigned a
 priority of 1 and the other two processes were assigned a priority of 2.
 
 \pagebreak
