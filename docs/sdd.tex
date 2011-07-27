@@ -368,20 +368,16 @@ primitive.
 \begin{lstlisting}
 int set_process_priority(int pid, int priority) {
     mode switch to kernel mode using system call exception
-    
     if invalid PID or invalid priority:
         return RTX_ERROR
-    
     if running process is the process to change:
         update running process to the new priority
     else:
         dequeue process from appropriate queue
         update priority of that process
         enqueue process to its new priority queue
-
     if the priority of the updated is greater than the running processes priority:
         call release processor
-
     return RTX_SUCCESS
 }
 \end{lstlisting}
@@ -430,11 +426,9 @@ void* request_memory_block() {
         if there are no memory blocks free:
             set the state of the running process to blocked on memory
             call release processor
-
     pop block of memory off the free list        
     get block index
     set corresponding bit in memory allocation field to 1
-
     return address of block
 }
 \end{lstlisting}
