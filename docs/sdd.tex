@@ -603,6 +603,7 @@ data it is sent to the UART shared memory and UART transmit interrupt is
 triggered. Then, the memory of the message is released and release processor is 
 called. Pseudo code for the process can be found in Listing~\ref{crt}.
 
+\pagebreak
 \lstset{caption={Pseudo code for CRT display process}, label=crt}
 \begin{lstlisting}
 void process_crt_display() {
@@ -709,6 +710,7 @@ one second. When the clock reaches a time of 24:00:00 it is reset to
 00:00:00. Pseudo code for the wall clock process can be found in
 Listing~\ref{wallclock}.
 
+\pagebreak
 \lstset{caption={Pseudo code for the wall clock process}, label=wallclock}
 \begin{lstlisting}
 void process_wall_clock() {
