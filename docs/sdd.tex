@@ -897,7 +897,7 @@ hot key function directly with the input string as a parameter. See
 Table~\ref{hot_keys_table} for a summary of the hot key strings and
 descriptions. All of the code related to the debug hot keys are wrapped in
 \texttt{\#ifdef \_DEBUG\_HOTKEYS} and \texttt{\#endif} to ensure that during 
-normal operation of the system that this code will not interfere.
+normal operation of the system this code will not interfere.
 
 \begin{table}[h]
     \caption{Hot Keys and Descriptions}
@@ -959,26 +959,28 @@ The RTX initialization happens in four phases: process, priority queues,
 interrupts, and the memory management system. Pseudo code for everything except
 memory management can be seen in Listing~\ref{initlisting}.
 
-The process initialization occurs in \texttt{init\_processes()} and is done in
-two stages. The first is an initialization of the test processes. Second is the
-initialization of the null process and the user processes. For each process, a
-PCB is created on the process table. This PCB is then added to the kernel's own
-process list but is not yet added to a priority queue. For each process in
-the kernel's process list a stack pointer is created and an exception frame is
-added to this new stack. The format/vector word portion of the exception frame
-is set to \texttt{0x4000} to represent a 4 byte aligned stack and the status register
-portion is \texttt{0x0000}. In the frame, the program counter is assigned to the entry
-point of the process.
+The process initialization occurs in \texttt{init\_processes()} and is
+done in two stages. The first is an initialization of the test
+processes. Second is the initialization of the null process and the
+user processes. For each process, a PCB is created in the process
+table. This PCB is then added to the kernel's own process list but is
+not yet added to a priority queue. For each process in the kernel's
+process list a stack pointer is created and an exception frame is
+added to this new stack. The format/vector word portion of the
+exception frame is set to \texttt{0x4000} to represent a 4 byte
+aligned stack and the status register portion is \texttt{0x0000}. In
+the frame, the program counter is assigned to the entry point of the
+process.
 
 Next, priority queues are initialized. The data structures are already
 allocated but not initialized. To ensure proper operation, the queues are
 put into a consistent empty state. After the queues are setup, the processes
 are added to appropriate queue.
 
-Then interrupts are setup. First, the vector base register (VBR) for the
-interrupts is set to memory location \texttt{0x10000000}. Next, the soft interrupt for
-\texttt{system\_call()} is installed to the VBR at vector 0 as outlined in
-Section~\ref{sec:soft_isr}.
+Interrupts are then setup. First, the vector base register (VBR) for
+the interrupts is set to memory location \texttt{0x10000000}. Next,
+the soft interrupt for \texttt{system\_call()} is installed to the VBR
+at vector 0 as outlined in Section~\ref{sec:soft_isr}.
 
 \lstset{caption={Pseudo code for RTX initialization},label=initlisting}
 \begin{lstlisting}
