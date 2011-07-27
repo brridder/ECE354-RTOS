@@ -1,6 +1,6 @@
 \documentclass[oneside]{report}
 \usepackage{listings}
-\usepackage[hmargin=1.5in,vmargin=1.5in]{geometry}
+\usepackage[hmargin=1.4in,vmargin=1.5in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
 \usepackage{float}
@@ -48,6 +48,8 @@ details of the entire system is explained in Section~\ref{sec:implementation}.
 \setlength{\unitlength}{2.0em} 
 \include{flowchart}
 \normalsize
+
+\pagebreak
 
 \section{\textsc{Global Information}}
 \label{sec:global_info}
@@ -226,6 +228,7 @@ processes for specific duties. See Table~\ref{table_msg_types} for the type
 name, process, and description of each type.
 
 \begin{table}[H]
+\small
     \caption{Message Types}
     \label{table_msg_types}
     \center{
@@ -253,6 +256,7 @@ name, process, and description of each type.
     } % Center
 
 \end{table}
+
 
 Two return codes are used by functions in the system. The first,
 \texttt{RTX\_SUCCESS}, is defined as $0$ and is used for indicating a success 
@@ -296,6 +300,8 @@ difference is that there is a queue for each priority level. Hence, for the
 ready and blocked queues an array of queues is used with the index of the queue
 as the priority level. As described earlier, every queue is implemented using a
 doubly linked list so that nearly every operation occurs in $O(1)$ time.
+
+\pagebreak
 
 \section{\textsc{Primitives}}
 \label{sec:primitives}
@@ -530,6 +536,7 @@ int delayed_send(int process_id, void* message_envelope, int delay) {
 \end{lstlisting}
 
 
+\pagebreak 
 
 \section{\textsc{Processes}}
 \label{sec:processes}
@@ -773,6 +780,8 @@ these processes loop forever in order to deplete memory. In order to have these
 processes work properly within our system \texttt{Process C} was assigned a
 priority of 1 and the other two processes were assigned a priority of 2.
 
+\pagebreak
+
 \section{\textsc{Software Interrupt Handler}}
 \label{sec:soft_isr}
 
@@ -816,6 +825,7 @@ void system_call() {
 }
 \end{lstlisting}
 
+\pagebreak
 \section{\textsc{Hardware Interrupt Handlers}}
 \label{sec:hard_isr}
 % data structures, functional outline, pseudocode
@@ -851,6 +861,8 @@ void interrupt_handler() {
 Interrupt service routines are loaded into the interrupt vector table and
 initialized with the required settings in the initialization period of the
 system start up. This is described in Section~\ref{sec:rtx_init}.
+
+\pagebreak
 
 \section{\textsc{Hot Keys}}
 \label{sec:hot_keys}
@@ -917,6 +929,8 @@ through every message in both queues and outputs first all the sent messages
 and then all of the received messages. The number of messages store in the two
 queues can be changed by modifying the \texttt{DEBUG\_MESSAGE\_LOG\_SIZE}
 definition. 
+
+\pagebreak
 
 \section{\textsc{Initialization}}
 \label{sec:rtx_init}
@@ -1020,6 +1034,7 @@ void init_memory(void* memory_start){
 }
 \end{lstlisting}
 
+\pagebreak 
 
 \section{\textsc{Implementation}}
 \label{sec:implementation}
