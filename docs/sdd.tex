@@ -1,6 +1,6 @@
 \documentclass[oneside]{report}
 \usepackage{listings}
-\usepackage[hmargin=1.4in,vmargin=1.5in]{geometry}
+\usepackage[hmargin=1.5in,vmargin=1.5in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
 \usepackage{float}
@@ -295,8 +295,7 @@ Priority queues are done using a standard queue data structure. The only
 difference is that there is a queue for each priority level. Hence, for the
 ready and blocked queues an array of queues is used with the index of the queue
 as the priority level. As described earlier, every queue is implemented using a
-double-linked list so that nearly every operation occurs in $O(1)$ time.
-
+doubly linked list so that nearly every operation occurs in $O(1)$ time.
 
 \section{\textsc{Primitives}}
 \label{sec:primitives}
@@ -932,8 +931,8 @@ PCB is created on the process table. This PCB is then added to the kernel's own
 process list but is not yet added to a priority queue. For each process in
 the kernel's process list a stack pointer is created and an exception frame is
 added to this new stack. The format/vector word portion of the exception frame
-is set to 0x4000 to represent a 4 byte aligned stack and the status register
-portion is 0x0000. In the frame, the program counter is assigned to the entry
+is set to \texttt{0x4000} to represent a 4 byte aligned stack and the status register
+portion is \texttt{0x0000}. In the frame, the program counter is assigned to the entry
 point of the process.
 
 Next, priority queues are initialized. The data structures are already
@@ -942,7 +941,7 @@ put into a consistent empty state. After the queues are setup, the processes
 are added to appropriate queue.
 
 Then interrupts are setup. First, the vector base register (VBR) for the
-interrupts is set to memory location 0x10000000. Next, the soft interrupt for
+interrupts is set to memory location \texttt{0x10000000}. Next, the soft interrupt for
 \texttt{system\_call()} is installed to the VBR at vector 0 as outlined in
 Section~\ref{sec:soft_isr}.
 
