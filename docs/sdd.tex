@@ -23,6 +23,7 @@ David Janssen - dajjanss }
 
 \tableofcontents
 \listoftables
+\listoffigures
 \lstlistoflistings
 
 \chapter{\textsc{Software Design}}
@@ -384,7 +385,7 @@ int set_process_priority(int pid, int priority) {
 \end{lstlisting}
 
 \subsection{\textsc{Get Process Priority}}
-The \texttt{get\_process\_priority()} primitive is used to retrieve the
+The \texttt{get\_process\_priority(...)} primitive is used to retrieve the
 priority of any process in the system. If an invalid PID is specified,
 \texttt{RTX\_ERROR} is returned. Otherwise, the PCB is retrieved from
 the process table and the priority of the process is returned. Pseudo
@@ -439,7 +440,7 @@ void* request_memory_block() {
 
 \subsection{\textsc{Release Memory Block}}
 
-The primitive \texttt{release\_memory\_block()} is used by processes to
+The primitive \texttt{release\_memory\_block(...)} is used by processes to
 deallocate a previously allocated block of memory. If the block is invalid
 \texttt{RTX\_ERROR} is returned. Once the block has been deallocated, if there
 are processes blocked on memory, the highest priority blocked process is
@@ -469,7 +470,7 @@ int release_memory_block(void* memory_block) {
 
 \subsection{\textsc{Send Message}}
 
-The \texttt{send\_message()} primitive is used to send a message to a
+The \texttt{send\_message(...)} primitive is used to send a message to a
 process in the system. Messages are enqueued onto a message queue in
 the receiving process' PCB. If the receiving process is currently
 blocked on messages, it is unblocked and enqueued to the ready
@@ -500,7 +501,7 @@ int send_message(int pid, void* message_envelope) {
 
 \subsection{\textsc{Receive Message}}
 
-The \texttt{receive\_message()} primitive is used by processes to
+The \texttt{receive\_message(...)} primitive is used by processes to
 receive a message from a process. If a message is available on the
 running processes message queue, it is immediately dequeued and
 returned. Otherwise, the state of the running process is set to
@@ -524,7 +525,7 @@ void* receive_message(int* sender_id) {
 
 \subsection{\textsc{Delayed Send}}
 
-The \texttt{delayed\_send()} primitive allows processes to send a
+The \texttt{delayed\_send(...)} primitive allows processes to send a
 message which will not be delivered until a specified time has
 elapsed. The current system time and the delay amount are stored in
 the message envelope. The message is then inserted into the delayed
