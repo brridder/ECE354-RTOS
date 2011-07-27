@@ -553,11 +553,14 @@ int delayed_send(int process_id, void* message_envelope, int delay) {
 
 \section{\textsc{Processes}}
 \label{sec:processes}
-The operating system consists of several system, user, interrupt, and test 
-processes. These processes make up the main functionality of the operating 
-system. In order to be implemented properly these processes make use of the 
-primitives described above. Processes are assigned different priority levels 
-which are used to enforce what process should be running.
+
+The operating system consists of several system, user, interrupt, and
+test processes. These processes make up the main functionality of the
+operating system. The implementation of these processes makes use of
+the primitives described above. Processes are assigned different
+priority levels which are used to enforce what process should be
+running.
+
 \subsection{\textsc{Null Process}}
 The process method is defined as an infinite loop that constantly calls 
 \texttt{release\_processor()}. It has a priority of four and a process ID of 
