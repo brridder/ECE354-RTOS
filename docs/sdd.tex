@@ -755,8 +755,8 @@ void process_wall_clock() {
 
 The \texttt{process\_set\_priority\_command()} process allows a user
 to change the priority of any process in the system directly from
-terminal. The process registers the '\%C' keyboard command which takes
-the form '\%C pid priority'. When this command is received, the
+terminal. The process registers the \texttt{\%C} keyboard command which takes
+the form \texttt{\%C pid priority}. When this command is received, the
 process parses the arguments, validates them, and if they are correct
 it changes the priority of the selected process. Pseudo code for this
 process can be found in Listing~\ref{lst_set_prio_cmd_proc}.
