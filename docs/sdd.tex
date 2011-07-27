@@ -1097,16 +1097,17 @@ functions such as string formatting, memory copying, and character
 parsing functions were implemented by Casey. Most of the
 implementation was done while pair programming with other members of
 the group. Casey also handled implementation of the test case processes
-which were designed by David. Additionally, Casey handled setting up
+which were designed by David. Additionally, he handled setting up
 the version control system as well as the initial Makefile structure.
 
 \subsubsection{\textsc{David Janssen}}
-It was David's responsibility to write the documentation for each part of the 
-project. Also, he worked in a pair programming environment to assist with the 
-development of the memory management system, the request and release memory 
-block primitives, the get and set priority primitives, and the wall clock 
-process. Finally,  David had to come up with test cases that would be 
-implemented to verify the functionality of each primitive.   
+It was David's responsibility to write the documentation for each part
+of the project. Also, he worked in a pair programming environment to
+assist with the development of the memory management system, the
+request and release memory block primitives, the get and set priority
+primitives, and the wall clock process. Finally, David came up with
+test cases that would be implemented to verify the functionality of
+each primitive.
 
 \subsection{\textsc{Test Plan}}
 Testing for the operating system was done in a consistent fashion throughout all
@@ -1157,7 +1158,7 @@ millisecond.
 Finally, the second hardware timer was used to measure execution time
 of the primitives. By setting the timer to increment its internal
 counter at a rate of 180kHz, this profiling method was able to achieve
-5.555 microsecond granularity. Using this timer a process was
+5.555 microsecond granularity. Using this timer a method was
 developed that reset the timer counter register before running a
 primitive, and checked its value after the primitive finished
 executing. In this fashion the primitive execution time could be
@@ -1165,11 +1166,11 @@ accurately measured. Due to the shortcomings of the first two methods,
 this method was used to complete the measurements.
 
 \chapter{\textsc{Major Design Changes}}
-All in all, there were only two design changes that needed to be done. The
-first was related to the initial implementation of the scheduling system. The
-other was how the processes managed their memory blocks as allocated by the
-system and preventing key interrupt processes from blocking on whilst waiting
-for memory.
+All in all, there were only two major design changes that needed to be
+done. The first was related to the initial implementation of the
+scheduling system. The other was how the processes managed their
+memory blocks as allocated by the system and preventing key interrupt
+processes from blocking on whilst waiting for memory.
 
 \section{\textsc{Done Queues}}
 Initially, the priority queuing system was implemented using several different
@@ -1194,7 +1195,7 @@ the interrupt processes, two memory blocks were set aside just for the UART and
 timer processes. Memory management within the system processes also became an
 important consideration.
 
-Reserving a couple blocks of memory just for the interrupt processes limited
+Reserving two blocks of memory just for the interrupt processes limited
 how often the two interrupt processes became blocked on memory. Blocking the
 UART on memory will result in the system appearing like it locked up since
 nothing could be inputted from the keyboard or outputted to the display.
@@ -1232,11 +1233,11 @@ can be found in Table~\ref{measurementdata}.
           \hline
           {\bf Primitive Name} & {\bf Average Execution Time ($\mu$s)} \\
           \hline
-          \texttt{receive\_message()} & 244.44 \\
+          \texttt{receive\_message()} & 244 \\
           \hline
-          \texttt{send\_message()} & 255.55 \\
+          \texttt{send\_message()} & 255 \\
           \hline
-          \texttt{request\_memory\_block()} & 327.77 \\
+          \texttt{request\_memory\_block()} & 327 \\
           \hline
         \end{tabular}
     }
