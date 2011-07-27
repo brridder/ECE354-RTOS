@@ -601,10 +601,11 @@ void process_kcd() {
 
 \subsection{\textsc{CRT Process}}
 The \texttt{process\_crt\_display()} blocks until a message is
-received. If the type is correct, then the for each character in the message 
-data it is sent to the UART shared memory and UART transmit interrupt is 
-triggered. Then, the memory of the message is released and release processor is 
-called. Pseudo code for the process can be found in Listing~\ref{crt}.
+received. If the type is correct, then the for each character in the
+message data it is sent to the UART shared memory and UART transmit
+interrupt is triggered. Then, the memory of the message is released
+and \texttt{release\_processor()} is called. Pseudo code for the
+process can be found in Listing~\ref{crt}.
 
 \pagebreak
 \lstset{caption={Pseudo code for CRT display process}, label=crt}
@@ -623,15 +624,16 @@ void process_crt_display() {
 
 \subsection{\textsc{UART I-Process}}
 
-The UART i-process is responsible for handling all UART interrupts,
+The UART I-process is responsible for handling all UART interrupts,
 both receive ready and transmit ready. When the process is run, it
 checks which of these interrupts fired. If the interrupt was receive
 ready, the input character is appended to a string buffer. When a
 keyboard command is detected, it is forwarded in a message to the KCD
 process. When a hot key command is detected, the relevant hot key
-command is run. When a transmit interrupt is received, a character is
-printed out the UART from a location in shared memory. Pseudo code for
-this process can be found in Listing~\ref{uart}.
+command is run. When a transmit ready interrupt is received, a
+character is printed out the UART from a location in shared
+memory. Pseudo code for this process can be found in
+Listing~\ref{uart}.
 
 \lstset{caption={Pseudo code for the UART I-Process}, label=uart}
 \begin{lstlisting}
