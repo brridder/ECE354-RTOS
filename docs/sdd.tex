@@ -805,15 +805,16 @@ priority of 1 and the other two processes were assigned a priority of 2.
 \section{\textsc{Software Interrupt Handler}}
 \label{sec:soft_isr}
 
-The system uses a single software interrupt handler for performing context
-switches into kernel mode for kernel functions. It is initialized in the 0th
-location on the trap table. The trap is only called from the function
-\texttt{do\_system\_call(int call\_id, int* args, int num\_args)} which is used
-to abstract common code used by all the primitives. The software handler itself
-is called by the trap mnemonic is \texttt{system\_call()} which retrieves
-the parameters from data registers 1 to 4. It calls the appropriate kernel
-level function based on the call id parameter. The call ids are defined in an
-enumerator. 
+The system uses a single software interrupt handler for performing
+context switches into kernel mode for kernel functions. It is
+initialized in the 0th location on the trap table. The trap is only
+called from the function \texttt{do\_system\_call(int call\_id, int*
+  args, int num\_args)} which is used to abstract common code used by
+all the primitives. The software handler itself which is called by the
+\texttt{TRAP \#0} mnemonic is \texttt{system\_call()} which retrieves
+the parameters from data registers 1 through 4. It calls the
+appropriate kernel level function based on the call id parameter. The
+call ids are defined in an enumerator.
 
 The software interrupt handler, as described in Listing~\ref{lst_system_call},
 is installed in vector 0 of the trap table. The operation of this interrupt
@@ -855,7 +856,7 @@ They both use very similar logic. All of the data and address registers are
 moved onto the stack after interrupts are disabled. Then the processor is
 preempted with the the respective interrupt process selected as the next
 running process. In the case of the timer interrupt, the interrupt event is
-acknowledge to prevent the interrupt from firing multiple times for the same
+acknowledged to prevent the interrupt from firing multiple times for the same
 event. After the interrupt process releases the processor, and the processor
 returns back to the interrupted process, the data and address registers are
 restored from the stack and the interrupt handler returns from the exception.
