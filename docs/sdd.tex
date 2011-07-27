@@ -1296,14 +1296,14 @@ user process erroneously running in supervisor mode. The suspected cause for
 this is an incorrect initial exception on the user processes stack.
 
 The UART I-process contains a call to \texttt{request\_memory\_block()} inside
-the code path that handles keyboard commands that begin with '\%'. If the
+the code path that handles keyboard commands that begin with \texttt{\%}. If the
 system is starved for memory and a user enters such a keyboard command, the
 I-process will be come blocked. Obviously, this is not desired as this will
 cause all user input to block which will in turn cause hot keys to no longer
 function.
 
 Our memory manager implementation includes an allocation bit field which needs
-to be checked each time a memory block is requested in order to determine how
+to be counted each time a memory block is requested in order to determine how
 many blocks are free. This check could be improved to run in $O(1)$ time by
 keeping a count of the allocated memory blocks alongside the bit field.
 
@@ -1329,8 +1329,8 @@ the group that could not attend meetings about the project's current status.
 
 \subsection{\textsc{Technical}}
 
-Two particular parts of our operating system were implemented in a particular
-effective way. First of all, the memory manager is particularly robust.
+Two parts of our operating system were implemented in a particular
+effective way. First of all, the memory manager is very robust.
 Secondly, great effort was used to ensure as many operations would occur in 
 $O(1)$ time as possible.
 
@@ -1341,17 +1341,18 @@ allocated. The check for double deallocation runs in $O(1)$ time. Also, the
 memory manager includes out of range checks to avoid deallocating invalid
 blocks of memory.
 
-With the exception of counting the allocated memory blocks, inserting messages
-into the delayed message queue, and checking which process is first in a
-priority queue, all system functions run in $O(1)$ time. Due to the design of
-the data structures in the operating system, operations such as removing a
-process from the middle of a queue do not need to search the queue for the
-process. Additionally, the design decision to use a free list for our memory 
-management system, instead of a basic linked list, was made so that finding the 
-next free memory block could be done without having to traverse the whole list. 
-The free list also saves memory, as a counter or pointer could be kept to the 
-next available memory block, but with a free list this is not necessary as the 
-block it self stores the next pointer.
+With the exception of counting the allocated memory blocks, inserting
+messages into the delayed message queue, and checking which process is
+first in a priority queue, all system functions run in $O(1)$
+time. Due to the design of the data structures in the operating
+system, operations such as removing a process from the middle of a
+queue do not need to search the queue for the process. Additionally,
+the design decision to use a free list for our memory management
+system, instead of a basic linked list, was made so that finding the
+next free memory block could be done without having to traverse the
+whole list. The free list also saves memory, as no additional data
+structures are needed besides a single pointer to the head of the
+list.
 
 \subsection{\textsc{Organization}}
 
